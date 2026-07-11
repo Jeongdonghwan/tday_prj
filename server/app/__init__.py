@@ -76,6 +76,28 @@ def _register_cli(app: Flask):
                 sent += send_push([author.push_token], "베스트 등재", f"'{p.title[:20]}' 글이 BEST에 올랐어요!", {"type": "best", "post_id": p.id})
         click.echo(f"베스트 푸시 발송: {sent}건")
 
+    @app.cli.command("seed-poll")
+    def seed_poll():
+        """활성 커뮤니티 데일리 폴이 없으면 데모 1건 삽입 (idempotent, DESIGN_UPDATE §3)."""
+        from datetime import date
+
+        from .models import DailyPoll
+
+        if DailyPoll.query.filter_by(is_active=True).count() > 0:
+            click.echo("이미 활성 데일리 폴이 있어 건너뜁니다.")
+            return
+        db.session.add(
+            DailyPoll(
+                question="축의금, 10만원이 적당할까 부담일까?",
+                choice_a="10만원 적당",
+                choice_b="5만원도 충분",
+                scheduled_date=date.today(),
+                is_active=True,
+            )
+        )
+        db.session.commit()
+        click.echo("데모 데일리 폴 삽입 완료.")
+
     @app.cli.command("seed")
     def seed():
         """샘플 글/투표/댓글/오늘의질문 삽입 (피드가 비어보이지 않게)."""

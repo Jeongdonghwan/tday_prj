@@ -6,6 +6,7 @@ from .user import User
 from .couple import Couple
 from .post import Comment, PollOption, Post, Vote
 from .daily import DailyAnswer, DailyQuestion
+from .daily_poll import DailyPoll, DailyPollVote
 from .schedule import Schedule
 from .moderation import Block, Report
 
@@ -18,6 +19,8 @@ __all__ = [
     "Comment",
     "DailyQuestion",
     "DailyAnswer",
+    "DailyPoll",
+    "DailyPollVote",
     "Schedule",
     "Report",
     "Block",
