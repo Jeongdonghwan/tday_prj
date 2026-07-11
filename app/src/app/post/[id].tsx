@@ -27,6 +27,7 @@ import {
   type ApiPost,
 } from '@/api/posts';
 import { useAuth } from '@/auth/AuthContext';
+import { Avatar } from '@/components/Avatar';
 import { Icon } from '@/components/Icon';
 import { StatusChip } from '@/components/StatusChip';
 import { colors, radius, weight } from '@/theme';
@@ -267,9 +268,7 @@ function ResultCard({ label, pct, tone, chosen }: { label: string; pct: number; 
 function CommentItem({ comment }: { comment: ApiComment }) {
   return (
     <View style={styles.cmt}>
-      <View style={styles.cmAv}>
-        <Text style={styles.cmAvText}>{comment.author.nickname.slice(0, 1)}</Text>
-      </View>
+      <Avatar avatarNo={comment.author.avatar_no} size={28} />
       <View style={{ flex: 1 }}>
         <View style={styles.cmTop}>
           <Text style={styles.cmName}>{comment.author.nickname}</Text>
@@ -282,12 +281,15 @@ function CommentItem({ comment }: { comment: ApiComment }) {
         </Text>
         {comment.replies.map((r) => (
           <View key={r.id} style={styles.reply}>
-            <View style={styles.cmTop}>
-              <Text style={styles.cmName}>{r.author.nickname}</Text>
-              <StatusChip status={r.author.status} small />
+            <Avatar avatarNo={r.author.avatar_no} size={24} />
+            <View style={{ flex: 1 }}>
+              <View style={styles.cmTop}>
+                <Text style={styles.cmName}>{r.author.nickname}</Text>
+                <StatusChip status={r.author.status} small />
+              </View>
+              <Text style={styles.cmText}>{r.body}</Text>
+              <Text style={styles.cmMeta}>{r.time_text} · 좋아요 {r.like_count}</Text>
             </View>
-            <Text style={styles.cmText}>{r.body}</Text>
-            <Text style={styles.cmMeta}>{r.time_text} · 좋아요 {r.like_count}</Text>
           </View>
         ))}
       </View>
@@ -317,13 +319,11 @@ const styles = StyleSheet.create({
   cmthead: { fontSize: 14, fontWeight: weight.extrabold as '800', color: colors.ink, marginTop: 24, marginBottom: 4 },
   noComment: { fontSize: 13, color: colors.sub2, paddingVertical: 18, textAlign: 'center' },
   cmt: { flexDirection: 'row', gap: 10, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: colors.line },
-  cmAv: { width: 32, height: 32, borderRadius: 999, backgroundColor: colors.soft, alignItems: 'center', justifyContent: 'center' },
-  cmAvText: { fontSize: 12, fontWeight: weight.bold as '700', color: colors.sub },
   cmTop: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
   cmName: { fontSize: 12.5, fontWeight: weight.bold as '700', color: colors.ink },
   cmText: { fontSize: 14, lineHeight: 21, color: colors.body },
   cmMeta: { fontSize: 11.5, color: colors.sub2, marginTop: 6 },
-  reply: { marginTop: 12, paddingLeft: 12, borderLeftWidth: 2, borderLeftColor: colors.line },
+  reply: { flexDirection: 'row', gap: 8, marginTop: 12, paddingLeft: 8, borderLeftWidth: 2, borderLeftColor: colors.line },
   composer: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, paddingHorizontal: 16, paddingVertical: 10, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.bg },
   composerInput: { flex: 1, maxHeight: 100, borderWidth: 1.5, borderColor: colors.line, borderRadius: radius.input, paddingHorizontal: 14, paddingVertical: 10, fontSize: 14, color: colors.ink },
   sendBtn: { paddingHorizontal: 16, height: 42, borderRadius: radius.button, backgroundColor: colors.rose, alignItems: 'center', justifyContent: 'center' },

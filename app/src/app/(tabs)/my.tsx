@@ -8,6 +8,7 @@ import { updateMe } from '@/api/auth';
 import { getDday, type Dday } from '@/api/couple';
 import { useAuth } from '@/auth/AuthContext';
 import { AppBar } from '@/components/AppBar';
+import { Avatar } from '@/components/Avatar';
 import { Icon, type IconName } from '@/components/Icon';
 import { StatusChip } from '@/components/StatusChip';
 import { colors, radius, statusTheme, weight, type RelationshipStatus } from '@/theme';
@@ -56,9 +57,7 @@ export default function MyScreen() {
       <AppBar title="마이" right={<Icon name="settings" size={22} color={colors.ink} />} />
       <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
         <View style={styles.head}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{nickname.slice(0, 1)}</Text>
-          </View>
+          <Avatar avatarNo={user?.avatar_no} size={56} />
           <View>
             <View style={styles.nameRow}>
               <Text style={styles.name}>{nickname}</Text>
@@ -124,8 +123,6 @@ export default function MyScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
   head: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 20, paddingBottom: 18, paddingTop: 4 },
-  avatar: { width: 56, height: 56, borderRadius: 18, backgroundColor: colors.roseBg, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { fontSize: 22, fontWeight: weight.extrabold as '800', color: colors.rose },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
   name: { fontSize: 18, fontWeight: weight.extrabold as '800', color: colors.ink, letterSpacing: -0.4 },
   handle: { fontSize: 12.5, color: colors.sub, marginTop: 5 },

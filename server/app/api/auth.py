@@ -60,6 +60,8 @@ def social_login():
             relationship_status="single",
         )
         db.session.add(user)
+        db.session.flush()  # id 확보
+        user.avatar_no = (user.id % 12) + 1  # 기본 아바타 배정 (DESIGN_UPDATE §1)
         db.session.commit()
         created = True
 

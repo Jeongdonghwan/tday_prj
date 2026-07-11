@@ -3,7 +3,13 @@ import { apiRequest } from './client';
 import type { FeedPost } from '@/components/PostCard';
 import type { PostCategory, RelationshipStatus } from '@/theme';
 
-export type ApiAuthor = { id: number | null; nickname: string; status: RelationshipStatus; status_label: string };
+export type ApiAuthor = {
+  id: number | null;
+  nickname: string;
+  status: RelationshipStatus;
+  status_label: string;
+  avatar_no: number;
+};
 
 export type ApiPoll = {
   a_label: string;

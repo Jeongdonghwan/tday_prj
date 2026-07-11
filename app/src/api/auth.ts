@@ -8,6 +8,7 @@ export type Me = {
   relationship_status: RelationshipStatus;
   status_label: string;
   couple_id: number | null;
+  avatar_no: number;
   created_at: string | null;
   couple?: { id: number; start_date: string | null; connected: boolean };
 };

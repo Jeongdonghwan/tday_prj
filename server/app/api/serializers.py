@@ -25,11 +25,13 @@ def time_ago(dt: datetime) -> str:
 
 def _author(entity) -> dict:
     """글/댓글 작성자 요약 + 작성 시점 상태 스냅샷."""
+    author = getattr(entity, "author", None)
     return {
-        "id": entity.author.id if entity.author else None,
-        "nickname": entity.author.nickname if entity.author else "알 수 없음",
+        "id": author.id if author else None,
+        "nickname": author.nickname if author else "알 수 없음",
         "status": entity.author_status,
         "status_label": STATUS_LABELS.get(entity.author_status, ""),
+        "avatar_no": author.avatar() if author else 1,  # DESIGN_UPDATE §1
     }
 
 
