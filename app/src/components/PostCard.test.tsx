@@ -4,12 +4,17 @@ import { PostCard, type FeedPost } from './PostCard';
 
 const base: FeedPost = {
   id: 1,
-  categoryLabel: '연애 · 다툼',
+  tag: '썰',
+  categoryLabel: '연애',
   title: '기념일 까먹은 남친',
   body: '본문',
   authorName: '속상러',
   authorStatus: 'couple',
+  authorAvatarNo: 2,
   timeText: '2시간 전',
+  viewCount: 1800,
+  likeCount: 643,
+  commentCount: 87,
 };
 
 // 렌더러 환경 비호환으로 일시 skip (StatusChip.test 참고).

@@ -13,8 +13,12 @@ import { PostCard, type FeedPost } from '@/components/PostCard';
 import { CATEGORY_FILTERS } from '@/data/placeholders';
 import { colors, weight } from '@/theme';
 
-// 목업 썸네일 (실제 이미지 업로드 전까지 placeholder). post id 로 고정된 이미지.
-const mockThumb = (id: number) => `https://picsum.photos/seed/sseuljeon${id}/200/200`;
+// 목업 썸네일 (실제 이미지 업로드 전까지 placeholder, DECISIONS #5).
+// §2의 3케이스가 보이도록: 투표글=없음, id%3==0 일반글=이미지글, 그 외=텍스트글.
+const mockThumb = (p: FeedPost): string | undefined => {
+  if (p.poll) return undefined;
+  return p.id % 3 === 0 ? `https://picsum.photos/seed/sseuljeon${p.id}/200/200` : undefined;
+};
 
 export default function HomeFeed() {
   const router = useRouter();
@@ -32,7 +36,7 @@ export default function HomeFeed() {
       if (reset) setLoading(true);
       try {
         const res = await listPosts({ category: filter, cursor: reset ? null : cursor, token });
-        const mapped = res.items.map(toFeedPost).map((p) => ({ ...p, imageUrl: mockThumb(p.id) }));
+        const mapped = res.items.map(toFeedPost).map((p) => ({ ...p, imageUrl: mockThumb(p) }));
         setPosts((prev) => (reset ? mapped : [...prev, ...mapped]));
         setCursor(res.next_cursor);
       } catch {
@@ -85,8 +89,7 @@ export default function HomeFeed() {
         renderItem={({ item }) => (
           <PostCard post={item} onPress={() => router.push(`/post/${item.id}`)} />
         )}
-        ItemSeparatorComponent={() => <View style={styles.divider} />}
-        contentContainerStyle={posts.length === 0 ? styles.empty : { paddingBottom: 24 }}
+        contentContainerStyle={posts.length === 0 ? styles.empty : { paddingTop: 4, paddingBottom: 24 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.rose} />}
         onEndReached={onEndReached}
         onEndReachedThreshold={0.4}
@@ -104,8 +107,7 @@ export default function HomeFeed() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
-  list: { flex: 1, borderTopWidth: 1, borderTopColor: colors.line },
-  divider: { height: 1, backgroundColor: colors.line, marginHorizontal: 20 },
-  empty: { flexGrow: 1, justifyContent: 'center' },
+  list: { flex: 1, backgroundColor: colors.soft },
+  empty: { flexGrow: 1, justifyContent: 'center', backgroundColor: colors.bg },
   emptyText: { textAlign: 'center', color: colors.sub, fontSize: 14, lineHeight: 22, fontWeight: weight.semibold as '600' },
 });

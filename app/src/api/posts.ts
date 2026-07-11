@@ -51,18 +51,29 @@ export type ApiComment = {
 
 type Tok = string | null | undefined;
 
+/** 말머리 미니뱃지 (DESIGN_UPDATE §2). */
+function tagOf(p: ApiPost): string {
+  if (p.is_poll) return '투표';
+  if (p.category === 'counsel') return '고민';
+  return '썰';
+}
+
 /** API 글 → 피드 카드 표시 모델 변환. */
 export function toFeedPost(p: ApiPost): FeedPost {
   return {
     id: p.id,
+    tag: tagOf(p),
     categoryLabel: p.category_label,
     title: p.title,
     body: p.body ?? undefined,
     authorName: p.author.nickname,
     authorStatus: p.author.status,
+    authorAvatarNo: p.author.avatar_no,
     timeText: p.time_text,
+    viewCount: p.view_count,
     poll: p.poll ? { aLabel: p.poll.a_label, bLabel: p.poll.b_label, aPct: p.poll.a_pct } : undefined,
     voteCount: p.poll ? p.poll.total : undefined,
+    likeCount: p.like_count,
     commentCount: p.comment_count,
   };
 }
