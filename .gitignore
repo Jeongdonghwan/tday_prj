@@ -1,0 +1,24 @@
+# Node / Expo
+app/node_modules/
+app/.expo/
+app/dist/
+app/web-build/
+**/node_modules/
+
+# Python
+server/.venv/
+**/__pycache__/
+*.pyc
+server/instance/
+
+# Env / secrets
+**/.env
+!**/.env.example
+
+# OS / editor
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+dist/
+*.log

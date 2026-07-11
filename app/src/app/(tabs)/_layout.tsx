@@ -1,0 +1,103 @@
+/**
+ * 하단 4탭 (홈·BEST·오늘의 질문·MY) + 우하단 플로팅 글쓰기 FAB (스펙 §4).
+ * 커스텀 tabBar 로 목업 디자인(라인 아이콘 + 라벨)을 재현.
+ */
+import { Tabs, useRouter } from 'expo-router';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { Icon, type IconName } from '@/components/Icon';
+import { colors, weight } from '@/theme';
+
+const TAB_META: Record<string, { label: string; icon: IconName }> = {
+  index: { label: '홈', icon: 'home' },
+  best: { label: 'BEST', icon: 'best' },
+  daily: { label: '오늘의 질문', icon: 'chat' },
+  my: { label: 'MY', icon: 'user' },
+};
+
+/** 커스텀 tabBar 에 전달되는 props 중 사용하는 부분만 (react-navigation 호환). */
+type TabBarProps = {
+  state: { index: number; routes: { key: string; name: string }[] };
+  navigation: {
+    emit: (e: { type: 'tabPress'; target: string; canPreventDefault: true }) => { defaultPrevented: boolean };
+    navigate: (name: string) => void;
+  };
+};
+
+function CustomTabBar({ state, navigation }: TabBarProps) {
+  const insets = useSafeAreaInsets();
+  return (
+    <View style={[styles.bar, { paddingBottom: insets.bottom }]}>
+      {state.routes.map((route, index) => {
+        const meta = TAB_META[route.name];
+        if (!meta) return null;
+        const focused = state.index === index;
+
+        const onPress = () => {
+          const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+          if (!focused && !event.defaultPrevented) navigation.navigate(route.name);
+        };
+
+        return (
+          <Pressable key={route.key} style={styles.tab} onPress={onPress}>
+            <Icon name={meta.icon} size={23} color={focused ? colors.ink : colors.sub2} strokeWidth={1.9} />
+            <Text style={[styles.label, { color: focused ? colors.ink : colors.sub2 }]}>{meta.label}</Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+function WriteFab() {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  return (
+    <Pressable
+      style={[styles.fab, { bottom: 60 + insets.bottom + 16 }]}
+      onPress={() => router.push('/write')}>
+      <Icon name="plus" size={26} color="#fff" strokeWidth={2.2} />
+    </Pressable>
+  );
+}
+
+export default function TabsLayout() {
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      <Tabs screenOptions={{ headerShown: false }} tabBar={(props) => <CustomTabBar {...props} />}>
+        <Tabs.Screen name="index" />
+        <Tabs.Screen name="best" />
+        <Tabs.Screen name="daily" />
+        <Tabs.Screen name="my" />
+      </Tabs>
+      <WriteFab />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  bar: {
+    flexDirection: 'row',
+    backgroundColor: colors.bg,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+  },
+  tab: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 9, paddingBottom: 9, gap: 3 },
+  label: { fontSize: 10.5, fontWeight: weight.semibold as '600' },
+  fab: {
+    position: 'absolute',
+    right: 18,
+    width: 52,
+    height: 52,
+    borderRadius: 18,
+    backgroundColor: colors.rose,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.rose,
+    shadowOpacity: 0.4,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 6,
+  },
+});

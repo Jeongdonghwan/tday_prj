@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>썰전 — 글쓰기·커플연결·캘린더</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<style>
+  :root{
+    --ink:#17181C; --sub:#9398A1; --sub2:#C2C6CC; --line:#F0F1F3; --bg:#FFFFFF; --soft:#F7F8F9;
+    --rose:#F23B5F; --rose-bg:#FDEAEE;
+    --blue:#3B72F0; --blue-bg:#EAF0FE;
+    --gray:#868C95; --gray-bg:#F1F2F4;
+    --navy:#33425E; --navy-bg:#E8ECF4;
+    --canvas:#0C0D10;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;}
+  body{font-family:'Pretendard',system-ui,sans-serif; background:var(--canvas); color:var(--ink); padding:48px 28px 64px;}
+  .head{max-width:1240px; margin:0 auto 38px; color:#fff;}
+  .head h1{font-size:25px; font-weight:800; letter-spacing:-.02em;}
+  .head p{color:#888D96; margin-top:10px; font-size:14.5px; line-height:1.65; max-width:680px;}
+  .stage{display:flex; gap:42px; justify-content:flex-start; align-items:flex-start; max-width:1240px; margin:0 auto; flex-wrap:wrap;}
+  .frame{width:340px; flex:0 0 auto;}
+  .cap{color:#fff; font-size:13px; font-weight:700; margin:0 0 4px 2px; letter-spacing:-.01em;}
+  .cap span{color:#6E737B; font-weight:500;}
+  .cap-sub{color:#62666E; font-size:12px; margin:0 0 14px 2px; line-height:1.5;}
+  .phone{width:340px; height:726px; background:var(--bg); border-radius:40px; box-shadow:0 0 0 9px #191A1F,0 28px 60px rgba(0,0,0,.5); overflow:hidden; position:relative; display:flex; flex-direction:column;}
+  .status{height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 26px 0 30px; font-size:13px; font-weight:700; flex:0 0 auto;}
+  .status .r{display:flex; gap:6px; align-items:center;}
+  .scr{flex:1; overflow-y:auto; overflow-x:hidden; background:var(--bg);}
+  .scr::-webkit-scrollbar{display:none;}
+  svg{display:block;}
+
+  /* ---- app bar ---- */
+  .appbar{display:flex; align-items:center; justify-content:space-between; padding:6px 20px 14px;}
+  .brand{font-size:21px; font-weight:800; letter-spacing:-.04em; color:var(--ink);}
+  .appbar .acts{display:flex; gap:16px; align-items:center; color:var(--ink);}
+
+  /* ---- segmented status (my) ---- */
+  .mychip{display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; padding:6px 11px 6px 10px; border-radius:999px; background:var(--rose-bg); color:var(--rose);}
+  .mychip .d{width:6px; height:6px; border-radius:50%; background:currentColor;}
+
+  /* ---- filter row ---- */
+  .filters{display:flex; gap:7px; padding:2px 20px 14px; overflow-x:auto;}
+  .filters::-webkit-scrollbar{display:none;}
+  .fil{flex:0 0 auto; font-size:13px; font-weight:600; padding:7px 13px; border-radius:999px; background:var(--soft); color:var(--sub); border:1px solid transparent;}
+  .fil.on{background:var(--ink); color:#fff;}
+
+  /* ---- post card ---- */
+  .post{padding:17px 20px;}
+  .divider{height:1px; background:var(--line); margin:0 20px;}
+  .pcat{font-size:11.5px; font-weight:700; color:var(--sub); letter-spacing:.01em;}
+  .ptitle{font-size:16.5px; font-weight:700; line-height:1.42; margin:7px 0 0; letter-spacing:-.015em; color:var(--ink);}
+  .pbody{font-size:13.5px; color:#5C616A; line-height:1.5; margin-top:6px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+
+  .chip{display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; padding:2.5px 8px 2.5px 7px; border-radius:999px;}
+  .chip .d{width:5px; height:5px; border-radius:50%;}
+  .c-couple{background:var(--rose-bg); color:var(--rose);} .c-couple .d{background:var(--rose);}
+  .c-single{background:var(--blue-bg); color:var(--blue);} .c-single .d{background:var(--blue);}
+  .c-married{background:var(--navy-bg); color:var(--navy);} .c-married .d{background:var(--navy);}
+
+  .pauthor{display:flex; align-items:center; gap:7px; margin-top:11px;}
+  .pauthor .nm{font-size:12px; color:var(--sub); font-weight:500;}
+
+  /* vote */
+  .vote{margin-top:13px;}
+  .vrow{display:flex; justify-content:space-between; font-size:12px; font-weight:700; margin-bottom:7px;}
+  .vrow .a{color:var(--rose);} .vrow .b{color:var(--blue);}
+  .vtrack{height:7px; border-radius:999px; background:var(--blue); overflow:hidden;}
+  .vtrack .f{height:100%; background:var(--rose); border-radius:999px;}
+  .pstat{display:flex; align-items:center; gap:13px; margin-top:12px; font-size:12px; color:var(--sub); font-weight:500;}
+  .pstat .it{display:flex; align-items:center; gap:5px;}
+
+  /* hot mark */
+  .hot{display:inline-flex; align-items:center; gap:3px; font-size:11px; font-weight:800; color:var(--rose);}
+
+  /* ---- bottom nav ---- */
+  .nav{height:60px; border-top:1px solid var(--line); display:flex; flex:0 0 auto; background:#fff; align-items:center; padding-bottom:env(safe-area-inset-bottom);}
+  .nav a{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10.5px; font-weight:600; color:var(--sub2);}
+  .nav a.on{color:var(--ink);}
+  .nav .fab{flex:0 0 auto; width:46px; height:46px; border-radius:16px; background:var(--rose); display:flex; align-items:center; justify-content:center; color:#fff; box-shadow:0 6px 16px rgba(242,59,95,.4); margin:0 6px;}
+
+  /* ===== detail screen ===== */
+  .dbar{display:flex; align-items:center; justify-content:space-between; padding:8px 16px 10px; color:var(--ink);}
+  .dwrap{padding:6px 20px 20px;}
+  .dcat{font-size:12px; font-weight:700; color:var(--rose);}
+  .dtitle{font-size:20px; font-weight:800; line-height:1.36; letter-spacing:-.02em; margin:9px 0 14px;}
+  .dauthor{display:flex; align-items:center; gap:8px; padding-bottom:16px; border-bottom:1px solid var(--line);}
+  .dtext{font-size:15px; line-height:1.62; color:#34373D; margin:16px 0 22px; font-weight:450;}
+  .vquestion{font-size:13px; font-weight:700; color:var(--sub); text-align:center; margin-bottom:12px;}
+  .vbtns{display:flex; gap:10px;}
+  .vbtn{flex:1; border:1.5px solid var(--line); border-radius:16px; padding:18px 12px; text-align:center; background:#fff;}
+  .vbtn .side{font-size:12px; font-weight:700; margin-bottom:8px;}
+  .vbtn .pct{font-size:26px; font-weight:800; letter-spacing:-.02em;}
+  .vbtn.win{border-color:var(--rose); background:var(--rose-bg);}
+  .vbtn.win .side, .vbtn.win .pct{color:var(--rose);}
+  .vbtn.lose .side, .vbtn.lose .pct{color:var(--blue);}
+  .vtotal{text-align:center; font-size:12px; color:var(--sub); margin-top:12px;}
+  .cmthead{font-size:14px; font-weight:800; margin:24px 0 4px; display:flex; align-items:center; gap:6px;}
+  .cmt{padding:14px 0; border-bottom:1px solid var(--line); display:flex; gap:10px;}
+  .av{width:32px; height:32px; border-radius:50%; flex:0 0 auto; background:var(--soft); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--sub);}
+  .cmt .cm-top{display:flex; align-items:center; gap:6px; margin-bottom:4px;}
+  .cmt .cm-nm{font-size:12.5px; font-weight:700;}
+  .cmt .cm-tx{font-size:14px; line-height:1.5; color:#34373D;}
+  .cmt .cm-meta{font-size:11.5px; color:var(--sub2); margin-top:6px; display:flex; gap:12px;}
+
+  /* ===== daily question ===== */
+  .qhero{padding:22px 20px 4px;}
+  .qday{font-size:13px; font-weight:700; color:var(--sub);}
+  .qstreak{display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:700; color:var(--rose); background:var(--rose-bg); padding:5px 10px; border-radius:999px; margin-top:14px;}
+  .qmain{font-size:23px; font-weight:800; line-height:1.4; letter-spacing:-.02em; margin:14px 0 0;}
+  .qsub{font-size:13px; color:var(--sub); margin-top:10px; line-height:1.5;}
+  .qfield{margin:22px 20px 0; border:1.5px solid var(--line); border-radius:16px; padding:15px; min-height:96px; font-size:14px; color:var(--sub2); line-height:1.5;}
+  .qsubmit{margin:14px 20px 0; background:var(--ink); color:#fff; text-align:center; font-size:15px; font-weight:700; padding:15px; border-radius:14px;}
+  .qnote{text-align:center; font-size:12px; color:var(--sub); margin:12px 20px 0; line-height:1.5;}
+  .qpeek{margin:26px 20px 0; padding-top:20px; border-top:1px solid var(--line);}
+  .qpeek .t{font-size:13px; font-weight:800; color:var(--sub); margin-bottom:12px;}
+  .qprev{display:flex; align-items:center; justify-content:space-between; padding:13px 0; border-bottom:1px solid var(--line);}
+  .qprev .ql{font-size:14px; font-weight:600; color:var(--ink);}
+  .qprev .qr{font-size:12px; font-weight:700; color:var(--rose);}
+
+  /* ===== my page ===== */
+  .myhead{padding:8px 20px 18px; display:flex; align-items:center; gap:14px;}
+  .myav{width:56px; height:56px; border-radius:18px; background:var(--rose-bg); color:var(--rose); display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:800; flex:0 0 auto;}
+  .myinfo .nm{font-size:18px; font-weight:800; letter-spacing:-.02em; display:flex; align-items:center; gap:7px;}
+  .myinfo .sub{font-size:12.5px; color:var(--sub); margin-top:5px;}
+  .couplecard{margin:0 20px 18px; background:var(--rose-bg); border-radius:18px; padding:16px 18px; display:flex; align-items:center; justify-content:space-between;}
+  .couplecard .l .s{font-size:11.5px; font-weight:700; color:var(--rose); opacity:.85;}
+  .couplecard .l .d{font-size:21px; font-weight:800; color:var(--rose); letter-spacing:-.02em; margin-top:3px;}
+  .couplecard .l .p{font-size:11.5px; color:var(--rose); opacity:.8; margin-top:3px;}
+  .couplecard .heart{width:40px; height:40px;}
+
+  .switch{margin:0 20px 22px;}
+  .switch .lbl{font-size:12.5px; font-weight:800; color:var(--sub); margin-bottom:9px;}
+  .seg{display:flex; background:var(--soft); border-radius:13px; padding:4px;}
+  .seg div{flex:1; text-align:center; font-size:13px; font-weight:700; padding:9px 0; border-radius:10px; color:var(--sub);}
+  .seg div.on{background:#fff; color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,.08);}
+  .seg div.on.couple{color:var(--rose);}
+
+  .mysec{margin:0 20px 8px;}
+  .mysec .h{font-size:12.5px; font-weight:800; color:var(--sub); margin-bottom:4px;}
+  .myrow{display:flex; align-items:center; gap:13px; padding:14px 2px; border-bottom:1px solid var(--line);}
+  .myrow:last-child{border-bottom:none;}
+  .myrow .ico{color:var(--ink);}
+  .myrow .t{flex:1; font-size:14.5px; font-weight:600;}
+  .myrow .v{font-size:13px; color:var(--sub); font-weight:600;}
+  .myrow .chev{color:var(--sub2);}
+  .statgrid{display:flex; margin:0 20px 22px; border:1px solid var(--line); border-radius:16px; overflow:hidden;}
+  .statgrid .st{flex:1; text-align:center; padding:15px 0; border-right:1px solid var(--line);}
+  .statgrid .st:last-child{border-right:none;}
+  .statgrid .st .n{font-size:19px; font-weight:800; letter-spacing:-.02em;}
+  .statgrid .st .l{font-size:11px; color:var(--sub); margin-top:4px; font-weight:600;}
+</style>
+<style>
+  /* ===== write screen ===== */
+  .wbar{display:flex; align-items:center; justify-content:space-between; padding:10px 18px; border-bottom:1px solid var(--line);}
+  .wbar .cancel{font-size:14px; color:var(--sub); font-weight:600;}
+  .wbar .ttl{font-size:15px; font-weight:800;}
+  .wbar .post-btn{font-size:14px; font-weight:700; color:var(--sub2);}
+  .wbar .post-btn.active{color:var(--rose);}
+  .wcat{display:flex; gap:7px; padding:14px 18px 4px; overflow-x:auto;}
+  .wcat::-webkit-scrollbar{display:none;}
+  .wfield{padding:6px 18px;}
+  .wtitle-in{font-size:18px; font-weight:700; padding:12px 0; border:none; width:100%; letter-spacing:-.01em;}
+  .wtitle-in::placeholder{color:var(--sub2);}
+  .wbody-in{font-size:15px; line-height:1.6; padding:6px 0 14px; color:#34373D; min-height:120px;}
+  .wbody-in.ph{color:var(--sub2);}
+  .wmeta{display:flex; align-items:center; gap:8px; padding:14px 18px; border-top:1px solid var(--line); border-bottom:8px solid var(--soft);}
+  .wmeta .mlabel{font-size:13px; color:var(--sub); font-weight:600;}
+
+  .vtoggle{display:flex; align-items:center; justify-content:space-between; padding:18px;}
+  .vtoggle .l .t{font-size:15px; font-weight:700;}
+  .vtoggle .l .s{font-size:12px; color:var(--sub); margin-top:3px;}
+  .toggle{width:46px; height:28px; border-radius:999px; background:var(--rose); position:relative; flex:0 0 auto;}
+  .toggle .knob{position:absolute; top:3px; right:3px; width:22px; height:22px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.2);}
+  .toggle.off{background:var(--line);}
+  .toggle.off .knob{right:auto; left:3px;}
+
+  .vinputs{padding:0 18px 20px;}
+  .vin{display:flex; align-items:center; gap:10px; margin-bottom:10px;}
+  .vin .side-tag{font-size:11px; font-weight:800; width:20px; flex:0 0 auto;}
+  .vin .side-a{color:var(--rose);} .vin .side-b{color:var(--blue);}
+  .vin .vinbox{flex:1; border:1.5px solid var(--line); border-radius:12px; padding:13px 14px; font-size:14px; font-weight:600;}
+  .vin .vinbox.filled{border-color:var(--ink);}
+  .vin .vinbox.ph{color:var(--sub2); font-weight:500;}
+  .vhint{display:flex; align-items:flex-start; gap:7px; background:var(--soft); border-radius:12px; padding:12px 13px; font-size:12px; color:var(--sub); line-height:1.5;}
+  .vhint b{color:var(--ink); font-weight:700;}
+
+  /* ===== couple connect ===== */
+  .cc-wrap{padding:30px 24px; text-align:center;}
+  .cc-illust{width:88px; height:88px; margin:10px auto 22px; border-radius:28px; background:var(--rose-bg); display:flex; align-items:center; justify-content:center;}
+  .cc-h{font-size:21px; font-weight:800; letter-spacing:-.02em; line-height:1.4;}
+  .cc-p{font-size:14px; color:var(--sub); margin-top:10px; line-height:1.55;}
+  .cc-code{margin:26px 0 8px; background:var(--soft); border-radius:16px; padding:20px;}
+  .cc-code .lbl{font-size:12px; color:var(--sub); font-weight:600;}
+  .cc-code .code{font-size:32px; font-weight:800; letter-spacing:.12em; margin-top:8px; color:var(--ink);}
+  .cc-share{display:flex; align-items:center; justify-content:center; gap:8px; width:100%; background:#FAE100; color:#3A1D1D; font-weight:800; font-size:15px; padding:15px; border-radius:14px; margin-top:18px;}
+  .cc-or{display:flex; align-items:center; gap:12px; margin:24px 0; color:var(--sub2); font-size:12px; font-weight:600;}
+  .cc-or::before,.cc-or::after{content:""; flex:1; height:1px; background:var(--line);}
+  .cc-enter{font-size:14px; color:var(--rose); font-weight:700;}
+
+  .startdate{margin:26px 24px 0; border:1.5px solid var(--rose); border-radius:16px; padding:16px 18px; text-align:left; display:flex; align-items:center; justify-content:space-between;}
+  .startdate .l .lbl{font-size:12px; color:var(--rose); font-weight:700;}
+  .startdate .l .v{font-size:16px; font-weight:800; margin-top:4px;}
+  .startdate .edit{font-size:12.5px; color:var(--rose); font-weight:700;}
+
+  /* ===== calendar ===== */
+  .calbar{display:flex; align-items:center; justify-content:space-between; padding:14px 22px 6px;}
+  .calbar .mo{font-size:19px; font-weight:800; letter-spacing:-.02em;}
+  .calbar .arrows{display:flex; gap:18px; color:var(--ink);}
+  .callegend{display:flex; gap:14px; padding:4px 22px 14px;}
+  .callegend .lg{display:flex; align-items:center; gap:6px; font-size:12px; font-weight:600; color:var(--sub);}
+  .callegend .lg .d{width:8px; height:8px; border-radius:50%;}
+  .cal{padding:0 14px;}
+  .calhead{display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:6px;}
+  .calhead div{text-align:center; font-size:11px; font-weight:700; color:var(--sub); padding:6px 0;}
+  .calhead div:first-child{color:var(--rose);}
+  .calgrid{display:grid; grid-template-columns:repeat(7,1fr); gap:1px;}
+  .cell{min-height:56px; display:flex; flex-direction:column; padding:5px 3px 2px; border-radius:8px;}
+  .cell .dnum{font-size:12px; font-weight:600; text-align:center; margin-bottom:3px;}
+  .cell.mut .dnum{color:var(--sub2);}
+  .cell.today .dnum{color:#fff; background:var(--ink); width:20px; height:20px; line-height:20px; border-radius:50%; margin:0 auto 3px;}
+  .cell .evt{font-size:8.5px; font-weight:700; line-height:1.25; padding:2px 3px; border-radius:4px; margin-bottom:1.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .evt-r{background:var(--rose-bg); color:var(--rose);}
+  .evt-b{background:var(--blue-bg); color:var(--blue);}
+  .evt-n{background:var(--navy-bg); color:var(--navy);}
+  .cell .more{font-size:8px; color:var(--sub); font-weight:700; padding-left:3px;}
+  .dot-r{background:var(--rose);} .dot-b{background:var(--blue);} .dot-n{background:var(--navy);}
+  .agenda{padding:18px 22px 8px; border-top:8px solid var(--soft); margin-top:14px;}
+  .agenda .ah{font-size:13px; font-weight:800; color:var(--sub); margin-bottom:12px;}
+  .ev{display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--line);}
+  .ev:last-child{border-bottom:none;}
+  .ev .bar{width:4px; border-radius:4px; flex:0 0 auto;}
+  .ev .bar.r{background:var(--rose);} .ev .bar.b{background:var(--blue);} .ev .bar.n{background:var(--navy);}
+  .ev .ev-t{font-size:14.5px; font-weight:700;}
+  .ev .ev-m{font-size:12px; color:var(--sub); margin-top:3px;}
+  .calfab{position:absolute; right:18px; bottom:78px; width:52px; height:52px; border-radius:50%; background:var(--rose); display:flex; align-items:center; justify-content:center; color:#fff; box-shadow:0 8px 20px rgba(242,59,95,.45);}
+
+  /* ===== BEST screen ===== */
+  .period{display:flex; gap:7px; padding:4px 20px 14px;}
+  .period div{font-size:13px; font-weight:700; padding:7px 15px; border-radius:999px; background:var(--soft); color:var(--sub);}
+  .period div.on{background:var(--rose-bg); color:var(--rose);}
+  .bestsec{padding:18px 20px 6px; border-top:8px solid var(--soft);}
+  .bestsec.first{border-top:none;}
+  .bestsec .bh{display:flex; align-items:center; justify-content:between; gap:6px; margin-bottom:6px;}
+  .bestsec .bh .bt{font-size:15px; font-weight:800; letter-spacing:-.01em; flex:1;}
+  .bestsec .bh .more-l{font-size:12px; color:var(--sub); font-weight:600;}
+  .rank{display:flex; gap:13px; padding:13px 0; border-bottom:1px solid var(--line); align-items:flex-start;}
+  .rank:last-child{border-bottom:none;}
+  .rank .num{font-size:17px; font-weight:800; color:var(--rose); width:18px; flex:0 0 auto; line-height:1.3;}
+  .rank .num.gray{color:var(--sub2);}
+  .rank .rbody{flex:1;}
+  .rank .rt{font-size:14.5px; font-weight:600; line-height:1.4; letter-spacing:-.01em;}
+  .rank .rm{display:flex; align-items:center; gap:8px; margin-top:7px;}
+  .rank .rm .nm{font-size:11.5px; color:var(--sub); font-weight:500;}
+  .rank .rstat{font-size:11.5px; color:var(--sub); font-weight:600; display:flex; gap:10px; margin-top:6px;}
+  .bcmt{padding:13px 0; border-bottom:1px solid var(--line);}
+  .bcmt:last-child{border-bottom:none;}
+  .bcmt .bc-tx{font-size:14px; font-weight:600; line-height:1.45; color:var(--ink);}
+  .bcmt .bc-from{font-size:11.5px; color:var(--sub); margin-top:7px;}
+  .bcmt .bc-meta{display:flex; align-items:center; gap:5px; margin-top:8px; font-size:11.5px; font-weight:700; color:var(--rose);}
+</style>
+</head>
+<body>
+<div class="head">
+  <h1>썰전 — 글쓰기 · 커플 연결 · 캘린더</h1>
+  <p>1번은 v1 핵심(투표 on/off 구분, 선택지 직접 입력). 2·3번 커플 연결과 캘린더는 양쪽 다 가입·연결돼야 작동하는 기능이라 v1.5로 — 구조만 잡아두고 개발은 사람 모인 뒤.</p>
+</div>
+
+<div class="stage">
+
+  <!-- ========== 1. 글쓰기 (투표 on/off) ========== -->
+  <div class="frame">
+    <p class="cap">1 · 글쓰기 <span>— 투표 켜고 끄기</span></p>
+    <p class="cap-sub">투표 만들기 토글 ON이면 선택지 입력칸 등장. OFF면 그냥 일반 글. 작성자가 멘트 직접 입력.</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span class="r">
+        <svg width="17" height="11" viewBox="0 0 17 11" fill="none"><rect x="0" y="3" width="3" height="8" rx="1" fill="#17181C"/><rect x="4.5" y="1.5" width="3" height="9.5" rx="1" fill="#17181C"/><rect x="9" y="0" width="3" height="11" rx="1" fill="#17181C"/><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#C2C6CC"/></svg>
+        <svg width="22" height="11" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="#17181C" stroke-opacity=".4"/><rect x="2.5" y="2.5" width="16" height="7" rx="1.5" fill="#17181C"/></svg>
+      </span></div>
+      <div class="wbar">
+        <span class="cancel">취소</span>
+        <span class="ttl">글쓰기</span>
+        <span class="post-btn active">등록</span>
+      </div>
+      <div class="scr">
+        <div class="wcat">
+          <div class="fil on">연애</div>
+          <div class="fil">결혼·부부</div>
+          <div class="fil">고민상담</div>
+          <div class="fil">자유</div>
+        </div>
+        <div class="wfield">
+          <div class="wtitle-in">기념일 까먹은 남친, 이거 헤어질 일임?</div>
+        </div>
+        <div class="wfield">
+          <div class="wbody-in">사귄 지 1년 됐는데 100일도 그냥 넘어갔고 이번엔 제 생일까지 까먹었어요. 미안하다는 말도 제가 서운하다고 한참 말하고 나서야…</div>
+        </div>
+        <div class="wmeta">
+          <span class="mlabel">작성자 상태</span>
+          <span class="chip c-couple"><span class="d"></span>커플</span>
+          <span class="mlabel" style="margin-left:auto">자동 표시</span>
+        </div>
+
+        <div class="vtoggle">
+          <div class="l">
+            <div class="t">투표 만들기</div>
+            <div class="s">편 갈리는 주제면 켜보세요</div>
+          </div>
+          <div class="toggle"><div class="knob"></div></div>
+        </div>
+        <div class="vinputs">
+          <div class="vin">
+            <span class="side-tag side-a">A</span>
+            <div class="vinbox filled">여친이 서운한 게 당연</div>
+          </div>
+          <div class="vin">
+            <span class="side-tag side-b">B</span>
+            <div class="vinbox filled">너무 예민한 듯</div>
+          </div>
+          <div class="vhint">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--sub)" stroke-width="2" stroke-linecap="round" style="flex:0 0 auto;margin-top:1px"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+            <span><b>둘 중 하나를 고르게</b> 적어야 투표가 재밌어요. "둘 다 잘못" 같은 건 피하기. 비워두면 AI가 제안해줘요.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 2. 커플 연결 ========== -->
+  <div class="frame">
+    <p class="cap">2 · 커플 연결 <span>— 초대코드 + 시작일</span></p>
+    <p class="cap-sub">코드 만들어 카톡 전송, 상대가 입력하면 연결. 연애 시작일은 둘 중 누구나 설정 → 며칠째 자동 계산.</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span class="r">
+        <svg width="17" height="11" viewBox="0 0 17 11" fill="none"><rect x="0" y="3" width="3" height="8" rx="1" fill="#17181C"/><rect x="4.5" y="1.5" width="3" height="9.5" rx="1" fill="#17181C"/><rect x="9" y="0" width="3" height="11" rx="1" fill="#17181C"/><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#C2C6CC"/></svg>
+        <svg width="22" height="11" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="#17181C" stroke-opacity=".4"/><rect x="2.5" y="2.5" width="16" height="7" rx="1.5" fill="#17181C"/></svg>
+      </span></div>
+      <div class="dbar">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        <div></div>
+      </div>
+      <div class="scr">
+        <div class="cc-wrap">
+          <div class="cc-illust">
+            <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="var(--rose)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.6-9.5-9C1 9 2.5 5.5 6 5.5c2 0 3.2 1.2 4 2.3.8-1.1 2-2.3 4-2.3 3.5 0 5 3.5 3.5 6.5C19 16.4 12 21 12 21z"/></svg>
+          </div>
+          <div class="cc-h">준호님을 초대해<br>둘만의 공간을 열어요</div>
+          <div class="cc-p">상대가 코드를 입력하면 오늘의 질문 답과<br>일정을 함께 볼 수 있어요.</div>
+
+          <div class="cc-code">
+            <div class="lbl">내 초대 코드</div>
+            <div class="code">A B C 1 2 3</div>
+          </div>
+          <div class="cc-share">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="#3A1D1D"><path d="M12 3C6.5 3 2 6.6 2 11c0 2.8 1.9 5.3 4.7 6.7-.2.7-.7 2.6-.8 3-.1.5.2.5.4.4.2-.1 2.6-1.8 3.7-2.5.6.1 1.3.1 2 .1 5.5 0 10-3.6 10-8S17.5 3 12 3z"/></svg>
+            카카오톡으로 초대하기
+          </div>
+
+          <div class="cc-or">또는</div>
+          <div class="cc-enter">받은 코드 입력하기</div>
+
+          <div class="startdate">
+            <div class="l">
+              <div class="lbl">우리 시작한 날</div>
+              <div class="v">2025년 7월 17일</div>
+            </div>
+            <span class="edit">변경</span>
+          </div>
+          <div class="cc-p" style="font-size:12px; margin-top:12px">설정하면 327일째처럼 자동으로 세어드려요.<br>둘 중 누가 정해도 함께 적용돼요.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 3. 캘린더 ========== -->
+  <div class="frame">
+    <p class="cap">3 · 공유 캘린더 <span>— 둘의 일정</span></p>
+    <p class="cap-sub">내 일정·상대 일정·함께 일정 색으로 구분. 기념일은 자동으로 표시.</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span class="r">
+        <svg width="17" height="11" viewBox="0 0 17 11" fill="none"><rect x="0" y="3" width="3" height="8" rx="1" fill="#17181C"/><rect x="4.5" y="1.5" width="3" height="9.5" rx="1" fill="#17181C"/><rect x="9" y="0" width="3" height="11" rx="1" fill="#17181C"/><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#C2C6CC"/></svg>
+        <svg width="22" height="11" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="#17181C" stroke-opacity=".4"/><rect x="2.5" y="2.5" width="16" height="7" rx="1.5" fill="#17181C"/></svg>
+      </span></div>
+      <div class="calbar">
+        <span class="mo">6월</span>
+        <span class="arrows">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+        </span>
+      </div>
+      <div class="callegend">
+        <span class="lg"><span class="d dot-r"></span>민지</span>
+        <span class="lg"><span class="d dot-b"></span>준호</span>
+        <span class="lg"><span class="d dot-n"></span>함께</span>
+      </div>
+      <div class="cal">
+        <div class="calhead"><div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div></div>
+        <div class="calgrid">
+          <div class="cell mut"><div class="dnum">1</div></div>
+          <div class="cell"><div class="dnum">2</div></div>
+          <div class="cell"><div class="dnum">3</div></div>
+          <div class="cell"><div class="dnum">4</div></div>
+          <div class="cell"><div class="dnum">5</div><div class="evt evt-b">준호 출장</div></div>
+          <div class="cell"><div class="dnum">6</div></div>
+          <div class="cell"><div class="dnum">7</div><div class="evt evt-r">필라테스</div></div>
+
+          <div class="cell"><div class="dnum">8</div></div>
+          <div class="cell today"><div class="dnum">9</div></div>
+          <div class="cell"><div class="dnum">10</div></div>
+          <div class="cell"><div class="dnum">11</div><div class="evt evt-n">성수 데이트</div><div class="evt evt-b">준호 회식</div></div>
+          <div class="cell"><div class="dnum">12</div></div>
+          <div class="cell"><div class="dnum">13</div></div>
+          <div class="cell"><div class="dnum">14</div><div class="evt evt-r">미용실</div><div class="more">+1</div></div>
+
+          <div class="cell"><div class="dnum">15</div></div>
+          <div class="cell"><div class="dnum">16</div></div>
+          <div class="cell"><div class="dnum">17</div><div class="evt evt-n">100일 기념</div></div>
+          <div class="cell"><div class="dnum">18</div></div>
+          <div class="cell"><div class="dnum">19</div></div>
+          <div class="cell"><div class="dnum">20</div></div>
+          <div class="cell"><div class="dnum">21</div></div>
+
+          <div class="cell"><div class="dnum">22</div></div>
+          <div class="cell"><div class="dnum">23</div></div>
+          <div class="cell"><div class="dnum">24</div></div>
+          <div class="cell"><div class="dnum">25</div></div>
+          <div class="cell"><div class="dnum">26</div></div>
+          <div class="cell"><div class="dnum">27</div></div>
+          <div class="cell"><div class="dnum">28</div></div>
+
+          <div class="cell"><div class="dnum">29</div></div>
+          <div class="cell"><div class="dnum">30</div></div>
+        </div>
+      </div>
+      <div class="agenda">
+        <div class="ah">6월 11일 수요일</div>
+        <div class="ev"><div class="bar n"></div><div><div class="ev-t">저녁 데이트 — 성수</div><div class="ev-m">오후 7시 · 함께</div></div></div>
+        <div class="ev"><div class="bar b"></div><div><div class="ev-t">준호 회식</div><div class="ev-m">오후 9시 · 준호</div></div></div>
+      </div>
+      <div class="calfab">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 4. BEST ========== -->
+  <div class="frame">
+    <p class="cap">4 · BEST <span>— 인기글·베스트 댓글</span></p>
+    <p class="cap-sub">신규 유저 첫 동선. 기간·카테고리별 인기글 + 명댓글 모아보기. 하단 탭은 글쓰기를 플로팅으로 빼고 BEST를 넣은 4칸.</p>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span class="r">
+        <svg width="17" height="11" viewBox="0 0 17 11" fill="none"><rect x="0" y="3" width="3" height="8" rx="1" fill="#17181C"/><rect x="4.5" y="1.5" width="3" height="9.5" rx="1" fill="#17181C"/><rect x="9" y="0" width="3" height="11" rx="1" fill="#17181C"/><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#C2C6CC"/></svg>
+        <svg width="22" height="11" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="#17181C" stroke-opacity=".4"/><rect x="2.5" y="2.5" width="16" height="7" rx="1.5" fill="#17181C"/></svg>
+      </span></div>
+      <div class="appbar">
+        <div class="brand" style="font-size:19px">BEST</div>
+        <div class="acts">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        </div>
+      </div>
+      <div class="filters">
+        <div class="fil on">전체</div>
+        <div class="fil">연애</div>
+        <div class="fil">결혼·부부</div>
+        <div class="fil">고민상담</div>
+        <div class="fil">자유</div>
+      </div>
+      <div class="period">
+        <div class="on">실시간</div>
+        <div>오늘</div>
+        <div>주간</div>
+      </div>
+      <div class="scr" style="border-top:1px solid var(--line)">
+        <div class="bestsec first">
+          <div class="bh"><span class="bt">인기글</span><span class="more-l">더보기</span></div>
+          <div class="rank">
+            <span class="num">1</span>
+            <div class="rbody">
+              <div class="rt">명절에 시댁만 3일, 친정은 안 가도 되는 건가요</div>
+              <div class="rstat"><span>투표 2,847</span><span>댓글 312</span><span>공감 1.1천</span></div>
+            </div>
+          </div>
+          <div class="rank">
+            <span class="num">2</span>
+            <div class="rbody">
+              <div class="rt">기념일 까먹은 남친, 이거 헤어질 일임?</div>
+              <div class="rstat"><span>투표 1,204</span><span>댓글 87</span><span>공감 643</span></div>
+            </div>
+          </div>
+          <div class="rank">
+            <span class="num">3</span>
+            <div class="rbody">
+              <div class="rt">전 애인이 6개월 만에 연락 왔어요, 받아야 할까</div>
+              <div class="rstat"><span>댓글 156</span><span>공감 421</span></div>
+            </div>
+          </div>
+          <div class="rank">
+            <span class="num gray">4</span>
+            <div class="rbody">
+              <div class="rt">남친이 게임할 때 연락 씹는 거 어떻게 생각해요?</div>
+              <div class="rstat"><span>투표 932</span><span>댓글 74</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bestsec">
+          <div class="bh"><span class="bt">베스트 댓글</span><span class="more-l">더보기</span></div>
+          <div class="bcmt">
+            <div class="bc-tx">"1년 동안 기념일 다 까먹는 건 무딘 게 아니라 관심이 없는 거예요. 냉정하게 들리겠지만."</div>
+            <div class="bc-from">현실연애 · '기념일 까먹은 남친…' 글에서</div>
+            <div class="bc-meta">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21h4V9H2v12zM23 10a2 2 0 0 0-2-2h-6.3l1-4.6V3a1.5 1.5 0 0 0-3-.4L8 11v10h11a2 2 0 0 0 2-1.7l1-7a2 2 0 0 0 0-.3z"/></svg>
+              공감 214
+            </div>
+          </div>
+          <div class="bcmt">
+            <div class="bc-tx">"명절 분담은 결혼 전에 정했어야 할 문제예요. 지금이라도 남편이랑 먼저 얘기하세요."</div>
+            <div class="bc-from">10년차부부 · '명절에 시댁만 3일…' 글에서</div>
+            <div class="bc-meta">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21h4V9H2v12zM23 10a2 2 0 0 0-2-2h-6.3l1-4.6V3a1.5 1.5 0 0 0-3-.4L8 11v10h11a2 2 0 0 0 2-1.7l1-7a2 2 0 0 0 0-.3z"/></svg>
+              공감 189
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="nav">
+        <a>
+          <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg>홈</a>
+        <a class="on">
+          <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.6 6.4L21 9l-5 4.3L17.5 20 12 16.5 6.5 20 8 13.3 3 9l6.4-.6z"/></svg>BEST</a>
+        <a>
+          <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.8-.8L3 21l1.9-4.2A8.4 8.4 0 1 1 21 11.5z"/><circle cx="8.5" cy="11.5" r=".9" fill="currentColor" stroke="none"/><circle cx="12" cy="11.5" r=".9" fill="currentColor" stroke="none"/><circle cx="15.5" cy="11.5" r=".9" fill="currentColor" stroke="none"/></svg>오늘의 질문</a>
+        <a>
+          <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg>MY</a>
+      </div>
+      <div class="calfab" style="bottom:74px">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

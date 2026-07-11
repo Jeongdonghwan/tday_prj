@@ -1,0 +1,5 @@
+# 개발/테스트 전용 의존성 (운영 requirements.txt 와 분리)
+-r requirements.txt
+pytest==8.3.4
+pytest-cov==6.0.0
+anthropic==0.69.0
