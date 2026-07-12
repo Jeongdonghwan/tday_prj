@@ -37,6 +37,7 @@ function RootNavigator() {
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="post/[id]" />
+      <Stack.Screen name="issue/[id]" />
       <Stack.Screen name="write" options={{ presentation: 'modal' }} />
       <Stack.Screen name="couple/connect" />
       <Stack.Screen name="calendar" />

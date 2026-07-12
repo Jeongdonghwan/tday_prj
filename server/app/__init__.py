@@ -98,6 +98,25 @@ def _register_cli(app: Flask):
         db.session.commit()
         click.echo("데모 데일리 폴 삽입 완료.")
 
+    @app.cli.command("seed-issue")
+    def seed_issue():
+        """활성 이슈가 없으면 데모 1건 삽입 (idempotent, DESIGN_UPDATE §5)."""
+        from .models import Issue
+        from .services.issues import create_issue
+
+        if Issue.query.filter_by(is_active=True).count() > 0:
+            click.echo("이미 활성 이슈가 있어 건너뜁니다.")
+            return
+        create_issue(
+            title="MZ세대 결혼 비용 인식 조사 결과 발표",
+            summary="설문 응답자 절반이 '스몰웨딩 선호'. 예식 비용 평균은 여전히 상승세.",
+            source="통계뉴스",
+            url="https://example.com/wedding-survey",
+            poll_option_a="스몰웨딩",
+            poll_option_b="제대로 한번",
+        )
+        click.echo("데모 이슈 삽입 완료.")
+
     @app.cli.command("seed")
     def seed():
         """샘플 글/투표/댓글/오늘의질문 삽입 (피드가 비어보이지 않게)."""

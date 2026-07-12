@@ -8,6 +8,7 @@ import { listPosts, toFeedPost } from '@/api/posts';
 import { useAuth } from '@/auth/AuthContext';
 import { AppBar } from '@/components/AppBar';
 import { DailyPollCard } from '@/components/DailyPollCard';
+import { IssueCard } from '@/components/IssueCard';
 import { FilterRow } from '@/components/FilterRow';
 import { Icon } from '@/components/Icon';
 import { PostCard, type FeedPost } from '@/components/PostCard';
@@ -90,7 +91,12 @@ export default function HomeFeed() {
         renderItem={({ item }) => (
           <PostCard post={item} onPress={() => router.push(`/post/${item.id}`)} />
         )}
-        ListHeaderComponent={<DailyPollCard />}
+        ListHeaderComponent={
+          <>
+            <DailyPollCard />
+            <IssueCard />
+          </>
+        }
         contentContainerStyle={posts.length === 0 ? styles.empty : { paddingTop: 4, paddingBottom: 24 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.rose} />}
         onEndReached={onEndReached}
