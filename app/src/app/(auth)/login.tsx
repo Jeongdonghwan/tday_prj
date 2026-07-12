@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError } from '@/api/client';
 import { useAuth } from '@/auth/AuthContext';
+import { BrandLogo } from '@/components/BrandLogo';
 import { Icon } from '@/components/Icon';
 import { colors, fontSize, radius, spacing, weight } from '@/theme';
 
@@ -46,7 +47,7 @@ export default function LoginScreen() {
     <SafeAreaView style={styles.safe}>
       <View style={styles.body}>
         <View style={styles.hero}>
-          <Text style={styles.brand}>오늘연애</Text>
+          <BrandLogo height={40} />
           <Text style={styles.tagline}>오늘의 연애, 어느 편이세요?</Text>
         </View>
 
@@ -99,7 +100,6 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
   body: { flex: 1, paddingHorizontal: spacing.xl, justifyContent: 'space-between', paddingBottom: spacing.xxl },
   hero: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 },
-  brand: { fontSize: 40, fontWeight: weight.extrabold as '800', letterSpacing: -1, color: colors.ink },
   tagline: { fontSize: fontSize.body, color: colors.sub, fontWeight: weight.semibold as '600' },
   actions: { gap: 10 },
   btn: { height: 52, borderRadius: radius.input, alignItems: 'center', justifyContent: 'center' },

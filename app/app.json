@@ -4,11 +4,10 @@
     "slug": "todaylove",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/brand/app_icon.png",
     "scheme": "todaylove",
     "userInterfaceStyle": "light",
     "ios": {
-      "icon": "./assets/expo.icon",
       "bundleIdentifier": "com.hco.todaylove",
       "supportsTablet": true,
       "infoPlist": {
@@ -18,27 +17,23 @@
     "android": {
       "package": "com.hco.todaylove",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/brand/adaptive_foreground.png",
+        "backgroundColor": "#F23B5F"
       },
       "predictiveBackGestureEnabled": false
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/brand/app_icon.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
-          "android": {
-            "image": "./assets/images/splash-icon.png",
-            "imageWidth": 76
-          }
+          "image": "./assets/brand/splash.png",
+          "backgroundColor": "#FFFFFF",
+          "resizeMode": "contain"
         }
       ],
       "expo-secure-store",
