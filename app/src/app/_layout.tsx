@@ -41,6 +41,7 @@ function RootNavigator() {
       <Stack.Screen name="write" options={{ presentation: 'modal' }} />
       <Stack.Screen name="couple/connect" />
       <Stack.Screen name="calendar" />
+      <Stack.Screen name="tests" />
     </Stack>
   );
 }

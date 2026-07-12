@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { updateMe } from '@/api/auth';
 import { getDday, type Dday } from '@/api/couple';
+import { getTestBadge, type TestBadge } from '@/api/tests';
 import { useAuth } from '@/auth/AuthContext';
 import { AppBar } from '@/components/AppBar';
 import { Avatar } from '@/components/Avatar';
@@ -19,6 +20,7 @@ export default function MyScreen() {
   const { user, token, signOut, refresh } = useAuth();
   const router = useRouter();
   const [dday, setDday] = useState<Dday | null>(null);
+  const [badge, setBadge] = useState<TestBadge>(null);
   const status = user?.relationship_status ?? 'single';
   const nickname = user?.nickname ?? '나';
 
@@ -26,6 +28,11 @@ export default function MyScreen() {
     if (!token) return;
     try {
       setDday(await getDday(token));
+    } catch {
+      /* noop */
+    }
+    try {
+      setBadge((await getTestBadge(token)).badge);
     } catch {
       /* noop */
     }
@@ -49,7 +56,7 @@ export default function MyScreen() {
 
   const links: { icon: IconName; label: string; onPress: () => void }[] = [
     { icon: 'heart', label: dday?.connected ? '공유 캘린더' : '커플 연결하기', onPress: () => router.push(dday?.connected ? '/calendar' : '/couple/connect') },
-    { icon: 'vote', label: '공유 캘린더', onPress: () => router.push('/calendar') },
+    { icon: 'best', label: '테스트존', onPress: () => router.push('/tests') },
   ];
 
   return (
@@ -58,12 +65,18 @@ export default function MyScreen() {
       <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
         <View style={styles.head}>
           <Avatar avatarNo={user?.avatar_no} size={56} />
-          <View>
+          <View style={{ flex: 1 }}>
             <View style={styles.nameRow}>
               <Text style={styles.name}>{nickname}</Text>
               <StatusChip status={status} />
             </View>
             <Text style={styles.handle}>@{user?.id ?? '-'}</Text>
+            {badge && (
+              <Pressable style={styles.badge} onPress={() => router.push('/tests')}>
+                <Avatar avatarNo={badge.avatar_no} size={18} />
+                <Text style={styles.badgeText}>{badge.title}</Text>
+              </Pressable>
+            )}
           </View>
         </View>
 
@@ -126,6 +139,8 @@ const styles = StyleSheet.create({
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
   name: { fontSize: 18, fontWeight: weight.extrabold as '800', color: colors.ink, letterSpacing: -0.4 },
   handle: { fontSize: 12.5, color: colors.sub, marginTop: 5 },
+  badge: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', backgroundColor: colors.roseBg, borderRadius: 999, paddingVertical: 3, paddingRight: 10, paddingLeft: 3, marginTop: 7 },
+  badgeText: { fontSize: 11.5, fontWeight: weight.bold as '700', color: colors.rose },
   couple: { marginHorizontal: 20, marginBottom: 18, backgroundColor: colors.roseBg, borderRadius: radius.cardLg, padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   coupleS: { fontSize: 11.5, fontWeight: weight.bold as '700', color: colors.rose, opacity: 0.85 },
   coupleD: { fontSize: 21, fontWeight: weight.extrabold as '800', color: colors.rose, letterSpacing: -0.4, marginTop: 3 },

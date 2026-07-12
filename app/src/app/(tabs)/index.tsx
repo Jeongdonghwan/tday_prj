@@ -9,6 +9,7 @@ import { useAuth } from '@/auth/AuthContext';
 import { AppBar } from '@/components/AppBar';
 import { DailyPollCard } from '@/components/DailyPollCard';
 import { IssueCard } from '@/components/IssueCard';
+import { TestPromoCard } from '@/components/TestPromoCard';
 import { FilterRow } from '@/components/FilterRow';
 import { Icon } from '@/components/Icon';
 import { PostCard, type FeedPost } from '@/components/PostCard';
@@ -95,6 +96,7 @@ export default function HomeFeed() {
           <>
             <DailyPollCard />
             <IssueCard />
+            <TestPromoCard />
           </>
         }
         contentContainerStyle={posts.length === 0 ? styles.empty : { paddingTop: 4, paddingBottom: 24 }}
