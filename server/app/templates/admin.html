@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}관리자 · 썰전{% endblock %}
+{% block content %}
+<div class="admin">
+  <h1>썰전 관리자</h1>
+  {% if flash %}<div class="flash">{{ flash }}</div>{% endif %}
+
+  <h2>오늘의 연애 이슈 등록</h2>
+  <form method="post" action="{{ url_for('admin.add_issue') }}">
+    <input type="hidden" name="token" value="{{ token }}" />
+    <label>제목</label><input name="title" maxlength="120" required />
+    <label>요약 (2줄)</label><textarea name="summary" maxlength="200" rows="2" required></textarea>
+    <div class="row">
+      <div><label>출처명</label><input name="source" maxlength="30" /></div>
+      <div><label>원문 URL</label><input name="url" /></div>
+    </div>
+    <div class="row">
+      <div><label>투표 A</label><input name="poll_option_a" maxlength="30" required /></div>
+      <div><label>투표 B</label><input name="poll_option_b" maxlength="30" required /></div>
+    </div>
+    <button type="submit">이슈 등록</button>
+  </form>
+
+  <h2>최근 이슈</h2>
+  <table>
+    <tr><th>제목</th><th>활성</th></tr>
+    {% for i in issues %}
+    <tr><td>{{ i.title }}</td><td>{{ '●' if i.is_active else '' }}</td></tr>
+    {% endfor %}
+  </table>
+
+  <h2>테스트</h2>
+  <table>
+    <tr><th>slug</th><th>제목</th><th>활성</th><th></th></tr>
+    {% for t in tests %}
+    <tr>
+      <td>{{ t.slug }}</td><td>{{ t.title }}</td><td>{{ '●' if t.is_active else '' }}</td>
+      <td>
+        <form method="post" action="{{ url_for('admin.toggle_test', test_id=t.id) }}" style="margin:0">
+          <input type="hidden" name="token" value="{{ token }}" />
+          <button type="submit" style="width:auto;margin:0;padding:6px 10px;font-size:12px">{{ '비활성' if t.is_active else '활성' }}</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

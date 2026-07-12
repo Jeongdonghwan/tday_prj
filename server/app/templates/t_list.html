@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}테스트존 · 썰전{% endblock %}
+{% block content %}
+  <div class="brand">썰전 테스트존</div>
+  <p class="sub">연애 심리테스트 모음</p>
+  {% for t in tests %}
+    <a class="test-card" href="{{ url_for('web.test_intro', slug=t.slug) }}">
+      <div class="test-title">{{ t.title }}</div>
+      {% if t.intro %}<div class="test-intro">{{ t.intro }}</div>{% endif %}
+      <span class="go">시작하기 →</span>
+    </a>
+  {% else %}
+    <p class="empty">준비 중인 테스트가 곧 올라와요.</p>
+  {% endfor %}
+{% endblock %}

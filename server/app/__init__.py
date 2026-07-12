@@ -23,6 +23,13 @@ def create_app(config_object=None) -> Flask:
 
     register_blueprints(app)
 
+    # 웹(심리테스트존) + 관리자 (DESIGN_UPDATE §5·§6) — Jinja 템플릿/정적
+    from .admin import bp as admin_bp
+    from .web import bp as web_bp
+
+    app.register_blueprint(web_bp)
+    app.register_blueprint(admin_bp)
+
     @app.get("/health")
     def health():
         return jsonify({"status": "ok"}), 200
@@ -97,6 +104,18 @@ def _register_cli(app: Flask):
         )
         db.session.commit()
         click.echo("데모 데일리 폴 삽입 완료.")
+
+    @app.cli.command("seed-test")
+    @click.argument("md_path")
+    def seed_test_cmd(md_path):
+        """심리테스트 MD 파일을 파싱해 DB 등록 (DESIGN_UPDATE §6). 예: flask seed-test ../sulzun_design_update/tests/test01_love_type.md"""
+        from pathlib import Path
+
+        from .services.psych import seed_test
+
+        text = Path(md_path).read_text(encoding="utf-8")
+        t = seed_test(text)
+        click.echo(f"테스트 등록 완료: {t.slug}" if t else "이미 등록된 slug 라 건너뜀.")
 
     @app.cli.command("seed-issue")
     def seed_issue():

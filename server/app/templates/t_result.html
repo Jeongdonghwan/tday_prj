@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% set avatar = 'avatars/av_%02d.svg'|format(result.avatar_no or 1) %}
+{% block title %}나는 {{ result.title }}! · {{ test.title }}{% endblock %}
+{% block og_title %}나는 {{ result.title }}! 너는?{% endblock %}
+{% block og_desc %}{{ result.catchphrase or test.title }}{% endblock %}
+{% block og_image %}{{ url_for('static', filename=avatar, _external=True) }}{% endblock %}
+{% block content %}
+  <div class="result">
+    <img class="result-avatar" src="{{ url_for('static', filename=avatar) }}" alt="{{ result.title }}" />
+    <h1 class="result-title">{{ result.title }}</h1>
+    {% if result.catchphrase %}<p class="result-catch">{{ result.catchphrase }}</p>{% endif %}
+    <p class="result-desc">{{ result.description }}</p>
+
+    <div class="match-row">
+      {% if match %}
+      <div class="match-box good">
+        <img src="{{ url_for('static', filename='avatars/av_%02d.svg'|format(match.avatar_no or 1)) }}" />
+        <div><span class="match-label">잘 맞는 유형</span><span class="match-name">{{ match.title }}</span></div>
+      </div>
+      {% endif %}
+      {% if clash %}
+      <div class="match-box bad">
+        <img src="{{ url_for('static', filename='avatars/av_%02d.svg'|format(clash.avatar_no or 1)) }}" />
+        <div><span class="match-label">자주 부딪히는 유형</span><span class="match-name">{{ clash.title }}</span></div>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="share">
+      <button class="btn-share kakao" onclick="share()">카카오톡 공유</button>
+      <button class="btn-share copy" onclick="copyLink()">링크 복사</button>
+    </div>
+
+    <a class="btn-primary cta" href="{{ app_install_url }}">결과 저장하고 프로필에 뱃지 달기</a>
+    <a class="link-muted" href="{{ url_for('web.test_list') }}">다른 테스트 보기</a>
+  </div>
+
+  <script>
+    const SHARE_TITLE = {{ ('나는 ' ~ result.title ~ '! 너는?')|tojson }};
+    function copyLink() {
+      navigator.clipboard.writeText(location.href).then(function () { alert('링크를 복사했어요!'); });
+    }
+    function share() {
+      if (navigator.share) { navigator.share({ title: SHARE_TITLE, url: location.href }); }
+      else { copyLink(); }
+    }
+  </script>
+{% endblock %}

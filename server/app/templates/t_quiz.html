@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ test.title }} · 진행 중{% endblock %}
+{% block content %}
+  <div class="quiz">
+    <div class="progress"><div class="progress-fill" id="bar"></div></div>
+    <div class="q-count"><span id="cur">1</span> / {{ questions|length }}</div>
+    <h2 class="q-text" id="qtext"></h2>
+    <div class="choices" id="choices"></div>
+  </div>
+
+  <script>
+    const QUESTIONS = {{ questions|tojson }};
+    const SLUG = {{ test.slug|tojson }};
+    const REF = {{ (ref or '')|tojson }};
+    let idx = 0;
+    const answers = [];
+
+    function render() {
+      const q = QUESTIONS[idx];
+      document.getElementById('qtext').textContent = q.question;
+      document.getElementById('cur').textContent = idx + 1;
+      document.getElementById('bar').style.width = ((idx) / QUESTIONS.length * 100) + '%';
+      const box = document.getElementById('choices');
+      box.innerHTML = '';
+      q.choices.forEach(function (c) {
+        const b = document.createElement('button');
+        b.className = 'choice';
+        b.textContent = c.text;
+        b.onclick = function () { pick(c.code); };
+        box.appendChild(b);
+      });
+    }
+
+    function pick(code) {
+      answers.push(code);
+      idx += 1;
+      if (idx < QUESTIONS.length) { render(); }
+      else { submit(); }
+    }
+
+    async function submit() {
+      document.getElementById('bar').style.width = '100%';
+      document.getElementById('qtext').textContent = '결과 분석 중…';
+      document.getElementById('choices').innerHTML = '';
+      const res = await fetch('/t/' + SLUG + '/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answers: answers, ref: REF || null }),
+      });
+      const data = await res.json();
+      let url = '/t/' + SLUG + '/result/' + data.result_code;
+      if (REF) url += '?ref=' + encodeURIComponent(REF);
+      window.location.href = url;
+    }
+
+    render();
+  </script>
+{% endblock %}

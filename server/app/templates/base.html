@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>{% block title %}썰전 테스트존{% endblock %}</title>
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="{% block og_title %}썰전 연애 심리테스트{% endblock %}" />
+  <meta property="og:description" content="{% block og_desc %}12개 질문으로 알아보는 내 연애 스타일{% endblock %}" />
+  <meta property="og:image" content="{% block og_image %}{{ url_for('static', filename='og_default.png', _external=True) }}{% endblock %}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div class="wrap">
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>

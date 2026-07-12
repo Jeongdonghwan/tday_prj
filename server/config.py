@@ -43,6 +43,11 @@ class Config:
     ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
     AI_MODEL = os.getenv("AI_MODEL", "claude-haiku-4-5")
 
+    # 심리테스트존 웹 / 관리자 (DESIGN_UPDATE §5·§6)
+    ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "dev-admin-token")
+    WEB_BASE_URL = os.getenv("WEB_BASE_URL", "http://127.0.0.1:5050")
+    APP_INSTALL_URL = os.getenv("APP_INSTALL_URL", "#")
+
 
 class DevelopmentConfig(Config):
     DEBUG = True

@@ -15,3 +15,9 @@
 6. **Git**: 루트(`c:\side_Prj\썰전`)에 단일 저장소 초기화. 기존 `app/.git`은 create-expo-app 초기 커밋뿐이라 제거하고 루트로 통합. 단계별 `design-update step N: ...` 커밋.
 7. **WebView**: `react-native-webview`(Expo Go 호환 네이티브 모듈) 신규 설치, 테스트존 스크린 1개에만 사용. 이슈 원문/외부 링크 아웃링크는 기존 `expo-web-browser`.
 8. **가입 완료 아바타 문구(§1)**: 현재 별도 가입/온보딩 완료 화면이 없음(소셜 upsert 즉시 로그인). 온보딩 화면 신설은 범위 밖 → 문구 노출 보류. 온보딩 도입 시 추가.
+9. **말머리 미니뱃지(§2)**: 데이터에 별도 말머리 필드가 없어 category/투표여부에서 파생 — 투표글="투표", counsel="고민", 그 외="썰". 메타줄 카테고리와 구분되도록 코스한 태그로.
+10. **테스트존 채점 tiebreak(§6)**: `tests.tiebreak`에 우선순위 코드열("RB,DG,FX,CT,BR,PG") 저장, MD의 "동점 시 우선순위" 줄에서 파싱. 궁합(match/clash)은 결과 유형명의 동물 키워드로 코드 해석.
+11. **테스트존 OG(§6)**: 결과별 정적 이미지 미생성(Pillow 미도입). `og:title`="나는 {유형}! 너는?", `og:desc`=캐치프레이즈, `og:image`=결과 아바타 SVG. 실제 카톡 공유 최적화 시 결과별 PNG 도입 여지.
+12. **카톡 공유(§6)**: Kakao JS SDK 앱키 미보유 → 공유 버튼은 Web Share API(navigator.share) + 링크복사 폴백. 키 확보 시 Kakao SDK 교체.
+13. **앱↔테스트 뱃지 연동(§6)**: 웹은 기본 비로그인. 앱 WebView 진입 시 쿼리 `app_uid=<userId>`를 실어 `/t/.../submit`에서 `TestAttempt.user_id`로 연결 → `/me/test-badge`가 최근 결과 반환. 토큰 대신 uid 사용(민감정보 아님, 재미 뱃지 연동용).
+14. **관리자(§5)**: `/admin?token=<ADMIN_TOKEN>` 폼(이슈 등록·테스트 활성화). 세션 로그인 대신 토큰 게이트(운영 시 강한 토큰/역프록시 보호 권장).
