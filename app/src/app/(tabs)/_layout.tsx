@@ -2,17 +2,19 @@
  * 하단 4탭 (홈·BEST·오늘의 질문·MY) + 우하단 플로팅 글쓰기 FAB (스펙 §4).
  * 커스텀 tabBar 로 목업 디자인(라인 아이콘 + 라벨)을 재현.
  */
-import { Tabs, useRouter } from 'expo-router';
+import { Tabs, usePathname, useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon, type IconName } from '@/components/Icon';
 import { colors, weight } from '@/theme';
 
+// GNB 5탭 (IA 개편): 홈·커뮤니티·연애이슈·BEST·마이
 const TAB_META: Record<string, { label: string; icon: IconName }> = {
   index: { label: '홈', icon: 'home' },
+  community: { label: '커뮤니티', icon: 'community' },
+  issues: { label: '연애이슈', icon: 'news' },
   best: { label: 'BEST', icon: 'best' },
-  daily: { label: '오늘의 질문', icon: 'chat' },
   my: { label: 'MY', icon: 'user' },
 };
 
@@ -53,6 +55,9 @@ function CustomTabBar({ state, navigation }: TabBarProps) {
 function WriteFab() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const pathname = usePathname();
+  // 글쓰기 FAB 는 커뮤니티 탭에서만 (IA 개편)
+  if (pathname !== '/community') return null;
   return (
     <Pressable
       style={[styles.fab, { bottom: 60 + insets.bottom + 16 }]}
@@ -67,8 +72,9 @@ export default function TabsLayout() {
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <Tabs screenOptions={{ headerShown: false }} tabBar={(props) => <CustomTabBar {...props} />}>
         <Tabs.Screen name="index" />
+        <Tabs.Screen name="community" />
+        <Tabs.Screen name="issues" />
         <Tabs.Screen name="best" />
-        <Tabs.Screen name="daily" />
         <Tabs.Screen name="my" />
       </Tabs>
       <WriteFab />

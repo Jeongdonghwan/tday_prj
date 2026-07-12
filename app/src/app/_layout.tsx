@@ -42,6 +42,7 @@ function RootNavigator() {
       <Stack.Screen name="couple/connect" />
       <Stack.Screen name="calendar" />
       <Stack.Screen name="tests" />
+      <Stack.Screen name="daily" />
     </Stack>
   );
 }

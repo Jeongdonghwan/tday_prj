@@ -56,6 +56,7 @@ export default function MyScreen() {
 
   const links: { icon: IconName; label: string; onPress: () => void }[] = [
     { icon: 'heart', label: dday?.connected ? '공유 캘린더' : '커플 연결하기', onPress: () => router.push(dday?.connected ? '/calendar' : '/couple/connect') },
+    { icon: 'chat', label: '오늘의 질문 (커플)', onPress: () => router.push('/daily') },
     { icon: 'best', label: '테스트존', onPress: () => router.push('/tests') },
   ];
 

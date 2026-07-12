@@ -2,7 +2,7 @@
  * 라인 아이콘 세트 — 목업 SVG 패스를 그대로 포팅 (스펙 §4: stroke 1.8~1.9, 이모지 금지).
  * 사용: <Icon name="home" size={23} color={colors.ink} />
  */
-import Svg, { Circle, Path } from 'react-native-svg';
+import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
 import { colors } from '@/theme';
 
@@ -24,7 +24,9 @@ export type IconName =
   | 'settings'
   | 'share'
   | 'more'
-  | 'info';
+  | 'info'
+  | 'community'
+  | 'news';
 
 type Props = {
   name: IconName;
@@ -164,6 +166,23 @@ export function Icon({ name, size = 22, color = colors.ink, strokeWidth = 1.8, f
         <Svg width={size} height={size} viewBox="0 0 24 24">
           <Circle cx="12" cy="12" r="9" {...stroke} strokeWidth={2} />
           <Path d="M12 8v5M12 16h.01" {...stroke} strokeWidth={2} />
+        </Svg>
+      );
+    case 'community':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24">
+          <Circle cx="9" cy="8" r="3.2" {...stroke} />
+          <Path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5" {...stroke} />
+          <Circle cx="17.5" cy="9.5" r="2.4" {...stroke} />
+          <Path d="M16 15c2.6 0 5 1.8 5 5" {...stroke} />
+        </Svg>
+      );
+    case 'news':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24">
+          <Rect x="3" y="4" width="13" height="16" rx="2" {...stroke} />
+          <Path d="M16 8h3a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2" {...stroke} />
+          <Path d="M6.5 8.5h6M6.5 12h6M6.5 15.5h4" {...stroke} />
         </Svg>
       );
     default:

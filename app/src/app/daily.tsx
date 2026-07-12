@@ -1,7 +1,7 @@
 /** 오늘의 질문 (스펙 §5-3). API 연동: 1인 모드 + 커플 연결 시 답 공개. */
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getToday, submitAnswer, type DailyToday } from '@/api/daily';
@@ -12,6 +12,7 @@ import { StatusChip } from '@/components/StatusChip';
 import { colors, radius, weight } from '@/theme';
 
 export default function DailyScreen() {
+  const router = useRouter();
   const { token, user } = useAuth();
   const [data, setData] = useState<DailyToday | null>(null);
   const [loading, setLoading] = useState(true);
@@ -53,7 +54,7 @@ export default function DailyScreen() {
   if (loading || !data) {
     return (
       <SafeAreaView style={styles.safe} edges={['top']}>
-        <AppBar title="오늘의 질문" right={user ? <StatusChip status={user.relationship_status} /> : undefined} />
+        <AppBar title="오늘의 질문" onBack={() => router.back()} right={user ? <StatusChip status={user.relationship_status} /> : undefined} />
         <ActivityIndicator color={colors.rose} style={{ marginTop: 60 }} />
       </SafeAreaView>
     );
@@ -62,7 +63,7 @@ export default function DailyScreen() {
   if (!data.question) {
     return (
       <SafeAreaView style={styles.safe} edges={['top']}>
-        <AppBar title="오늘의 질문" right={user ? <StatusChip status={user.relationship_status} /> : undefined} />
+        <AppBar title="오늘의 질문" onBack={() => router.back()} right={user ? <StatusChip status={user.relationship_status} /> : undefined} />
         <Text style={styles.noQ}>오늘의 질문이 아직 준비되지 않았어요.</Text>
       </SafeAreaView>
     );
@@ -72,7 +73,7 @@ export default function DailyScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <AppBar title="오늘의 질문" right={user ? <StatusChip status={user.relationship_status} /> : undefined} />
+      <AppBar title="오늘의 질문" onBack={() => router.back()} right={user ? <StatusChip status={user.relationship_status} /> : undefined} />
       <ScrollView contentContainerStyle={{ paddingBottom: 24 }} keyboardShouldPersistTaps="handled">
         <View style={styles.hero}>
           <Text style={styles.day}>{data.question.date}</Text>
