@@ -71,6 +71,37 @@ def today():
     return jsonify({"issue": _issue_dict(issue, g.user) if issue else None})
 
 
+@bp.get("/issues/archive")
+@login_required
+def archive():
+    """지난(비활성) 이슈 아카이브 — 날짜·제목·최종 결과·댓글수 (HOME_UPDATE §3)."""
+    rows = db.session.scalars(
+        select(Issue).where(Issue.is_active.is_(False)).order_by(Issue.created_at.desc()).limit(30)
+    ).all()
+    items = []
+    for issue in rows:
+        counts = dict(
+            db.session.execute(
+                select(IssueVote.side, func.count(IssueVote.id))
+                .where(IssueVote.issue_id == issue.id)
+                .group_by(IssueVote.side)
+            ).all()
+        )
+        a, b = int(counts.get("a", 0)), int(counts.get("b", 0))
+        total = a + b
+        items.append({
+            "id": issue.id,
+            "title": issue.title,
+            "date": issue.created_at.date().isoformat() if issue.created_at else None,
+            "a_label": issue.poll_option_a,
+            "b_label": issue.poll_option_b,
+            "a_pct": round(a / total * 100) if total else 50,
+            "total": total,
+            "comment_count": issue.comment_count,
+        })
+    return jsonify({"items": items})
+
+
 @bp.get("/issues/<int:issue_id>")
 @login_required
 def detail(issue_id: int):

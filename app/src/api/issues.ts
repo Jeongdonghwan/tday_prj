@@ -23,8 +23,23 @@ export type Issue = {
   my_vote: 'a' | 'b' | null;
 };
 
+export type IssueArchiveItem = {
+  id: number;
+  title: string;
+  date: string;
+  a_label: string;
+  b_label: string;
+  a_pct: number;
+  total: number;
+  comment_count: number;
+};
+
 export function getTodayIssue(token: string) {
   return apiRequest<{ issue: Issue | null }>('/issues/today', { token });
+}
+
+export function getIssueArchive(token: string) {
+  return apiRequest<{ items: IssueArchiveItem[] }>('/issues/archive', { token });
 }
 
 export function getIssue(id: number | string, token: string) {

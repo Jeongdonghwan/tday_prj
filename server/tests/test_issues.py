@@ -58,3 +58,15 @@ def test_issue_comments(client, token, bearer, issue):
     assert c.status_code == 201 and c.get_json()["author"]["avatar_no"]
     assert client.get(f"/issues/{iid}/comments").get_json()["count"] == 1
     assert client.get(f"/issues/{iid}", headers=bearer(token)).get_json()["issue"]["comment_count"] == 1
+
+
+def test_archive_lists_past_inactive(client, token, bearer, app):
+    with app.app_context():
+        create_issue(title="지난이슈1", summary="s", source="src", url="u", poll_option_a="A", poll_option_b="B")
+        create_issue(title="오늘이슈", summary="s", source="src", url="u", poll_option_a="A", poll_option_b="B")
+    # 오늘이슈가 활성 → 아카이브엔 지난이슈1만
+    arc = client.get("/issues/archive", headers=bearer(token)).get_json()["items"]
+    titles = [i["title"] for i in arc]
+    assert "지난이슈1" in titles and "오늘이슈" not in titles
+    row = next(i for i in arc if i["title"] == "지난이슈1")
+    assert "a_pct" in row and "comment_count" in row and "date" in row
