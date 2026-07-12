@@ -1,22 +1,22 @@
 {
   "expo": {
-    "name": "썰전",
-    "slug": "sseuljeon",
+    "name": "오늘연애",
+    "slug": "todaylove",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "sseuljeon",
+    "scheme": "todaylove",
     "userInterfaceStyle": "light",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.sseuljeon.app",
+      "bundleIdentifier": "com.hco.todaylove",
       "supportsTablet": true,
       "infoPlist": {
-        "CFBundleDisplayName": "썰전"
+        "CFBundleDisplayName": "오늘연애"
       }
     },
     "android": {
-      "package": "com.sseuljeon.app",
+      "package": "com.hco.todaylove",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

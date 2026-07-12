@@ -1,4 +1,4 @@
-"""썰전 글/투표 API (스펙 §7, 3단계 구현).
+"""오늘연애 글/투표 API (스펙 §7, 3단계 구현).
 
   GET    /posts?category=&cursor=&limit=
   POST   /posts

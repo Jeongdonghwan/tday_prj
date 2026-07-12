@@ -1,4 +1,4 @@
-/** 썰전 상세 (스펙 §5-2). API 연동: 투표(중복 불가) + 댓글 목록/작성 + 좋아요. */
+/** 오늘연애 상세 (스펙 §5-2). API 연동: 투표(중복 불가) + 댓글 목록/작성 + 좋아요. */
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,

@@ -149,7 +149,7 @@ def answer():
 @bp.post("/daily/<int:question_id>/to-post")
 @login_required
 def to_post(question_id: int):
-    """답 갈린 질문 → 썰전 글로 전환 (커플 답을 A/B 투표로)."""
+    """답 갈린 질문 → 오늘연애 글로 전환 (커플 답을 A/B 투표로)."""
     q = db.session.get(DailyQuestion, question_id)
     if not q:
         return jsonify({"error": "not_found"}), 404
@@ -158,7 +158,7 @@ def to_post(question_id: int):
         user_id=g.user.id,
         category="counsel",
         title=q.question,
-        body="오늘의 질문에서 의견이 갈려 썰전으로 가져왔어요.",
+        body="오늘의 질문에서 의견이 갈려 글로 가져왔어요.",
         is_poll=False,
         author_status=g.user.relationship_status,
     )

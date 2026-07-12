@@ -46,7 +46,7 @@ export default function LoginScreen() {
     <SafeAreaView style={styles.safe}>
       <View style={styles.body}>
         <View style={styles.hero}>
-          <Text style={styles.brand}>썰전</Text>
+          <Text style={styles.brand}>오늘연애</Text>
           <Text style={styles.tagline}>오늘의 연애, 어느 편이세요?</Text>
         </View>
 

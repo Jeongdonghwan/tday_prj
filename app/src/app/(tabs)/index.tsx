@@ -1,4 +1,4 @@
-/** 홈 — 썰전 피드 (스펙 §5-1). API 연동: 커서 무한스크롤 + 당겨서 새로고침. */
+/** 홈 — 오늘연애 피드 (스펙 §5-1). API 연동: 커서 무한스크롤 + 당겨서 새로고침. */
 import { useCallback, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -75,7 +75,7 @@ export default function HomeFeed() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <AppBar
-        title="썰전"
+        title="오늘연애"
         brand
         right={
           <>

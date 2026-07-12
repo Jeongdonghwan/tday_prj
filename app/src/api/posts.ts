@@ -1,4 +1,4 @@
-/** 썰전 글/투표/댓글 API (스펙 §7, 3단계). */
+/** 오늘연애 글/투표/댓글 API (스펙 §7, 3단계). */
 import { apiRequest } from './client';
 import type { FeedPost } from '@/components/PostCard';
 import type { PostCategory, RelationshipStatus } from '@/theme';

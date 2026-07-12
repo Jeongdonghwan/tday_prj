@@ -12,7 +12,7 @@
 3. **이슈 댓글**: 기존 `comments`(post_id NOT NULL FK)를 건드리지 않기 위해 신규 `issue_comments` 테이블 사용(필드는 comments 미러). `serializers.comment_dict`는 재사용.
 4. **테스트존 OG 이미지**: Pillow 등 이미지 생성 의존성 미도입. 테스트별 정적 브랜드 OG 이미지 1장 + 결과별 동적 `og:title`/`og:description`(예 "나는 직진 하트토끼형! 너는?"). 공유 카드 텍스트로 결과 전달.
 5. **피드 목업 썸네일**: 기존 index.tsx가 전 글에 picsum 썸네일 강제 → §2의 3케이스가 보이도록 글별 분기(투표글=썸네일 없음, `id%3==0`=이미지글 썸네일, 그 외=텍스트글). 실제 이미지 업로드 기능 도입 전까지 placeholder.
-6. **Git**: 루트(`c:\side_Prj\썰전`)에 단일 저장소 초기화. 기존 `app/.git`은 create-expo-app 초기 커밋뿐이라 제거하고 루트로 통합. 단계별 `design-update step N: ...` 커밋.
+6. **Git**: 루트(`c:\side_Prj\오늘연애`)에 단일 저장소 초기화. 기존 `app/.git`은 create-expo-app 초기 커밋뿐이라 제거하고 루트로 통합. 단계별 `design-update step N: ...` 커밋.
 7. **WebView**: `react-native-webview`(Expo Go 호환 네이티브 모듈) 신규 설치, 테스트존 스크린 1개에만 사용. 이슈 원문/외부 링크 아웃링크는 기존 `expo-web-browser`.
 8. **가입 완료 아바타 문구(§1)**: 현재 별도 가입/온보딩 완료 화면이 없음(소셜 upsert 즉시 로그인). 온보딩 화면 신설은 범위 밖 → 문구 노출 보류. 온보딩 도입 시 추가.
 9. **말머리 미니뱃지(§2)**: 데이터에 별도 말머리 필드가 없어 category/투표여부에서 파생 — 투표글="투표", counsel="고민", 그 외="썰". 메타줄 카테고리와 구분되도록 코스한 태그로.
@@ -21,3 +21,21 @@
 12. **카톡 공유(§6)**: Kakao JS SDK 앱키 미보유 → 공유 버튼은 Web Share API(navigator.share) + 링크복사 폴백. 키 확보 시 Kakao SDK 교체.
 13. **앱↔테스트 뱃지 연동(§6)**: 웹은 기본 비로그인. 앱 WebView 진입 시 쿼리 `app_uid=<userId>`를 실어 `/t/.../submit`에서 `TestAttempt.user_id`로 연결 → `/me/test-badge`가 최근 결과 반환. 토큰 대신 uid 사용(민감정보 아님, 재미 뱃지 연동용).
 14. **관리자(§5)**: `/admin?token=<ADMIN_TOKEN>` 폼(이슈 등록·테스트 활성화). 세션 로그인 대신 토큰 게이트(운영 시 강한 토큰/역프록시 보호 권장).
+
+---
+
+# 오늘연애 리브랜딩 + IA + PC웹 — 결정 기록
+
+## 사용자 확인
+- rename 범위: 저장소 전체 파일내용 "썰전"→"오늘연애" (설계문서·목업·입력폴더 포함, 검색 0건). 식별자 slug/scheme=`todaylove`, 패키지=`com.hco.todaylove`.
+- GNB: **5탭 홈·커뮤니티·연애이슈·BEST·마이** (HOME_UPDATE 4탭에서 BEST 유지). 커플 자유서술 "오늘의 질문" 탭은 오프-GNB(MY 진입).
+
+## 리브랜딩 자율결정
+- **루트 폴더 경로명 `c:\side_Prj\썰전`**은 파일 "내용"이 아니라 파일시스템 경로 → 유지(작업 디렉토리 rename은 위험/범위 밖). 저장소 내용 검색은 0건.
+- **로마자 `sseuljeon`** 은 "썰전"(한글) 리브랜딩 대상 아님. 내부 식별자로 유지: DB명 `sseuljeon`(docker/config), 토큰 저장키 `sseuljeon.jwt`(내부, 유저 무노출; 변경 시 재로그인만 유발), picsum 목업 시드 문자열. (운영 전환 시 DB명은 인프라 결정으로 별도 처리)
+- **feature-noun "썰전"**(투표글·게시판 뜻)도 전역 치환으로 "오늘연애"가 됨 — 문서/주석은 브랜드 prefix로 자연스러워 그대로, 유저 노출 문자열 1곳(`daily.py` 질문→글 전환 body)만 "…글로 가져왔어요"로 조사 자연화.
+- **EAS projectId 미연결**: `app.json`/`eas.json`에 projectId 없음 → 리브랜딩으로 깨질 링크 없음. 신규 패키지로 `eas init` 필요(콘솔 체크리스트).
+
+## IA/홈 자율결정
+- 퀵메뉴 8종 → 기존 4카테고리 매핑: 연애고민→love, 예비부부·결혼준비→marriage, 재테크고민·직장커리어·일상잡담→free, 가족·인간관계→counsel, 전체게시판→(전체), 연애유형테스트→테스트존. (아이콘-라벨은 스펙 그대로, 카테고리만 근사 매핑)
+- 인기글 TOP5: 기존 hot_score와 별개로 스펙 가중치(최근24h `조회×1+댓글×5+공감×3`) 신규 `/home/trending`, `ranking` 메모리캐시 10분 재사용.

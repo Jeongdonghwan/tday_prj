@@ -101,7 +101,7 @@ def stage5(tok):
 
     r = c.post(f"/daily/{qid}/to-post", headers=auth(tok))
     assert r.status_code == 201 and r.get_json()["post_id"]
-    print("질문 → 썰전 전환 OK")
+    print("질문 → 오늘연애 전환 OK")
 
 
 def stage6():

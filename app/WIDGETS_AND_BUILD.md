@@ -38,5 +38,5 @@ eas build --profile preview --platform android       # 테스터 APK
 
 ## 출시 전 교체 항목
 - `eas.json` 의 `EXPO_PUBLIC_API_BASE_URL` → 실제 API 도메인(HTTPS, Let's Encrypt — 스펙 §3/§8).
-- `app.json` bundleIdentifier/package(`com.sseuljeon.app` 임시) 확정, 앱 이름(현재 "썰전" 가칭).
+- `app.json` bundleIdentifier/package(`com.sseuljeon.app` 임시) 확정, 앱 이름(현재 "오늘연애" 가칭).
 - 개인정보처리방침 URL, 아이콘/스플래시, 스토어 스크린샷(스펙 §10).

@@ -1,4 +1,4 @@
--- 썰전 DB 스키마 (스펙 §6) — MariaDB / utf8mb4
+-- 오늘연애 DB 스키마 (스펙 §6) — MariaDB / utf8mb4
 -- ORM(app/models)과 동치. 빠른 부트스트랩/참고용.
 -- 사용: docker compose 의 MariaDB 에 접속해 source schema.sql
 

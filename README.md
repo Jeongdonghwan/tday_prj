@@ -1,12 +1,12 @@
-# 썰전 (가칭)
+# 오늘연애 (가칭)
 
-연애 상태(커플·돌싱·유부) 기반 투표형 썰전 커뮤니티 앱. RN/Expo + Flask + MariaDB.
+연애 상태(커플·돌싱·유부) 기반 투표형 오늘연애 커뮤니티 앱. RN/Expo + Flask + MariaDB.
 상세 스펙은 [BUILD_SPEC.md](BUILD_SPEC.md), 디자인은 `mockup_v2.html` / `mockup_v3.html` 참고.
 
 > **현재 상태**: 착수 1~2단계 완료 — 앱 골격(theme·4탭·화면) + 서버 골격(전 테이블 + 소셜로그인 구조 + dev 로그인). 3단계(피드·상세·글쓰기·댓글)부터 기능을 쌓는다.
 
 ```
-썰전/
+오늘연애/
 ├── app/      # Expo (React Native, expo-router) — iOS+Android 단일 코드
 └── server/   # Flask REST API + MariaDB
 ```
@@ -95,7 +95,7 @@ npm start            # QR 코드 → Expo Go, 또는 a(android)/i(ios)
 ---
 
 ## 3. 다음 단계 (스펙 §11)
-3. 썰전 피드·상세·글쓰기(투표 on/off)·댓글 → 커뮤니티 코어
+3. 오늘연애 피드·상세·글쓰기(투표 on/off)·댓글 → 커뮤니티 코어
 4. BEST(hot_score 배치) + 신고/차단
 5. 오늘의 질문(1인 모드) → 6. 커플 연결·캘린더·D-day → 7. 위젯 → 8. 푸시·EAS 빌드
 - 실제 카카오/애플 네이티브 SDK 배선(prebuild)은 API 키 확보 후.
