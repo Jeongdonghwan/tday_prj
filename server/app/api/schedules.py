@@ -17,8 +17,11 @@ from ..models.enums import SCHEDULE_OWNERS
 bp = Blueprint("schedules", __name__)
 
 
-def _require_couple():
-    return g.user.couple_id
+def _scope():
+    """커플 연결 시 공유(couple) 스코프, 미연결 시 개인(user) 스코프."""
+    if g.user.couple_id:
+        return Schedule.couple_id == g.user.couple_id
+    return (Schedule.user_id == g.user.id) & (Schedule.couple_id.is_(None))
 
 
 def _month_range(month_str: str | None):
@@ -47,13 +50,10 @@ def _to_dict(s: Schedule) -> dict:
 @bp.get("/schedules")
 @login_required
 def list_schedules():
-    couple_id = _require_couple()
-    if not couple_id:
-        return jsonify({"items": []})
     first, nxt = _month_range(request.args.get("month"))
     rows = db.session.scalars(
         select(Schedule)
-        .where(Schedule.couple_id == couple_id, Schedule.event_date >= first, Schedule.event_date < nxt)
+        .where(_scope(), Schedule.event_date >= first, Schedule.event_date < nxt)
         .order_by(Schedule.event_date.asc(), Schedule.event_time.asc())
     ).all()
     return jsonify({"items": [_to_dict(s) for s in rows]})
@@ -62,9 +62,6 @@ def list_schedules():
 @bp.post("/schedules")
 @login_required
 def create_schedule():
-    couple_id = _require_couple()
-    if not couple_id:
-        return jsonify({"error": "no_couple"}), 400
     data = request.get_json(silent=True) or {}
     owner = data.get("owner", "both")
     title = (data.get("title") or "").strip()
@@ -83,8 +80,10 @@ def create_schedule():
         except ValueError:
             return jsonify({"error": "invalid_time"}), 400
 
+    # 커플 연결 시 공유 일정(couple_id), 미연결 시 개인 일정(user_id)
     s = Schedule(
-        couple_id=couple_id,
+        couple_id=g.user.couple_id,
+        user_id=g.user.id,
         owner=owner,
         title=title,
         event_date=event_date,
@@ -101,7 +100,12 @@ def create_schedule():
 @login_required
 def delete_schedule(schedule_id: int):
     s = db.session.get(Schedule, schedule_id)
-    if not s or s.couple_id != g.user.couple_id:
+    if not s:
+        return jsonify({"error": "not_found"}), 404
+    # 공유(같은 커플) 또는 본인 개인 일정만 삭제 가능
+    owns_couple = s.couple_id is not None and s.couple_id == g.user.couple_id
+    owns_personal = s.couple_id is None and s.user_id == g.user.id
+    if not (owns_couple or owns_personal):
         return jsonify({"error": "not_found"}), 404
     db.session.delete(s)
     db.session.commit()

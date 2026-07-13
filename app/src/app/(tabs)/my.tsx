@@ -12,6 +12,7 @@ import { AppBar } from '@/components/AppBar';
 import { Avatar } from '@/components/Avatar';
 import { Icon, type IconName } from '@/components/Icon';
 import { StatusChip } from '@/components/StatusChip';
+import { useIsDesktop } from '@/hooks/useResponsive';
 import { colors, radius, statusTheme, weight, type RelationshipStatus } from '@/theme';
 
 const STATUSES: RelationshipStatus[] = ['couple', 'single', 'married'];
@@ -19,6 +20,7 @@ const STATUSES: RelationshipStatus[] = ['couple', 'single', 'married'];
 export default function MyScreen() {
   const { user, token, signOut, refresh } = useAuth();
   const router = useRouter();
+  const isDesktop = useIsDesktop();
   const [dday, setDday] = useState<Dday | null>(null);
   const [badge, setBadge] = useState<TestBadge>(null);
   const status = user?.relationship_status ?? 'single';
@@ -55,14 +57,15 @@ export default function MyScreen() {
   }
 
   const links: { icon: IconName; label: string; onPress: () => void }[] = [
-    { icon: 'heart', label: dday?.connected ? '공유 캘린더' : '커플 연결하기', onPress: () => router.push(dday?.connected ? '/calendar' : '/couple/connect') },
+    { icon: 'chat', label: '내 글·댓글', onPress: () => router.push('/my-activity') },
+    { icon: 'heart', label: dday?.connected ? '공유 캘린더' : '캘린더', onPress: () => router.push('/calendar') },
     { icon: 'chat', label: '오늘의 질문 (커플)', onPress: () => router.push('/daily') },
     { icon: 'best', label: '테스트존', onPress: () => router.push('/tests') },
   ];
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <AppBar title="마이" right={<Icon name="settings" size={22} color={colors.ink} />} />
+      {!isDesktop && <AppBar title="마이" right={<Icon name="settings" size={22} color={colors.ink} />} />}
       <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
         <View style={styles.head}>
           <Avatar avatarNo={user?.avatar_no} size={56} />

@@ -3,8 +3,8 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
 import { Icon } from '@/components/Icon';
-import { StatusChip } from '@/components/StatusChip';
-import { colors, radius, weight, type RelationshipStatus } from '@/theme';
+import { PollResultBar } from '@/components/PollResultBar';
+import { colors, radius, statusTheme, weight, type RelationshipStatus } from '@/theme';
 
 // DESIGN_UPDATE §2 고정 색 (기존 토큰 외 문서 지정값)
 const BODY = '#4E5968';
@@ -23,6 +23,7 @@ export type FeedPost = {
   viewCount: number;
   poll?: { aLabel: string; bLabel: string; aPct: number };
   voteCount?: number;
+  myVote?: 'A' | 'B' | null;
   likeCount: number;
   commentCount: number;
   /** 이미지 첨부 글 썸네일 (없으면 텍스트 글) */
@@ -38,7 +39,7 @@ export function PostCard({ post, onPress }: { post: FeedPost; onPress?: () => vo
         <View style={{ flex: 1 }}>
           <View style={styles.nameRow}>
             <Text style={styles.name}>{post.authorName}</Text>
-            <StatusChip status={post.authorStatus} small />
+            <Text style={styles.status}>· {statusTheme[post.authorStatus].label}</Text>
           </View>
           <Text style={styles.meta}>
             {post.categoryLabel} · {post.timeText} · 조회 {post.viewCount.toLocaleString()}
@@ -49,32 +50,22 @@ export function PostCard({ post, onPress }: { post: FeedPost; onPress?: () => vo
       {/* 본문 행 */}
       <View style={styles.bodyRow}>
         <View style={{ flex: 1 }}>
-          <View style={styles.titleLine}>
-            <View style={styles.tag}>
-              <Text style={styles.tagText}>{post.tag}</Text>
-            </View>
-            <Text style={styles.title} numberOfLines={2}>{post.title}</Text>
-          </View>
+          {/* 말머리 뱃지 제거 — 카테고리는 메타줄에 이미 노출(중복·산만함 제거) */}
+          <Text style={styles.title} numberOfLines={2}>{post.title}</Text>
           {post.body ? <Text style={styles.body} numberOfLines={2}>{post.body}</Text> : null}
         </View>
         {post.imageUrl ? <Image source={{ uri: post.imageUrl }} style={styles.thumb} /> : null}
       </View>
 
-      {/* 투표형: rose/blue 채움 게이지 */}
+      {/* 투표형: 공용 결과바 (우세 로즈 / 열세 그레이, 퍼센트만, 내 투표 ✓) */}
       {post.poll && (
-        <View style={styles.vote}>
-          <View style={styles.vrow}>
-            <Text style={[styles.vlabel, { color: colors.rose }]}>
-              {post.poll.aLabel} · {post.poll.aPct}%
-            </Text>
-            <Text style={[styles.vlabel, { color: colors.blue }]}>
-              {100 - post.poll.aPct}% · {post.poll.bLabel}
-            </Text>
-          </View>
-          <View style={styles.vtrack}>
-            <View style={[styles.vfill, { width: `${post.poll.aPct}%` }]} />
-          </View>
-        </View>
+        <PollResultBar
+          aLabel={post.poll.aLabel}
+          bLabel={post.poll.bLabel}
+          aPct={post.poll.aPct}
+          total={post.voteCount}
+          myVote={post.myVote}
+        />
       )}
 
       {/* 액션 행: 알약 버튼 */}
@@ -105,21 +96,14 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   header: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   name: { fontSize: 13, fontWeight: weight.semibold as '600', color: colors.ink },
+  status: { fontSize: 10.5, color: colors.statusText },
   meta: { fontSize: 11.5, color: colors.sub, marginTop: 2 },
   bodyRow: { flexDirection: 'row', gap: 12, alignItems: 'flex-start', marginTop: 11 },
-  titleLine: { flexDirection: 'row', alignItems: 'flex-start', gap: 6, flexWrap: 'wrap' },
-  tag: { backgroundColor: colors.roseBg, borderRadius: 6, paddingVertical: 2, paddingHorizontal: 6, marginTop: 1 },
-  tagText: { color: colors.rose, fontSize: 10.5, fontWeight: weight.bold as '700' },
   title: { flex: 1, fontSize: 15, fontWeight: weight.semibold as '600', color: colors.ink, lineHeight: 22, letterSpacing: -0.4 },
   body: { fontSize: 13.5, color: BODY, lineHeight: 20, marginTop: 4 },
   thumb: { width: 66, height: 66, borderRadius: 12, backgroundColor: colors.soft },
-  vote: { marginTop: 12 },
-  vrow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 7 },
-  vlabel: { fontSize: 12, fontWeight: weight.bold as '700' },
-  vtrack: { height: 8, borderRadius: 5, backgroundColor: colors.blue, overflow: 'hidden' },
-  vfill: { height: '100%', backgroundColor: colors.rose, borderRadius: 5 },
   actions: { flexDirection: 'row', gap: 8, marginTop: 12 },
   pill: {
     flexDirection: 'row',

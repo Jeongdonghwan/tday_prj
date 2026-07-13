@@ -3,8 +3,9 @@
 # 연애 상태 (상태칩). 라벨: 커플/돌싱/유부
 RELATIONSHIP_STATUSES = ("couple", "single", "married")
 
-# 글 카테고리. 라벨: 연애/결혼·부부/고민상담/자유
-POST_CATEGORIES = ("love", "marriage", "counsel", "free")
+# 글 카테고리(게시판). superset 확장 — dating/daily/photo 추가(기존 값 유지, 데이터 이관 불필요).
+# photo = 인증·사진 앨범 게시판(이미지 글). 텍스트 피드에서는 제외.
+POST_CATEGORIES = ("love", "dating", "marriage", "counsel", "daily", "free", "photo")
 
 # 소셜 provider. dev 는 개발용 모의 로그인.
 SOCIAL_PROVIDERS = ("kakao", "apple", "dev")
@@ -21,5 +22,16 @@ REPORT_TARGETS = ("post", "comment", "user")
 # 상태값 -> 한글 라벨 (서버 응답에 함께 실어주면 클라가 매핑 불필요)
 STATUS_LABELS = {"couple": "커플", "single": "돌싱", "married": "유부"}
 
-# 카테고리 -> 한글 라벨
-CATEGORY_LABELS = {"love": "연애", "marriage": "결혼·부부", "counsel": "고민상담", "free": "자유"}
+# 카테고리 -> 한글 라벨 (게시판 개편)
+CATEGORY_LABELS = {
+    "love": "연애",
+    "dating": "썸·소개팅",
+    "marriage": "결혼·동거",
+    "counsel": "인간관계",
+    "daily": "일상잡담",
+    "free": "자유",
+    "photo": "인증·사진",
+}
+
+# 광고 슬롯 포지션 (Phase 3)
+AD_POSITIONS = ("feed_native", "issue_bottom", "web_wing_l", "web_wing_r", "web_rail")

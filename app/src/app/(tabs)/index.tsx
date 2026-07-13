@@ -14,19 +14,28 @@ import { BrandLogo } from '@/components/BrandLogo';
 import { DailyPollCard } from '@/components/DailyPollCard';
 import { Icon } from '@/components/Icon';
 import { issueThumb } from '@/components/IssueCard';
+import { NotificationBell } from '@/components/NotificationBell';
 import { QuickMenu } from '@/components/QuickMenu';
+import { useIsDesktop } from '@/hooks/useResponsive';
 import { colors, weight } from '@/theme';
 
 export default function HomeScreen() {
+  const isDesktop = useIsDesktop();
+  const router = useRouter();
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <View style={styles.header}>
-        <BrandLogo height={22} />
-        <View style={styles.actions}>
-          <Icon name="search" size={22} color={colors.ink} />
-          <Icon name="bell" size={22} color={colors.ink} />
+      {/* 데스크톱은 상단 GNB가 로고/검색/알림 제공 → 자체 헤더 미노출(중복 제거) */}
+      {!isDesktop && (
+        <View style={styles.header}>
+          <BrandLogo height={22} />
+          <View style={styles.actions}>
+            <Pressable onPress={() => router.push('/search')} hitSlop={8}>
+              <Icon name="search" size={22} color={colors.ink} />
+            </Pressable>
+            <NotificationBell />
+          </View>
         </View>
-      </View>
+      )}
       <ScrollView style={styles.body} contentContainerStyle={{ paddingTop: 4, paddingBottom: 28 }}>
         <DailyPollCard />
         <View style={styles.qmCard}>

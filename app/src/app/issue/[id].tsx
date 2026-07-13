@@ -23,6 +23,7 @@ import { useAuth } from '@/auth/AuthContext';
 import { Avatar } from '@/components/Avatar';
 import { Icon } from '@/components/Icon';
 import { StatusChip } from '@/components/StatusChip';
+import { useIsDesktop } from '@/hooks/useResponsive';
 import { colors, radius, weight } from '@/theme';
 
 const BODY = '#4E5968';
@@ -32,6 +33,7 @@ export default function IssueDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { token } = useAuth();
+  const isDesktop = useIsDesktop();
   const [issue, setIssue] = useState<Issue | null>(null);
   const [comments, setComments] = useState<ApiComment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -92,7 +94,8 @@ export default function IssueDetail() {
   const voted = issue.my_vote != null;
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
+    <SafeAreaView style={[styles.safe, isDesktop && styles.safeDesktop]} edges={['top']}>
+     <View style={[styles.col, isDesktop && styles.colDesktop]}>
       <Bar onBack={() => router.back()} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={8}>
         <ScrollView contentContainerStyle={styles.wrap} keyboardShouldPersistTaps="handled">
@@ -156,6 +159,7 @@ export default function IssueDetail() {
           </Pressable>
         </View>
       </KeyboardAvoidingView>
+     </View>
     </SafeAreaView>
   );
 }
@@ -186,6 +190,9 @@ function Bar2({ label, pct, tone, mine }: { label: string; pct: number; tone: st
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
+  safeDesktop: { alignItems: 'center' },
+  col: { flex: 1, width: '100%' },
+  colDesktop: { maxWidth: 680, borderLeftWidth: 1, borderRightWidth: 1, borderColor: colors.line },
   bar: { paddingHorizontal: 16, paddingVertical: 8 },
   wrap: { paddingHorizontal: 20, paddingBottom: 24 },
   label: { fontSize: 11.5, fontWeight: weight.bold as '700', color: colors.sub },

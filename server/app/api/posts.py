@@ -14,7 +14,7 @@ from sqlalchemy.orm import joinedload
 
 from ..auth import current_user_optional, login_required
 from ..extensions import db
-from ..models import Block, Comment, PollOption, Post, Vote
+from ..models import Block, Comment, PollOption, Post, PostLike, Vote
 from ..models.enums import POLL_SIDES, POST_CATEGORIES
 from .serializers import post_dict
 
@@ -28,10 +28,17 @@ def list_posts():
     category = request.args.get("category")
     cursor = request.args.get("cursor", type=int)
     limit = min(request.args.get("limit", default=20, type=int), 50)
+    search = (request.args.get("q") or "").strip()
 
     q = select(Post).where(Post.is_blinded.is_(False))
     if category and category != "all":
         q = q.where(Post.category == category)
+    else:
+        # 텍스트 피드/전체에서는 인증·사진(photo) 게시판 글 제외 (앨범 전용)
+        q = q.where(Post.category != "photo")
+    if search:
+        like = f"%{search}%"
+        q = q.where(Post.title.ilike(like) | Post.body.ilike(like))
     if cursor:
         q = q.where(Post.id < cursor)
     if user:
@@ -65,11 +72,14 @@ def create_post():
     title = (data.get("title") or "").strip()
     body = (data.get("body") or "").strip() or None
     is_poll = bool(data.get("is_poll"))
+    image_url = (data.get("image_url") or "").strip() or None
 
     if category not in POST_CATEGORIES:
         return jsonify({"error": "invalid_category"}), 400
     if not title:
         return jsonify({"error": "title_required"}), 400
+    if category == "photo" and not image_url:
+        return jsonify({"error": "image_required"}), 400
 
     post = Post(
         user_id=g.user.id,
@@ -77,6 +87,7 @@ def create_post():
         title=title,
         body=body,
         is_poll=is_poll,
+        image_url=image_url,
         author_status=g.user.relationship_status,  # 작성 시점 스냅샷
     )
     db.session.add(post)
@@ -108,11 +119,15 @@ def get_post(post_id: int):
     db.session.commit()
 
     my_vote = None
+    liked = False
     if user:
         my_vote = db.session.scalar(
             select(Vote.option_side).where(Vote.post_id == post_id, Vote.user_id == user.id)
         )
-    return jsonify(post_dict(post, my_vote))
+        liked = db.session.scalar(
+            select(PostLike.id).where(PostLike.post_id == post_id, PostLike.user_id == user.id)
+        ) is not None
+    return jsonify(post_dict(post, my_vote, liked))
 
 
 @bp.delete("/posts/<int:post_id>")
@@ -165,9 +180,25 @@ def vote(post_id: int):
 @bp.post("/posts/<int:post_id>/like")
 @login_required
 def like_post(post_id: int):
+    """공감 토글 — 유저당 1회. 이미 눌렀으면 해제(-1), 아니면 공감(+1)."""
     post = db.session.get(Post, post_id)
     if not post:
         return jsonify({"error": "not_found"}), 404
-    post.like_count += 1
-    db.session.commit()
-    return jsonify({"like_count": post.like_count})
+
+    existing = db.session.scalar(
+        select(PostLike).where(PostLike.post_id == post_id, PostLike.user_id == g.user.id)
+    )
+    if existing:
+        db.session.delete(existing)
+        post.like_count = max(0, post.like_count - 1)
+        liked = False
+    else:
+        db.session.add(PostLike(post_id=post_id, user_id=g.user.id))
+        post.like_count += 1
+        liked = True
+    try:
+        db.session.commit()
+    except IntegrityError:  # 동시 중복 방지
+        db.session.rollback()
+        liked = True
+    return jsonify({"like_count": post.like_count, "liked": liked})

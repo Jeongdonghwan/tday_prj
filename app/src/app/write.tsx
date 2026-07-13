@@ -10,19 +10,22 @@ import { useAuth } from '@/auth/AuthContext';
 import { FilterRow } from '@/components/FilterRow';
 import { Icon } from '@/components/Icon';
 import { StatusChip } from '@/components/StatusChip';
+import { useIsDesktop } from '@/hooks/useResponsive';
+import { QUICK_ITEMS } from '@/quickmenu';
 import { colors, radius, weight, type PostCategory } from '@/theme';
 
-const WRITE_CATEGORIES = [
-  { key: 'love', label: '연애' },
-  { key: 'marriage', label: '결혼·부부' },
-  { key: 'counsel', label: '고민상담' },
-  { key: 'free', label: '자유' },
-];
+// 홈 퀵메뉴와 동일한 게시판 라벨(전체·테스트 제외). 각 라벨은 서버 카테고리 4종에 매핑.
+const WRITE_CATEGORIES = QUICK_ITEMS.flatMap((q) =>
+  q.kind === 'community' && q.category !== 'all'
+    ? [{ key: q.key, label: q.label, category: q.category }]
+    : [],
+);
 
 export default function WriteScreen() {
   const router = useRouter();
   const { user, token } = useAuth();
-  const [cat, setCat] = useState('love');
+  const isDesktop = useIsDesktop();
+  const [cat, setCat] = useState(WRITE_CATEGORIES[0].key);
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [poll, setPoll] = useState(false);
@@ -36,11 +39,13 @@ export default function WriteScreen() {
 
   async function onSubmit() {
     if (!canPost || !token) return;
+    const selectedCategory = (WRITE_CATEGORIES.find((c) => c.key === cat) ?? WRITE_CATEGORIES[0])
+      .category as PostCategory;
     setSubmitting(true);
     try {
       await createPost(
         {
-          category: cat as PostCategory,
+          category: selectedCategory,
           title: title.trim(),
           body: body.trim() || undefined,
           is_poll: poll,
@@ -79,7 +84,8 @@ export default function WriteScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[styles.safe, isDesktop && styles.safeDesktop]}>
+     <View style={[styles.col, isDesktop && styles.colDesktop]}>
       <View style={styles.bar}>
         <Pressable onPress={() => router.back()} hitSlop={8}>
           <Text style={styles.cancel}>취소</Text>
@@ -150,12 +156,16 @@ export default function WriteScreen() {
           </View>
         )}
       </ScrollView>
+     </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
+  safeDesktop: { alignItems: 'center' },
+  col: { flex: 1, width: '100%' },
+  colDesktop: { maxWidth: 680, borderLeftWidth: 1, borderRightWidth: 1, borderColor: colors.line },
   bar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 18, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.line },
   cancel: { fontSize: 14, color: colors.sub, fontWeight: weight.semibold as '600' },
   barTitle: { fontSize: 15, fontWeight: weight.extrabold as '800', color: colors.ink },

@@ -45,6 +45,11 @@ function RootNavigator() {
       <Stack.Screen name="calendar" />
       <Stack.Screen name="tests" />
       <Stack.Screen name="daily" />
+      <Stack.Screen name="notifications" />
+      <Stack.Screen name="search" />
+      <Stack.Screen name="my-activity" />
+      <Stack.Screen name="photos/index" />
+      <Stack.Screen name="photos/new" options={{ presentation: 'modal' }} />
     </Stack>
   );
 }

@@ -8,11 +8,13 @@ import { getIssueArchive, type IssueArchiveItem } from '@/api/issues';
 import { useAuth } from '@/auth/AuthContext';
 import { AppBar } from '@/components/AppBar';
 import { IssueCard, issueThumb } from '@/components/IssueCard';
+import { useIsDesktop } from '@/hooks/useResponsive';
 import { colors, weight } from '@/theme';
 
 export default function IssuesScreen() {
   const { token } = useAuth();
   const router = useRouter();
+  const isDesktop = useIsDesktop();
   const [archive, setArchive] = useState<IssueArchiveItem[]>([]);
 
   const load = useCallback(async () => {
@@ -32,7 +34,7 @@ export default function IssuesScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <AppBar title="연애이슈" />
+      {!isDesktop && <AppBar title="연애이슈" />}
       <ScrollView style={styles.body} contentContainerStyle={{ paddingTop: 4, paddingBottom: 28 }}>
         <IssueCard />
 

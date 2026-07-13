@@ -9,6 +9,7 @@ import { useAuth } from '@/auth/AuthContext';
 import { Avatar } from '@/components/Avatar';
 import { BrandLogo } from '@/components/BrandLogo';
 import { Icon } from '@/components/Icon';
+import { NotificationBell } from '@/components/NotificationBell';
 import { RightRail } from '@/components/web/RightRail';
 import { colors, weight } from '@/theme';
 
@@ -48,12 +49,12 @@ function TopGnb() {
           <GnbMenu />
         </View>
         <View style={styles.gnbRight}>
-          <Pressable hitSlop={8} style={styles.iconBtn}>
+          <Pressable hitSlop={8} style={styles.iconBtn} onPress={() => router.push('/search')}>
             <Icon name="search" size={22} color={colors.ink} strokeWidth={1.9} />
           </Pressable>
-          <Pressable hitSlop={8} style={styles.iconBtn}>
-            <Icon name="bell" size={22} color={colors.ink} strokeWidth={1.9} />
-          </Pressable>
+          <View style={styles.iconBtn}>
+            <NotificationBell />
+          </View>
           <Pressable style={styles.writeBtn} onPress={() => router.push('/write')}>
             <Icon name="plus" size={18} color="#fff" strokeWidth={2.2} />
             <Text style={styles.writeText}>글쓰기</Text>
@@ -73,10 +74,11 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
       <TopGnb />
       <View style={styles.body}>
         <View style={styles.columns}>
-          <View style={styles.center}>{children}</View>
+          {/* 좌: 위젯 레일, 우: 메인 본문 (좌우 스왑) */}
           <View style={styles.railCol}>
             <RightRail />
           </View>
+          <View style={styles.center}>{children}</View>
         </View>
       </View>
     </View>

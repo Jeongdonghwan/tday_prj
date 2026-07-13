@@ -20,6 +20,11 @@ export const colors = {
   // 본문 보조 톤 (목업에서 등장)
   body: '#34373D',
   bodySoft: '#5C616A',
+
+  // 투표 결과바 색 총량 규제 (투표 카드 프레젠테이션 개편)
+  neutralBar: '#E4E7EC', // 결과바 열세/동률 세그먼트 (뉴트럴 그레이)
+  caption: '#B9BEC6', // "투표 · n명 참여" 캡션
+  statusText: '#868C95', // 닉네임 옆 "· 커플" 상태 텍스트
 } as const;
 
 /** 연애 상태 → 칩 테마 매핑 (커플=rose / 돌싱=blue / 유부=navy) */
@@ -31,12 +36,15 @@ export const statusTheme = {
 
 export type RelationshipStatus = keyof typeof statusTheme;
 
-/** 글 카테고리 라벨 (스펙 §6 enum ↔ 한글) */
+/** 글 카테고리 라벨 (게시판 개편, 서버 enum ↔ 한글) */
 export const categoryLabel = {
   love: '연애',
-  marriage: '결혼·부부',
-  counsel: '고민상담',
+  dating: '썸·소개팅',
+  marriage: '결혼·동거',
+  counsel: '인간관계',
+  daily: '일상잡담',
   free: '자유',
+  photo: '인증·사진',
 } as const;
 
 export type PostCategory = keyof typeof categoryLabel;

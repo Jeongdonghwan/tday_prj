@@ -33,7 +33,9 @@ export type ApiPost = {
   created_at: string | null;
   view_count: number;
   like_count: number;
+  liked?: boolean;
   comment_count: number;
+  image_url?: string | null;
   poll?: ApiPoll;
 };
 
@@ -73,15 +75,18 @@ export function toFeedPost(p: ApiPost): FeedPost {
     viewCount: p.view_count,
     poll: p.poll ? { aLabel: p.poll.a_label, bLabel: p.poll.b_label, aPct: p.poll.a_pct } : undefined,
     voteCount: p.poll ? p.poll.total : undefined,
+    myVote: p.poll ? p.poll.my_vote : undefined,
     likeCount: p.like_count,
     commentCount: p.comment_count,
+    imageUrl: p.image_url ?? undefined,
   };
 }
 
-export function listPosts(params: { category?: string; cursor?: number | null; token?: Tok }) {
+export function listPosts(params: { category?: string; cursor?: number | null; q?: string; token?: Tok }) {
   const q = new URLSearchParams();
   if (params.category && params.category !== 'all') q.set('category', params.category);
   if (params.cursor) q.set('cursor', String(params.cursor));
+  if (params.q?.trim()) q.set('q', params.q.trim());
   const qs = q.toString();
   return apiRequest<{ items: ApiPost[]; next_cursor: number | null }>(`/posts${qs ? `?${qs}` : ''}`, {
     token: params.token,
@@ -98,6 +103,7 @@ export type CreatePostBody = {
   body?: string;
   is_poll?: boolean;
   poll?: { a: string; b: string };
+  image_url?: string;
 };
 
 export function createPost(body: CreatePostBody, token: string) {
@@ -109,7 +115,7 @@ export function votePost(id: number | string, side: 'A' | 'B', token: string) {
 }
 
 export function likePost(id: number | string, token: string) {
-  return apiRequest<{ like_count: number }>(`/posts/${id}/like`, { method: 'POST', token });
+  return apiRequest<{ like_count: number; liked: boolean }>(`/posts/${id}/like`, { method: 'POST', token });
 }
 
 export function listComments(id: number | string, token?: Tok) {

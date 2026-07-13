@@ -35,7 +35,7 @@ def _author(entity) -> dict:
     }
 
 
-def post_dict(post, my_vote: str | None = None) -> dict:
+def post_dict(post, my_vote: str | None = None, liked: bool = False) -> dict:
     data = {
         "id": post.id,
         "category": post.category,
@@ -48,7 +48,9 @@ def post_dict(post, my_vote: str | None = None) -> dict:
         "created_at": post.created_at.isoformat() if post.created_at else None,
         "view_count": post.view_count,
         "like_count": post.like_count,
+        "liked": liked,
         "comment_count": post.comment_count,
+        "image_url": post.image_url,
     }
     if post.is_poll:
         opts = {o.side: o for o in post.options}

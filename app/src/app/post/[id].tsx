@@ -12,6 +12,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -29,13 +30,16 @@ import {
 import { useAuth } from '@/auth/AuthContext';
 import { Avatar } from '@/components/Avatar';
 import { Icon } from '@/components/Icon';
+import { PollResultBar } from '@/components/PollResultBar';
 import { StatusChip } from '@/components/StatusChip';
-import { colors, radius, weight } from '@/theme';
+import { useIsDesktop } from '@/hooks/useResponsive';
+import { colors, radius, statusTheme, weight } from '@/theme';
 
 export default function PostDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { token } = useAuth();
+  const isDesktop = useIsDesktop();
 
   const [post, setPost] = useState<ApiPost | null>(null);
   const [comments, setComments] = useState<ApiComment[]>([]);
@@ -73,8 +77,8 @@ export default function PostDetail() {
   async function onLike() {
     if (!token) return;
     try {
-      const { like_count } = await likePost(id, token);
-      setPost((p) => (p ? { ...p, like_count } : p));
+      const { like_count, liked } = await likePost(id, token);
+      setPost((p) => (p ? { ...p, like_count, liked } : p));
     } catch {
       /* noop */
     }
@@ -150,8 +154,9 @@ export default function PostDetail() {
   const voted = post.poll?.my_vote != null;
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <DetailBar onBack={() => router.back()} onLike={onLike} onMore={onMore} />
+    <SafeAreaView style={[styles.safe, isDesktop && styles.safeDesktop]} edges={['top']}>
+     <View style={[styles.col, isDesktop && styles.colDesktop]}>
+      <DetailBar onBack={() => router.back()} onLike={onLike} onMore={onMore} liked={post.liked} likeCount={post.like_count} />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -161,12 +166,12 @@ export default function PostDetail() {
           <Text style={styles.cat}>{post.category_label}</Text>
           <Text style={styles.title}>{post.title}</Text>
           <View style={styles.author}>
-            <StatusChip status={post.author.status} />
             <Text style={styles.authorText}>
-              {post.author.nickname} · {post.time_text} · 조회 {post.view_count.toLocaleString()}
+              <Text style={styles.authorName}>{post.author.nickname}</Text> · {statusTheme[post.author.status].label} · {post.time_text} · 조회 {post.view_count.toLocaleString()}
             </Text>
           </View>
 
+          {post.image_url ? <Image source={{ uri: post.image_url }} style={styles.photo} contentFit="cover" /> : null}
           {post.body ? <Text style={styles.text}>{post.body}</Text> : <View style={{ height: 16 }} />}
 
           {post.poll && (
@@ -184,26 +189,13 @@ export default function PostDetail() {
                   </View>
                 </>
               ) : (
-                <>
-                  <View style={styles.vbtns}>
-                    <ResultCard
-                      label={post.poll.a_label}
-                      pct={post.poll.a_pct}
-                      tone={colors.rose}
-                      chosen={post.poll.my_vote === 'A'}
-                    />
-                    <ResultCard
-                      label={post.poll.b_label}
-                      pct={100 - post.poll.a_pct}
-                      tone={colors.blue}
-                      chosen={post.poll.my_vote === 'B'}
-                    />
-                  </View>
-                  <Text style={styles.vtotal}>
-                    총 {post.poll.total.toLocaleString()}명 참여 · 내 선택:{' '}
-                    {post.poll.my_vote === 'A' ? post.poll.a_label : post.poll.b_label}
-                  </Text>
-                </>
+                <PollResultBar
+                  aLabel={post.poll.a_label}
+                  bLabel={post.poll.b_label}
+                  aPct={post.poll.a_pct}
+                  total={post.poll.total}
+                  myVote={post.poll.my_vote}
+                />
               )}
             </>
           )}
@@ -233,34 +225,40 @@ export default function PostDetail() {
           </Pressable>
         </View>
       </KeyboardAvoidingView>
+     </View>
     </SafeAreaView>
   );
 }
 
-function DetailBar({ onBack, onLike, onMore }: { onBack: () => void; onLike: () => void; onMore: () => void }) {
+function DetailBar({
+  onBack,
+  onLike,
+  onMore,
+  liked = false,
+  likeCount,
+}: {
+  onBack: () => void;
+  onLike: () => void;
+  onMore: () => void;
+  liked?: boolean;
+  likeCount?: number;
+}) {
   return (
     <View style={styles.bar}>
       <Pressable onPress={onBack} hitSlop={8}>
         <Icon name="back" size={24} color={colors.ink} strokeWidth={1.9} />
       </Pressable>
       <View style={styles.barRight}>
-        <Pressable onPress={onLike} hitSlop={8}>
-          <Icon name="heart" size={22} color={colors.ink} />
+        <Pressable onPress={onLike} hitSlop={8} style={styles.likeBtn}>
+          <Icon name={liked ? 'heartFill' : 'heart'} size={22} color={liked ? colors.rose : colors.ink} />
+          {typeof likeCount === 'number' && (
+            <Text style={[styles.likeCount, liked && { color: colors.rose }]}>{likeCount}</Text>
+          )}
         </Pressable>
         <Pressable onPress={onMore} hitSlop={8}>
           <Icon name="more" size={22} color={colors.ink} />
         </Pressable>
       </View>
-    </View>
-  );
-}
-
-function ResultCard({ label, pct, tone, chosen }: { label: string; pct: number; tone: string; chosen: boolean }) {
-  return (
-    <View style={[styles.resultCard, chosen && { borderColor: tone, backgroundColor: tone + '14' }]}>
-      <Text style={[styles.resultLabel, { color: tone }]}>{label}</Text>
-      <Text style={[styles.resultPct, { color: tone }]}>{pct}%</Text>
-      {chosen && <Text style={[styles.resultMine, { color: tone }]}>내 선택</Text>}
     </View>
   );
 }
@@ -299,23 +297,25 @@ function CommentItem({ comment }: { comment: ApiComment }) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
+  safeDesktop: { alignItems: 'center' },
+  col: { flex: 1, width: '100%' },
+  colDesktop: { maxWidth: 680, borderLeftWidth: 1, borderRightWidth: 1, borderColor: colors.line },
   bar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 8 },
-  barRight: { flexDirection: 'row', gap: 16 },
+  barRight: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  likeBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  likeCount: { fontSize: 13, fontWeight: weight.bold as '700', color: colors.ink },
   wrap: { paddingHorizontal: 20, paddingBottom: 24 },
   cat: { fontSize: 12, fontWeight: weight.bold as '700', color: colors.rose },
   title: { fontSize: 20, fontWeight: weight.extrabold as '800', color: colors.ink, lineHeight: 27, letterSpacing: -0.4, marginTop: 9, marginBottom: 14 },
   author: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: colors.line },
   authorText: { fontSize: 12, color: colors.sub },
+  authorName: { fontSize: 12, color: colors.ink, fontWeight: weight.semibold as '600' },
+  photo: { width: '100%', aspectRatio: 1, borderRadius: 12, backgroundColor: colors.soft, marginTop: 16 },
   text: { fontSize: 15, lineHeight: 24, color: colors.body, marginTop: 16, marginBottom: 22 },
   vquestion: { fontSize: 13, fontWeight: weight.bold as '700', color: colors.sub, textAlign: 'center', marginBottom: 12 },
   vbtns: { flexDirection: 'row', gap: 10 },
   choiceBtn: { flex: 1, borderWidth: 1.5, borderColor: colors.line, borderRadius: radius.card, paddingVertical: 22, paddingHorizontal: 12, alignItems: 'center' },
   choiceText: { fontSize: 14, fontWeight: weight.bold as '700' },
-  resultCard: { flex: 1, borderWidth: 1.5, borderColor: colors.line, borderRadius: radius.card, paddingVertical: 18, paddingHorizontal: 12, alignItems: 'center' },
-  resultLabel: { fontSize: 12, fontWeight: weight.bold as '700', marginBottom: 8, textAlign: 'center' },
-  resultPct: { fontSize: 26, fontWeight: weight.extrabold as '800', letterSpacing: -0.4 },
-  resultMine: { fontSize: 11, fontWeight: weight.bold as '700', marginTop: 4 },
-  vtotal: { textAlign: 'center', fontSize: 12, color: colors.sub, marginTop: 12 },
   cmthead: { fontSize: 14, fontWeight: weight.extrabold as '800', color: colors.ink, marginTop: 24, marginBottom: 4 },
   noComment: { fontSize: 13, color: colors.sub2, paddingVertical: 18, textAlign: 'center' },
   cmt: { flexDirection: 'row', gap: 10, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: colors.line },

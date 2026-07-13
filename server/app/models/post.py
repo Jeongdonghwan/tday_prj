@@ -26,6 +26,7 @@ class Post(db.Model):
     title = db.Column(String(120), nullable=False)
     body = db.Column(Text, nullable=True)
     is_poll = db.Column(Boolean, nullable=False, default=False)  # 투표글/일반글 구분
+    image_url = db.Column(String(300), nullable=True)  # 인증·사진 게시판 이미지
     # 작성 시점 상태 스냅샷 (나중에 바꿔도 과거 글은 유지)
     author_status = db.Column(Enum(*RELATIONSHIP_STATUSES, name="author_status_post"), nullable=False)
     view_count = db.Column(Integer, nullable=False, default=0)
@@ -66,6 +67,21 @@ class Vote(db.Model):
     # 중복투표는 DB 레벨에서 차단 (스펙 못박기)
     __table_args__ = (
         UniqueConstraint("post_id", "user_id", name="uq_vote"),
+    )
+
+
+class PostLike(db.Model):
+    """공감(좋아요) — 유저당 1회 토글. like_count 는 posts 에 캐시."""
+
+    __tablename__ = "post_likes"
+
+    id = db.Column(BigInteger, primary_key=True, autoincrement=True)
+    post_id = db.Column(BigInteger, db.ForeignKey("posts.id"), nullable=False)
+    user_id = db.Column(BigInteger, db.ForeignKey("users.id"), nullable=False)
+    created_at = db.Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    __table_args__ = (
+        UniqueConstraint("post_id", "user_id", name="uq_post_like"),
     )
 
 

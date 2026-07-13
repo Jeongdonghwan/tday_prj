@@ -1,6 +1,6 @@
 /** 커뮤니티 탭 — 오늘연애 피드 (IA 개편: 기존 홈 피드를 별도 탭으로 분리, 헤더 카드는 홈/이슈탭으로 이동). */
 import { useCallback, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -9,19 +9,16 @@ import { useAuth } from '@/auth/AuthContext';
 import { AppBar } from '@/components/AppBar';
 import { FilterRow } from '@/components/FilterRow';
 import { Icon } from '@/components/Icon';
+import { NotificationBell } from '@/components/NotificationBell';
 import { PostCard, type FeedPost } from '@/components/PostCard';
 import { CATEGORY_FILTERS } from '@/data/placeholders';
+import { useIsDesktop } from '@/hooks/useResponsive';
 import { colors, weight } from '@/theme';
-
-// 목업 썸네일 placeholder (DECISIONS #5): 투표글=없음, id%3==0 일반글=이미지글, 그 외=텍스트글.
-const mockThumb = (p: FeedPost): string | undefined => {
-  if (p.poll) return undefined;
-  return p.id % 3 === 0 ? `https://picsum.photos/seed/todaylove${p.id}/200/200` : undefined;
-};
 
 export default function CommunityFeed() {
   const router = useRouter();
   const { token } = useAuth();
+  const isDesktop = useIsDesktop();
   // 퀵메뉴 등에서 category 파라미터로 진입 가능
   const params = useLocalSearchParams<{ category?: string }>();
   const [filter, setFilter] = useState(params.category ?? 'all');
@@ -37,7 +34,8 @@ export default function CommunityFeed() {
       if (reset) setLoading(true);
       try {
         const res = await listPosts({ category: filter, cursor: reset ? null : cursor, token });
-        const mapped = res.items.map(toFeedPost).map((p) => ({ ...p, imageUrl: mockThumb(p) }));
+        // 실제 이미지 첨부 기능 도입 전까지 목업 썸네일 미부착 (첨부 안 한 글이 이미지글로 보이던 문제)
+        const mapped = res.items.map(toFeedPost);
         setPosts((prev) => (reset ? mapped : [...prev, ...mapped]));
         setCursor(res.next_cursor);
       } catch {
@@ -71,15 +69,19 @@ export default function CommunityFeed() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <AppBar
-        title="커뮤니티"
-        right={
-          <>
-            <Icon name="search" size={22} color={colors.ink} />
-            <Icon name="bell" size={22} color={colors.ink} />
-          </>
-        }
-      />
+      {!isDesktop && (
+        <AppBar
+          title="커뮤니티"
+          right={
+            <>
+              <Pressable onPress={() => router.push('/search')} hitSlop={8}>
+                <Icon name="search" size={22} color={colors.ink} />
+              </Pressable>
+              <NotificationBell />
+            </>
+          }
+        />
+      )}
       <FilterRow items={CATEGORY_FILTERS} value={filter} onChange={setFilter} />
       <FlatList
         style={styles.list}

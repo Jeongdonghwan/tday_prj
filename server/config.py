@@ -48,6 +48,10 @@ class Config:
     WEB_BASE_URL = os.getenv("WEB_BASE_URL", "http://127.0.0.1:5050")
     APP_INSTALL_URL = os.getenv("APP_INSTALL_URL", "#")
 
+    # 인증·사진 업로드 (로컬 디스크). 운영은 nginx 정적 서빙 권장.
+    UPLOAD_DIR = os.getenv("UPLOAD_DIR", os.path.join(os.path.dirname(__file__), "uploads"))
+    UPLOAD_MAX_BYTES = int(os.getenv("UPLOAD_MAX_BYTES", str(8 * 1024 * 1024)))  # 8MB
+
 
 class DevelopmentConfig(Config):
     DEBUG = True

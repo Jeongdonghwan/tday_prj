@@ -97,7 +97,7 @@ export default function CalendarScreen() {
       setAdding(false);
       await load();
     } catch {
-      Alert.alert('일정', '추가에 실패했어요. 커플 연결이 필요할 수 있어요.');
+      Alert.alert('일정', '추가에 실패했어요. 잠시 후 다시 시도해주세요.');
     }
   }
 

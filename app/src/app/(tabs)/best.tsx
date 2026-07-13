@@ -11,6 +11,7 @@ import { AppBar } from '@/components/AppBar';
 import { FilterRow } from '@/components/FilterRow';
 import { Icon } from '@/components/Icon';
 import { CATEGORY_FILTERS } from '@/data/placeholders';
+import { useIsDesktop } from '@/hooks/useResponsive';
 import { colors, radius, weight } from '@/theme';
 
 const PERIODS: { key: BestPeriod; label: string }[] = [
@@ -22,6 +23,7 @@ const PERIODS: { key: BestPeriod; label: string }[] = [
 export default function BestScreen() {
   const router = useRouter();
   const { token } = useAuth();
+  const isDesktop = useIsDesktop();
   const [cat, setCat] = useState('all');
   const [period, setPeriod] = useState<BestPeriod>('realtime');
   const [posts, setPosts] = useState<ApiPost[]>([]);
@@ -50,7 +52,17 @@ export default function BestScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <AppBar title="BEST" brand right={<Icon name="search" size={22} color={colors.ink} />} />
+      {!isDesktop && (
+        <AppBar
+          title="BEST"
+          brand
+          right={
+            <Pressable onPress={() => router.push('/search')} hitSlop={8}>
+              <Icon name="search" size={22} color={colors.ink} />
+            </Pressable>
+          }
+        />
+      )}
       <FilterRow items={CATEGORY_FILTERS} value={cat} onChange={setCat} />
       <View style={styles.period}>
         {PERIODS.map((p) => {
