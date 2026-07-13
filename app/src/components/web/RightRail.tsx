@@ -10,6 +10,7 @@ import { useFocusEffect, usePathname, useRouter } from 'expo-router';
 import { getTrending, type TrendingItem } from '@/api/home';
 import { getIssueArchive, type IssueArchiveItem } from '@/api/issues';
 import { useAuth } from '@/auth/AuthContext';
+import { AdSlot } from '@/components/AdSlot';
 import { DailyPollCard } from '@/components/DailyPollCard';
 import { colors, weight } from '@/theme';
 
@@ -82,11 +83,9 @@ export function RightRail() {
         </View>
       )}
 
-      {/* 광고 배너 placeholder (300×100, 점선) */}
+      {/* 광고 슬롯 (활성 없으면 아무것도 안 그림) */}
       <View style={styles.adWrap}>
-        <View style={styles.ad}>
-          <Text style={styles.adText}>AD</Text>
-        </View>
+        <AdSlot position="web_rail" />
       </View>
     </View>
   );
@@ -110,16 +109,4 @@ const styles = StyleSheet.create({
   issueRow: { paddingVertical: 6, gap: 2 },
   issueDate: { fontSize: 10.5, color: colors.sub2, fontWeight: weight.semibold as '600' },
   adWrap: { alignItems: 'center' },
-  ad: {
-    width: 280,
-    height: 100,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: colors.sub2,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.soft,
-  },
-  adText: { fontSize: 12, fontWeight: weight.bold as '700', color: colors.sub2, letterSpacing: 1 },
 });

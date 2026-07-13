@@ -2,16 +2,19 @@
  * 데스크톱(≥1240px) 3영역 셸 (Task 4-1): 상단 고정 GNB + 중앙 본문(max 600) + 우측 레일(280).
  * 하단 탭바·FAB 는 데스크톱에서 숨김((tabs)/_layout 에서 분기). 색·수치는 기존 토큰 재사용.
  */
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { usePathname, useRouter } from 'expo-router';
 
 import { useAuth } from '@/auth/AuthContext';
+import { AdSlot } from '@/components/AdSlot';
 import { Avatar } from '@/components/Avatar';
 import { BrandLogo } from '@/components/BrandLogo';
 import { Icon } from '@/components/Icon';
 import { NotificationBell } from '@/components/NotificationBell';
 import { RightRail } from '@/components/web/RightRail';
 import { colors, weight } from '@/theme';
+
+const WING_MIN_WIDTH = 1460;
 
 const MENU = [
   { label: '홈', path: '/' },
@@ -69,9 +72,22 @@ function TopGnb() {
 }
 
 export function DesktopShell({ children }: { children: React.ReactNode }) {
+  const { width } = useWindowDimensions();
+  const showWings = width >= WING_MIN_WIDTH;
   return (
     <View style={styles.root}>
       <TopGnb />
+      {/* 윙 배너 (1460px+) — 활성 광고 없으면 각각 null */}
+      {showWings && (
+        <>
+          <View style={[styles.wing, styles.wingL]}>
+            <AdSlot position="web_wing_l" />
+          </View>
+          <View style={[styles.wing, styles.wingR]}>
+            <AdSlot position="web_wing_r" />
+          </View>
+        </>
+      )}
       <View style={styles.body}>
         <View style={styles.columns}>
           {/* 좌: 위젯 레일, 우: 메인 본문 (좌우 스왑) */}
@@ -124,6 +140,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   writeText: { color: '#fff', fontSize: 13.5, fontWeight: weight.bold as '700' },
+  wing: { position: 'absolute', top: 80, width: 240, alignItems: 'center', zIndex: 5 },
+  wingL: { left: 24 },
+  wingR: { right: 24 },
   body: { flex: 1, alignItems: 'center' },
   columns: {
     flex: 1,

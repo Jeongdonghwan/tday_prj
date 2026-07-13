@@ -10,6 +10,7 @@ import { AppBar } from '@/components/AppBar';
 import { FilterRow } from '@/components/FilterRow';
 import { Icon } from '@/components/Icon';
 import { NotificationBell } from '@/components/NotificationBell';
+import { AdSlot } from '@/components/AdSlot';
 import { PostCard, type FeedPost } from '@/components/PostCard';
 import { CATEGORY_FILTERS } from '@/data/placeholders';
 import { useIsDesktop } from '@/hooks/useResponsive';
@@ -87,8 +88,12 @@ export default function CommunityFeed() {
         style={styles.list}
         data={posts}
         keyExtractor={(p) => String(p.id)}
-        renderItem={({ item }) => (
-          <PostCard post={item} onPress={() => router.push(`/post/${item.id}`)} />
+        renderItem={({ item, index }) => (
+          <>
+            <PostCard post={item} onPress={() => router.push(`/post/${item.id}`)} />
+            {/* 5번째 글 뒤마다 네이티브 광고 (활성 없으면 null) */}
+            {(index + 1) % 5 === 0 && <AdSlot position="feed_native" />}
+          </>
         )}
         contentContainerStyle={posts.length === 0 ? styles.empty : { paddingTop: 4, paddingBottom: 24 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.rose} />}

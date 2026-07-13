@@ -11,6 +11,7 @@ from .issue import Issue, IssueComment, IssueVote
 from .psych import Test, TestAttempt, TestQuestion, TestResult
 from .schedule import Schedule
 from .moderation import Block, Report
+from .ad import AdSlot
 
 __all__ = [
     "User",
@@ -34,4 +35,5 @@ __all__ = [
     "Schedule",
     "Report",
     "Block",
+    "AdSlot",
 ]

@@ -84,6 +84,43 @@
     {% endfor %}
   </table>
 
+  <h2>광고 슬롯</h2>
+  <form method="post" action="{{ url_for('admin.add_ad') }}">
+    <input type="hidden" name="token" value="{{ token }}" />
+    <label>포지션</label>
+    <select name="position">
+      {% for p in ad_positions %}<option value="{{ p }}">{{ p }}</option>{% endfor %}
+    </select>
+    <label>이미지 URL</label><input name="image" required />
+    <label>링크 URL</label><input name="link_url" required />
+    <div class="row">
+      <div><label>시작(YYYY-MM-DDTHH:MM)</label><input name="starts_at" placeholder="비우면 지금" /></div>
+      <div><label>종료(비우면 무기한)</label><input name="ends_at" /></div>
+    </div>
+    <label><input type="checkbox" name="is_active" checked /> 활성</label>
+    <button type="submit">광고 등록</button>
+  </form>
+
+  <h2>광고 목록</h2>
+  <table>
+    <tr><th>포지션</th><th>활성</th><th>노출</th><th>클릭</th><th>링크</th><th></th></tr>
+    {% for a in ads %}
+    <tr>
+      <td>{{ a.position }}</td>
+      <td>{{ '●' if a.is_active else '' }}</td>
+      <td>{{ a.impressions }}</td>
+      <td>{{ a.clicks }}</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ a.link_url }}</td>
+      <td>
+        <form method="post" action="{{ url_for('admin.toggle_ad', ad_id=a.id) }}" style="margin:0">
+          <input type="hidden" name="token" value="{{ token }}" />
+          <button type="submit" style="width:auto;margin:0;padding:6px 10px;font-size:12px">{{ '중지' if a.is_active else '활성' }}</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+
   <h2>회원관리</h2>
   <form method="get" action="{{ url_for('admin.dashboard') }}" style="display:flex;gap:8px;align-items:center">
     <input type="hidden" name="token" value="{{ token }}" />

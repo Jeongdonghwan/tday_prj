@@ -13,7 +13,8 @@ from flask import Blueprint, abort, current_app, redirect, render_template, requ
 from sqlalchemy import func, select
 
 from .extensions import db
-from .models import Comment, DailyPoll, Issue, Post, Test, User, Vote
+from .models import AdSlot, Comment, DailyPoll, Issue, Post, Test, User, Vote
+from .models.enums import AD_POSITIONS
 from .services.daily_poll import create_daily_poll
 from .services.issues import create_issue
 
@@ -83,12 +84,56 @@ def dashboard():
         issues=db.session.query(Issue).order_by(Issue.created_at.desc()).limit(10).all(),
         tests=db.session.query(Test).order_by(Test.created_at.desc()).all(),
         polls=db.session.query(DailyPoll).order_by(DailyPoll.created_at.desc()).limit(10).all(),
+        ads=db.session.query(AdSlot).order_by(AdSlot.created_at.desc()).limit(20).all(),
+        ad_positions=AD_POSITIONS,
         totals=totals,
         signups=signups,
         members=_members(q),
         q=q,
         flash=request.args.get("flash"),
     )
+
+
+def _parse_dt(s):
+    s = (s or "").strip()
+    if not s:
+        return None
+    for fmt in ("%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(s, fmt)
+        except ValueError:
+            continue
+    return None
+
+
+@bp.post("/admin/ads")
+def add_ad():
+    token = _check_token()
+    f = request.form
+    if f.get("position") not in AD_POSITIONS or not f.get("image") or not f.get("link_url"):
+        return redirect(url_for("admin.dashboard", token=token, flash="포지션·이미지·링크는 필수예요."))
+    db.session.add(AdSlot(
+        position=f["position"],
+        image=f["image"].strip(),
+        link_url=f["link_url"].strip(),
+        starts_at=_parse_dt(f.get("starts_at")) or datetime.utcnow(),
+        ends_at=_parse_dt(f.get("ends_at")),
+        is_active=bool(f.get("is_active")),
+        impressions=0,
+        clicks=0,
+    ))
+    db.session.commit()
+    return redirect(url_for("admin.dashboard", token=token, flash="광고를 등록했어요."))
+
+
+@bp.post("/admin/ads/<int:ad_id>/toggle")
+def toggle_ad(ad_id):
+    token = _check_token()
+    ad = db.session.get(AdSlot, ad_id)
+    if ad:
+        ad.is_active = not ad.is_active
+        db.session.commit()
+    return redirect(url_for("admin.dashboard", token=token, flash="광고 상태를 변경했어요."))
 
 
 @bp.post("/admin/issues")

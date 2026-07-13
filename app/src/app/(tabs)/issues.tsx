@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getIssueArchive, type IssueArchiveItem } from '@/api/issues';
 import { useAuth } from '@/auth/AuthContext';
+import { AdSlot } from '@/components/AdSlot';
 import { AppBar } from '@/components/AppBar';
 import { IssueCard, issueThumb } from '@/components/IssueCard';
 import { useIsDesktop } from '@/hooks/useResponsive';
@@ -37,6 +38,7 @@ export default function IssuesScreen() {
       {!isDesktop && <AppBar title="연애이슈" />}
       <ScrollView style={styles.body} contentContainerStyle={{ paddingTop: 4, paddingBottom: 28 }}>
         <IssueCard />
+        <AdSlot position="issue_bottom" />
 
         {archive.length > 0 && (
           <View style={styles.archive}>
