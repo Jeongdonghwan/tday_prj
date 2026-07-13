@@ -5,10 +5,13 @@
 {% block og_desc %}{{ result.catchphrase or test.title }}{% endblock %}
 {% block og_image %}{{ url_for('static', filename=avatar, _external=True) }}{% endblock %}
 {% block content %}
-  <div class="result">
-    <img class="result-avatar" src="{{ url_for('static', filename=avatar) }}" alt="{{ result.title }}" />
+  <div class="result" style="--accent:{{ th.theme }}">
+    <div class="result-hero" style="background:linear-gradient(160deg,{{ th.theme }}26,{{ th.theme }}0d)">
+      <div class="result-emoji">{{ th.emoji }}</div>
+      <img class="result-avatar" src="{{ url_for('static', filename=avatar) }}" alt="{{ result.title }}" />
+    </div>
     <h1 class="result-title">{{ result.title }}</h1>
-    {% if result.catchphrase %}<p class="result-catch">{{ result.catchphrase }}</p>{% endif %}
+    {% if result.catchphrase %}<p class="result-catch" style="color:{{ th.theme }}">{{ result.catchphrase }}</p>{% endif %}
     <p class="result-desc">{{ result.description }}</p>
 
     <div class="match-row">

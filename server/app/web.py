@@ -12,9 +12,14 @@ from flask import Blueprint, abort, current_app, jsonify, render_template, reque
 
 from .extensions import db
 from .models import Test, TestAttempt, TestQuestion, TestResult
+from .seeds.love_tests import DEFAULT_THEME, THEMES
 from .services.psych import score
 
 bp = Blueprint("web", __name__)
+
+
+def _theme(slug):
+    return THEMES.get(slug, DEFAULT_THEME)
 
 
 def _test_or_404(slug):
@@ -27,12 +32,12 @@ def _test_or_404(slug):
 @bp.get("/t")
 def test_list():
     tests = db.session.query(Test).filter_by(is_active=True).order_by(Test.created_at.desc()).all()
-    return render_template("t_list.html", tests=tests)
+    return render_template("t_list.html", tests=tests, themes=THEMES, default_theme=DEFAULT_THEME)
 
 
 @bp.get("/t/<slug>")
 def test_intro(slug):
-    return render_template("t_intro.html", test=_test_or_404(slug), ref=request.args.get("ref"))
+    return render_template("t_intro.html", test=_test_or_404(slug), th=_theme(slug), ref=request.args.get("ref"))
 
 
 @bp.get("/t/<slug>/quiz")
@@ -49,7 +54,7 @@ def test_quiz(slug):
         }
         for q in t.questions
     ]
-    return render_template("t_quiz.html", test=t, questions=questions, ref=request.args.get("ref"))
+    return render_template("t_quiz.html", test=t, questions=questions, th=_theme(slug), ref=request.args.get("ref"))
 
 
 @bp.post("/t/<slug>/submit")
@@ -90,6 +95,7 @@ def test_result(slug, code):
         "t_result.html",
         test=t,
         result=result,
+        th=_theme(slug),
         match=by_code.get(result.match_code),
         clash=by_code.get(result.clash_code),
         others=others,

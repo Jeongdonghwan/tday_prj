@@ -1,13 +1,20 @@
 {% extends "base.html" %}
 {% block title %}테스트존 · 오늘연애{% endblock %}
 {% block content %}
-  <div class="brand">오늘연애 테스트존</div>
-  <p class="sub">연애 심리테스트 모음</p>
+  <div class="tz-hero">
+    <div class="tz-hearts">💘 💞 💗</div>
+    <div class="brand">오늘연애 테스트존</div>
+    <p class="sub">오늘의 연애 심리테스트</p>
+  </div>
   {% for t in tests %}
-    <a class="test-card" href="{{ url_for('web.test_intro', slug=t.slug) }}">
-      <div class="test-title">{{ t.title }}</div>
-      {% if t.intro %}<div class="test-intro">{{ t.intro }}</div>{% endif %}
-      <span class="go">시작하기 →</span>
+    {% set th = themes.get(t.slug, default_theme) %}
+    <a class="test-card" href="{{ url_for('web.test_intro', slug=t.slug) }}" style="--accent:{{ th.theme }}">
+      <div class="tc-emoji" style="background:{{ th.theme }}1f">{{ th.emoji }}</div>
+      <div class="tc-body">
+        <div class="test-title">{{ t.title }}</div>
+        {% if t.intro %}<div class="test-intro">{{ t.intro }}</div>{% endif %}
+        <span class="go" style="color:{{ th.theme }}">시작하기 →</span>
+      </div>
     </a>
   {% else %}
     <p class="empty">준비 중인 테스트가 곧 올라와요.</p>

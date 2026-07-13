@@ -117,6 +117,38 @@ def seed_test(text: str):
     return test
 
 
+def create_test_from_data(data: dict):
+    """구조화 데이터(app/seeds/love_tests.py 형식) → DB 등록. slug 중복이면 건너뜀."""
+    from ..models import Test, TestQuestion, TestResult
+
+    if not data.get("slug") or Test.query.filter_by(slug=data["slug"]).first():
+        return None
+    test = Test(
+        slug=data["slug"], title=data["title"], intro=data.get("intro"),
+        tiebreak=",".join(data.get("tiebreak", [])), is_active=True,
+    )
+    db.session.add(test)
+    db.session.flush()
+
+    for i, (q, choices) in enumerate(data["questions"], 1):
+        db.session.add(TestQuestion(
+            test_id=test.id, sort_order=i, question=q,
+            choice1=choices[0][0], choice1_code=choices[0][1],
+            choice2=choices[1][0], choice2_code=choices[1][1],
+            choice3=choices[2][0] if len(choices) > 2 else None,
+            choice3_code=choices[2][1] if len(choices) > 2 else None,
+        ))
+    codes = data["codes"]
+    for code, r in data["results"].items():
+        db.session.add(TestResult(
+            test_id=test.id, code=code, title=r["title"], catchphrase=r.get("catch"),
+            description=r["desc"], match_code=r.get("match"), clash_code=r.get("clash"),
+            avatar_no=codes[code][1],
+        ))
+    db.session.commit()
+    return test
+
+
 def score(answer_codes, valid_codes, tiebreak) -> str | None:
     """유형 집계형: 최다 선택 유형, 동점 시 tiebreak 우선순위."""
     tally = Counter(c for c in answer_codes if c in valid_codes)

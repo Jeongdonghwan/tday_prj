@@ -56,3 +56,7 @@
 - **광고 이미지**: 관리자 입력 **URL**(업로드 아님) — 광고주 소재는 외부 CDN 가정. `impressions`=활성조회 GET 시 +1, `clicks`=클릭 엔드포인트 +1. AdSlot은 포지션별 **모듈 캐시 1회 fetch**(노출/요청 폭주 방지 → 화면당 1노출). 활성 없으면 `null`(placeholder 금지).
 - **광고 배치**: feed_native=커뮤니티 5번째 글마다(단일 활성광고 반복 노출), issue_bottom=연애이슈 오늘카드 아래, web_rail=레일(300×100), web_wing_l/r=`width≥1460`일 때 좌우 절대배치(240×600).
 - **웹 SEO**: 앱은 SPA라 개별 색인 불가 → Flask 서버렌더 공개 페이지 `/p/<id>`(제목·본문·작성자 + OG/canonical, /t 패턴 재사용) + `/sitemap.xml`(비블라인드 글) + `/robots.txt`. 앱 공유 링크로 `WEB_BASE_URL/p/<id>` 사용 가능.
+
+## 심리테스트 확장 + 테스트존 디자인 (신규)
+- **연애 테스트 10종 신규**: 애착유형/데이트스타일/사랑의언어/질투지수/밀당레벨/이별후유형/이상형동물상/커플역할/썸판독기/관계주도권. 구조화 데이터(`app/seeds/love_tests.py`) → `services.psych.create_test_from_data` → `flask seed-love-tests`(idempotent). 결과 일러스트는 기존 12 아바타(avatar_no) 재사용(신규 이미지 에셋 미도입).
+- **테스트존 디자인(연애톤)**: 테스트별 이모지+대표색 테마(`THEMES` by slug). 목록=이모지 타일+색 액센트, 인트로/결과=그라데이션 히어로+이모지, 퀴즈=테마색 진행바. 이미지 생성 의존성 없이 이모지+그라데이션+아바타로 시각화.

@@ -119,6 +119,18 @@ def _register_cli(app: Flask):
         t = seed_test(text)
         click.echo(f"테스트 등록 완료: {t.slug}" if t else "이미 등록된 slug 라 건너뜀.")
 
+    @app.cli.command("seed-love-tests")
+    def seed_love_tests():
+        """연애 심리테스트 10종 시드 (idempotent, slug 중복 건너뜀)."""
+        from .seeds.love_tests import TESTS
+        from .services.psych import create_test_from_data
+
+        n = 0
+        for data in TESTS:
+            if create_test_from_data(data):
+                n += 1
+        click.echo(f"연애 테스트 시드 완료: {n}개 신규 등록 (전체 {len(TESTS)}종).")
+
     @app.cli.command("seed-issue")
     def seed_issue():
         """활성 이슈가 없으면 데모 1건 삽입 (idempotent, DESIGN_UPDATE §5)."""

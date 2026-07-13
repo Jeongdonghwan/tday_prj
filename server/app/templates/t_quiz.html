@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 {% block title %}{{ test.title }} · 진행 중{% endblock %}
 {% block content %}
-  <div class="quiz">
-    <div class="progress"><div class="progress-fill" id="bar"></div></div>
-    <div class="q-count"><span id="cur">1</span> / {{ questions|length }}</div>
+  <div class="quiz" style="--accent:{{ th.theme }}">
+    <div class="q-emoji">{{ th.emoji }}</div>
+    <div class="progress"><div class="progress-fill" id="bar" style="background:{{ th.theme }}"></div></div>
+    <div class="q-count" style="color:{{ th.theme }}"><span id="cur">1</span> / {{ questions|length }}</div>
     <h2 class="q-text" id="qtext"></h2>
     <div class="choices" id="choices"></div>
   </div>

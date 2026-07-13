@@ -1,13 +1,14 @@
 {% extends "base.html" %}
 {% block title %}{{ test.title }} · 오늘연애{% endblock %}
 {% block og_title %}{{ test.title }}{% endblock %}
-{% block og_desc %}{{ test.intro or '12개 질문으로 알아보는 내 연애 스타일' }}{% endblock %}
+{% block og_desc %}{{ test.intro or '오늘연애 연애 심리테스트' }}{% endblock %}
 {% block content %}
   <div class="intro">
-    <div class="badge-new">NEW</div>
+    <div class="intro-emoji" style="background:{{ th.theme }}22">{{ th.emoji }}</div>
+    <div class="badge-new" style="background:{{ th.theme }}1f;color:{{ th.theme }}">NEW</div>
     <h1 class="intro-title">{{ test.title }}</h1>
     <p class="intro-desc">{{ test.intro }}</p>
-    <a class="btn-primary" href="{{ url_for('web.test_quiz', slug=test.slug) }}{% if ref %}?ref={{ ref }}{% endif %}">시작하기</a>
+    <a class="btn-primary" style="background:{{ th.theme }}" href="{{ url_for('web.test_quiz', slug=test.slug) }}{% if ref %}?ref={{ ref }}{% endif %}">시작하기</a>
     <a class="link-muted" href="{{ url_for('web.test_list') }}">다른 테스트 보기</a>
   </div>
 {% endblock %}
