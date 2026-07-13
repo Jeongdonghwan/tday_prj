@@ -1,12 +1,15 @@
 /**
- * 하단 4탭 (홈·BEST·오늘의 질문·MY) + 우하단 플로팅 글쓰기 FAB (스펙 §4).
+ * 하단 5탭 (홈·커뮤니티·연애이슈·BEST·MY) + 커뮤니티 탭 글쓰기 FAB (IA 개편).
  * 커스텀 tabBar 로 목업 디자인(라인 아이콘 + 라벨)을 재현.
+ * 데스크톱(≥1240, 웹)에서는 DesktopShell(상단 GNB+3영역)로 전환 (Task 4-1).
  */
 import { Tabs, usePathname, useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon, type IconName } from '@/components/Icon';
+import { DesktopShell } from '@/components/web/DesktopShell';
+import { useIsDesktop } from '@/hooks/useResponsive';
 import { colors, weight } from '@/theme';
 
 // GNB 5탭 (IA 개편): 홈·커뮤니티·연애이슈·BEST·마이
@@ -68,15 +71,27 @@ function WriteFab() {
 }
 
 export default function TabsLayout() {
+  const isDesktop = useIsDesktop();
+
+  const tabs = (
+    // 데스크톱(≥1240)은 상단 GNB 를 쓰므로 하단 탭바 숨김
+    <Tabs
+      screenOptions={{ headerShown: false }}
+      tabBar={isDesktop ? () => null : (props) => <CustomTabBar {...props} />}>
+      <Tabs.Screen name="index" />
+      <Tabs.Screen name="community" />
+      <Tabs.Screen name="issues" />
+      <Tabs.Screen name="best" />
+      <Tabs.Screen name="my" />
+    </Tabs>
+  );
+
+  // 데스크톱: 3영역 셸로 감싸고 FAB 미노출
+  if (isDesktop) return <DesktopShell>{tabs}</DesktopShell>;
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <Tabs screenOptions={{ headerShown: false }} tabBar={(props) => <CustomTabBar {...props} />}>
-        <Tabs.Screen name="index" />
-        <Tabs.Screen name="community" />
-        <Tabs.Screen name="issues" />
-        <Tabs.Screen name="best" />
-        <Tabs.Screen name="my" />
-      </Tabs>
+      {tabs}
       <WriteFab />
     </View>
   );
