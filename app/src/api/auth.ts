@@ -30,7 +30,7 @@ export function fetchMe(token: string): Promise<Me> {
 }
 
 export function updateMe(
-  body: { relationship_status?: RelationshipStatus; push_token?: string | null; nickname?: string },
+  body: { relationship_status?: RelationshipStatus; push_token?: string | null; nickname?: string; avatar_no?: number },
   token: string,
 ): Promise<Me> {
   return apiRequest<Me>('/me', { method: 'PATCH', body, token });

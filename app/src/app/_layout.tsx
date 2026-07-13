@@ -50,6 +50,7 @@ function RootNavigator() {
       <Stack.Screen name="my-activity" />
       <Stack.Screen name="photos/index" />
       <Stack.Screen name="photos/new" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="profile-edit" />
     </Stack>
   );
 }

@@ -51,3 +51,10 @@ def test_patch_me_rejects_duplicate_nickname(client, register, bearer):
 def test_patch_me_rejects_invalid_status(client, token, bearer):
     r = client.patch("/me", json={"relationship_status": "bogus"}, headers=bearer(token))
     assert r.status_code == 400
+
+
+def test_patch_me_changes_nickname_and_avatar(client, token, bearer):
+    r = client.patch("/me", json={"nickname": "새닉네임", "avatar_no": 7}, headers=bearer(token))
+    assert r.status_code == 200
+    body = r.get_json()
+    assert body["nickname"] == "새닉네임" and body["avatar_no"] == 7

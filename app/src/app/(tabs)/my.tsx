@@ -65,14 +65,24 @@ export default function MyScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      {!isDesktop && <AppBar title="마이" right={<Icon name="settings" size={22} color={colors.ink} />} />}
+      {!isDesktop && (
+        <AppBar
+          title="마이"
+          right={
+            <Pressable onPress={() => router.push('/profile-edit')} hitSlop={8}>
+              <Icon name="settings" size={22} color={colors.ink} />
+            </Pressable>
+          }
+        />
+      )}
       <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
-        <View style={styles.head}>
+        <Pressable style={styles.head} onPress={() => router.push('/profile-edit')}>
           <Avatar avatarNo={user?.avatar_no} size={56} />
           <View style={{ flex: 1 }}>
             <View style={styles.nameRow}>
               <Text style={styles.name}>{nickname}</Text>
               <StatusChip status={status} />
+              <Text style={styles.editHint}>수정 ›</Text>
             </View>
             <Text style={styles.handle}>@{user?.id ?? '-'}</Text>
             {badge && (
@@ -82,7 +92,7 @@ export default function MyScreen() {
               </Pressable>
             )}
           </View>
-        </View>
+        </Pressable>
 
         <Pressable
           style={styles.couple}
@@ -143,6 +153,7 @@ const styles = StyleSheet.create({
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 7 },
   name: { fontSize: 18, fontWeight: weight.extrabold as '800', color: colors.ink, letterSpacing: -0.4 },
   handle: { fontSize: 12.5, color: colors.sub, marginTop: 5 },
+  editHint: { fontSize: 12, color: colors.sub2, fontWeight: weight.semibold as '600', marginLeft: 'auto' },
   badge: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', backgroundColor: colors.roseBg, borderRadius: 999, paddingVertical: 3, paddingRight: 10, paddingLeft: 3, marginTop: 7 },
   badgeText: { fontSize: 11.5, fontWeight: weight.bold as '700', color: colors.rose },
   couple: { marginHorizontal: 20, marginBottom: 18, backgroundColor: colors.roseBg, borderRadius: radius.cardLg, padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },

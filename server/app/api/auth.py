@@ -92,9 +92,18 @@ def update_me():
     if "nickname" in data:
         nick = (data["nickname"] or "").strip()
         if nick:
+            if len(nick) > 30:
+                return jsonify({"error": "nickname_too_long"}), 400
             if db.session.scalar(select(User.id).where(User.nickname == nick, User.id != user.id)):
                 return jsonify({"error": "nickname_taken"}), 409
             user.nickname = nick
+    if "avatar_no" in data:
+        try:
+            n = int(data["avatar_no"])
+        except (TypeError, ValueError):
+            n = 0
+        if 1 <= n <= 12:
+            user.avatar_no = n
 
     db.session.commit()
     return jsonify(_me_payload(user)), 200
