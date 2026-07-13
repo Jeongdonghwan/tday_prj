@@ -9,6 +9,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 
 import { AuthProvider, useAuth } from '@/auth/AuthContext';
+import { usePushRouting } from '@/push/usePushRouting';
 
 function useProtectedRoute() {
   const { ready, token } = useAuth();
@@ -29,6 +30,7 @@ function useProtectedRoute() {
 function RootNavigator() {
   const { ready } = useAuth();
   useProtectedRoute();
+  usePushRouting();
 
   if (!ready) return null; // 스플래시 유지 구간 (토큰 복원 중)
 
