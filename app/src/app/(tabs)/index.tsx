@@ -4,6 +4,8 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Image } from 'react-native';
+
 import { bestPosts } from '@/api/best';
 import { getTrending, type TrendingItem } from '@/api/home';
 import { getIssueArchive, getTodayIssue } from '@/api/issues';
@@ -11,6 +13,7 @@ import { useAuth } from '@/auth/AuthContext';
 import { BrandLogo } from '@/components/BrandLogo';
 import { DailyPollCard } from '@/components/DailyPollCard';
 import { Icon } from '@/components/Icon';
+import { issueThumb } from '@/components/IssueCard';
 import { QuickMenu } from '@/components/QuickMenu';
 import { colors, weight } from '@/theme';
 
@@ -94,9 +97,9 @@ function HotSection() {
   );
 }
 
-type IssueRow = { id: number; title: string; total: number; tag: string };
+type IssueRow = { id: number; title: string; meta: string; hot: boolean };
 
-/** 연애이슈 — 운영자 큐레이션(오늘 + 지난 이슈). 여러 건을 리스트로 프리뷰. */
+/** 연애이슈 — 운영자 큐레이션 뉴스/칼럼(오늘 + 지난). 썸네일+헤드라인 뉴스 리스트 프리뷰. */
 function IssueSection() {
   const { token } = useAuth();
   const router = useRouter();
@@ -108,10 +111,10 @@ function IssueSection() {
       const [todayRes, archiveRes] = await Promise.all([getTodayIssue(token), getIssueArchive(token)]);
       const list: IssueRow[] = [];
       if (todayRes.issue) {
-        list.push({ id: todayRes.issue.id, title: todayRes.issue.title, total: todayRes.issue.poll.total, tag: 'HOT' });
+        list.push({ id: todayRes.issue.id, title: todayRes.issue.title, meta: todayRes.issue.source ?? '오늘의 이슈', hot: true });
       }
       for (const a of archiveRes.items) {
-        list.push({ id: a.id, title: a.title, total: a.total, tag: a.date });
+        list.push({ id: a.id, title: a.title, meta: a.date, hot: false });
       }
       setRows(list.slice(0, 4));
     } catch {
@@ -135,23 +138,23 @@ function IssueSection() {
           <Text style={styles.more}>더보기</Text>
         </Pressable>
       </View>
-      {rows.map((it) => {
-        const hot = it.tag === 'HOT';
-        return (
-          <Pressable
-            key={it.id}
-            style={styles.issue}
-            onPress={() => router.push({ pathname: '/issue/[id]', params: { id: it.id } })}>
-            <View style={[styles.tag, hot ? styles.tagHot : styles.tagDate]}>
-              <Text style={[styles.tagText, hot ? styles.tagTextHot : styles.tagTextDate]}>{it.tag}</Text>
+      {rows.map((it) => (
+        <Pressable
+          key={it.id}
+          style={styles.issue}
+          onPress={() => router.push({ pathname: '/issue/[id]', params: { id: it.id } })}>
+          <Image source={{ uri: issueThumb(it.id) }} style={styles.issueThumb} />
+          <View style={styles.issueBody}>
+            <Text style={styles.issueTitle} numberOfLines={2}>{it.title}</Text>
+            <View style={styles.issueMetaRow}>
+              {it.hot ? (
+                <View style={styles.hotTag}><Text style={styles.hotTagText}>NEW</Text></View>
+              ) : null}
+              <Text style={styles.issueMeta}>{it.meta}</Text>
             </View>
-            <View style={styles.issueBody}>
-              <Text style={styles.issueTitle} numberOfLines={1}>{it.title}</Text>
-              <Text style={styles.issueMeta}>투표 참여 {it.total.toLocaleString()}명</Text>
-            </View>
-          </Pressable>
-        );
-      })}
+          </View>
+        </Pressable>
+      ))}
     </View>
   );
 }
@@ -191,13 +194,11 @@ const styles = StyleSheet.create({
   rankTitle: { flex: 1, fontSize: 14, fontWeight: weight.semibold as '600', color: colors.ink },
   rankCmt: { fontSize: 11.5, color: colors.sub, fontWeight: weight.semibold as '600' },
   issue: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 9 },
-  tag: { borderRadius: 7, paddingHorizontal: 8, paddingVertical: 4, minWidth: 46, alignItems: 'center' },
-  tagHot: { backgroundColor: colors.roseBg },
-  tagDate: { backgroundColor: colors.soft },
-  tagText: { fontSize: 10.5, fontWeight: weight.bold as '700' },
-  tagTextHot: { color: colors.rose },
-  tagTextDate: { color: colors.sub },
-  issueBody: { flex: 1, gap: 3 },
-  issueTitle: { fontSize: 14, fontWeight: weight.semibold as '600', color: colors.ink },
+  issueThumb: { width: 68, height: 68, borderRadius: 12, backgroundColor: colors.soft },
+  issueBody: { flex: 1, gap: 5, justifyContent: 'center' },
+  issueTitle: { fontSize: 14, fontWeight: weight.semibold as '600', color: colors.ink, lineHeight: 20 },
+  issueMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  hotTag: { backgroundColor: colors.roseBg, borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2 },
+  hotTagText: { fontSize: 9.5, fontWeight: weight.bold as '700', color: colors.rose },
   issueMeta: { fontSize: 11.5, color: colors.sub, fontWeight: weight.semibold as '600' },
 });

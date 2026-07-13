@@ -1,13 +1,13 @@
 /** 연애이슈 탭 (HOME_UPDATE §3): 오늘 이슈 풀카드 + 지난 이슈 아카이브. */
 import { useCallback, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getIssueArchive, type IssueArchiveItem } from '@/api/issues';
 import { useAuth } from '@/auth/AuthContext';
 import { AppBar } from '@/components/AppBar';
-import { IssueCard } from '@/components/IssueCard';
+import { IssueCard, issueThumb } from '@/components/IssueCard';
 import { colors, weight } from '@/theme';
 
 export default function IssuesScreen() {
@@ -39,29 +39,22 @@ export default function IssuesScreen() {
         {archive.length > 0 && (
           <View style={styles.archive}>
             <Text style={styles.archiveTitle}>지난 이슈</Text>
-            {archive.map((it) => {
-              const aWin = it.a_pct >= 50;
-              return (
-                <Pressable
-                  key={it.id}
-                  style={styles.row}
-                  onPress={() => router.push({ pathname: '/issue/[id]', params: { id: it.id } })}>
-                  <View style={styles.rowTop}>
+            {archive.map((it) => (
+              <Pressable
+                key={it.id}
+                style={styles.row}
+                onPress={() => router.push({ pathname: '/issue/[id]', params: { id: it.id } })}>
+                <Image source={{ uri: issueThumb(it.id) }} style={styles.thumb} />
+                <View style={styles.rowBody}>
+                  <Text style={styles.title} numberOfLines={2}>{it.title}</Text>
+                  <View style={styles.rowMeta}>
                     <Text style={styles.date}>{it.date}</Text>
+                    <Text style={styles.dot}>·</Text>
                     <Text style={styles.cmt}>댓글 {it.comment_count}</Text>
                   </View>
-                  <Text style={styles.title} numberOfLines={1}>{it.title}</Text>
-                  <View style={styles.barRow}>
-                    <View style={styles.track}>
-                      <View style={[styles.fill, { width: `${it.a_pct}%`, backgroundColor: aWin ? colors.rose : colors.blue }]} />
-                    </View>
-                    <Text style={[styles.result, { color: aWin ? colors.rose : colors.blue }]}>
-                      {aWin ? it.a_label : it.b_label} {aWin ? it.a_pct : 100 - it.a_pct}%
-                    </Text>
-                  </View>
-                </Pressable>
-              );
-            })}
+                </View>
+              </Pressable>
+            ))}
           </View>
         )}
       </ScrollView>
@@ -74,13 +67,12 @@ const styles = StyleSheet.create({
   body: { flex: 1, backgroundColor: colors.soft },
   archive: { marginHorizontal: 16, marginTop: 6 },
   archiveTitle: { fontSize: 13, fontWeight: weight.extrabold as '800', color: colors.sub, marginBottom: 8, marginLeft: 4 },
-  row: { backgroundColor: colors.bg, borderWidth: 0.5, borderColor: colors.line, borderRadius: 14, padding: 14, marginBottom: 8 },
-  rowTop: { flexDirection: 'row', justifyContent: 'space-between' },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.bg, borderWidth: 0.5, borderColor: colors.line, borderRadius: 14, padding: 12, marginBottom: 8 },
+  thumb: { width: 72, height: 72, borderRadius: 10, backgroundColor: colors.soft },
+  rowBody: { flex: 1, gap: 6, justifyContent: 'center' },
+  title: { fontSize: 14, fontWeight: weight.semibold as '600', color: colors.ink, lineHeight: 20 },
+  rowMeta: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   date: { fontSize: 11.5, color: colors.sub2, fontWeight: weight.semibold as '600' },
+  dot: { fontSize: 11.5, color: colors.sub2 },
   cmt: { fontSize: 11.5, color: colors.sub, fontWeight: weight.semibold as '600' },
-  title: { fontSize: 14, fontWeight: weight.semibold as '600', color: colors.ink, marginTop: 6 },
-  barRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10 },
-  track: { flex: 1, height: 6, borderRadius: 4, backgroundColor: '#F2F3F5', overflow: 'hidden' },
-  fill: { height: '100%', borderRadius: 4 },
-  result: { fontSize: 11.5, fontWeight: weight.bold as '700' },
 });
