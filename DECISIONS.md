@@ -27,15 +27,24 @@
 # 오늘연애 리브랜딩 + IA + PC웹 — 결정 기록
 
 ## 사용자 확인
-- rename 범위: 저장소 전체 파일내용 "썰전"→"오늘연애" (설계문서·목업·입력폴더 포함, 검색 0건). 식별자 slug/scheme=`todaylove`, 패키지=`com.hco.todaylove`.
+- rename 범위: 저장소 전체 파일내용 구 브랜드명→"오늘연애" (설계문서·목업·입력폴더 포함, 검색 0건). 식별자 slug/scheme=`todaylove`, 패키지=`com.hco.todaylove`.
 - GNB: **5탭 홈·커뮤니티·연애이슈·BEST·마이** (HOME_UPDATE 4탭에서 BEST 유지). 커플 자유서술 "오늘의 질문" 탭은 오프-GNB(MY 진입).
 
 ## 리브랜딩 자율결정
 - **루트 폴더 경로명 `c:\side_Prj\썰전`**은 파일 "내용"이 아니라 파일시스템 경로 → 유지(작업 디렉토리 rename은 위험/범위 밖). 저장소 내용 검색은 0건.
-- **로마자 `sseuljeon`** 은 "썰전"(한글) 리브랜딩 대상 아님. 내부 식별자로 유지: DB명 `sseuljeon`(docker/config), 토큰 저장키 `sseuljeon.jwt`(내부, 유저 무노출; 변경 시 재로그인만 유발), picsum 목업 시드 문자열. (운영 전환 시 DB명은 인프라 결정으로 별도 처리)
-- **feature-noun "썰전"**(투표글·게시판 뜻)도 전역 치환으로 "오늘연애"가 됨 — 문서/주석은 브랜드 prefix로 자연스러워 그대로, 유저 노출 문자열 1곳(`daily.py` 질문→글 전환 body)만 "…글로 가져왔어요"로 조사 자연화.
+- **로마자 `sseuljeon`** 은 한글 구 브랜드명 리브랜딩 대상 아님. 내부 식별자로 유지: DB명 `sseuljeon`(docker/config), 토큰 저장키 `sseuljeon.jwt`(내부, 유저 무노출; 변경 시 재로그인만 유발), picsum 목업 시드 문자열. (운영 전환 시 DB명은 인프라 결정으로 별도 처리)
+- **구 브랜드명의 일반명사 용법**(투표글·게시판 뜻)도 전역 치환으로 "오늘연애"가 됨 — 문서/주석은 브랜드 prefix로 자연스러워 그대로, 유저 노출 문자열 1곳(`daily.py` 질문→글 전환 body)만 "…글로 가져왔어요"로 조사 자연화.
 - **EAS projectId 미연결**: `app.json`/`eas.json`에 projectId 없음 → 리브랜딩으로 깨질 링크 없음. 신규 패키지로 `eas init` 필요(콘솔 체크리스트).
 
 ## IA/홈 자율결정
 - 퀵메뉴 8종 → 기존 4카테고리 매핑: 연애고민→love, 예비부부·결혼준비→marriage, 재테크고민·직장커리어·일상잡담→free, 가족·인간관계→counsel, 전체게시판→(전체), 연애유형테스트→테스트존. (아이콘-라벨은 스펙 그대로, 카테고리만 근사 매핑)
 - 인기글 TOP5: 기존 hot_score와 별개로 스펙 가중치(최근24h `조회×1+댓글×5+공감×3`) 신규 `/home/trending`, `ranking` 메모리캐시 10분 재사용.
+
+## 푸시 랜딩(3d) 자율결정
+- **`usePushRouting`**(`_layout.tsx`): `data.type` 라우팅 — `best`→`/post/[id]`(서버 `notify-best`가 이미 `{type:"best", post_id}` 발송), `daily*`→`/daily`(서버 `notify-daily`가 `{type:"daily_arrived"}` → prefix 매칭), `issue`→`/issues`. 콜드스타트(`getLastNotificationResponseAsync`)+실행중(`addNotificationResponseReceivedListener`) 모두 처리. 서버 페이로드가 이미 존재하는 타입만 매핑(신규 서버 변경 없음).
+
+## PC 웹(Task 4) 자율결정
+- **브레이크포인트 1240px**: `Platform.OS==='web' && width>=1240`(`useIsDesktop`). 미만은 기존 모바일 그대로(모바일 웹 포함). 한 번의 웹 빌드로 반응형 커버.
+- **데스크톱 셸**: `<Tabs tabBar={()=>null}>`로 하단 탭바 숨기고 `DesktopShell`(상단 GNB+중앙600+우측레일280)로 감쌈. FAB 미노출. 각 탭 스크린의 자체 헤더는 유지(중앙은 "모바일 구성 그대로" 원칙) — 상단 GNB와 일부 중복이나 로직/스타일 변경 없이 재배치만.
+- **테스트존 웹(4-0)**: `react-native-webview`는 웹 런타임 없음(빌드는 통과하나 렌더 불가). 플랫폼 분기 `tests.web.tsx`에서 `<iframe src=/t>`로 대체. 그 외 모듈(secure-store=localStorage 분기済, notifications=guard済, svg/web-browser 웹OK) 하드 블로커 없음 → `expo export --platform web` 성공 확인.
+- **웹 배포(4-2)**: 클라이언트 라우트(`/issues/5`·`/post/12`)가 Flask API 경로와 충돌 → **웹앱은 별도 오리진(서브도메인) 권장**. nginx 정적+SPA fallback, API는 절대 URL(`EXPO_PUBLIC_API_BASE_URL`)로 직접 호출(프록시 불요). 동일 오리진 불가피 시 `experiments.baseUrl:"/app"` 서브패스 격리. 상세 `WEB_DEPLOY.md`.
