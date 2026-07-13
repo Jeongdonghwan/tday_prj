@@ -6,5 +6,6 @@ export const CATEGORY_FILTERS = [
   { key: 'marriage', label: '결혼·동거' },
   { key: 'counsel', label: '인간관계' },
   { key: 'daily', label: '일상잡담' },
+  { key: 'story', label: '썰·후기' },
   { key: 'free', label: '자유' },
 ];

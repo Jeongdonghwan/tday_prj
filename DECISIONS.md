@@ -48,3 +48,11 @@
 - **데스크톱 셸**: `<Tabs tabBar={()=>null}>`로 하단 탭바 숨기고 `DesktopShell`(상단 GNB+중앙600+우측레일280)로 감쌈. FAB 미노출. 각 탭 스크린의 자체 헤더는 유지(중앙은 "모바일 구성 그대로" 원칙) — 상단 GNB와 일부 중복이나 로직/스타일 변경 없이 재배치만.
 - **테스트존 웹(4-0)**: `react-native-webview`는 웹 런타임 없음(빌드는 통과하나 렌더 불가). 플랫폼 분기 `tests.web.tsx`에서 `<iframe src=/t>`로 대체. 그 외 모듈(secure-store=localStorage 분기済, notifications=guard済, svg/web-browser 웹OK) 하드 블로커 없음 → `expo export --platform web` 성공 확인.
 - **웹 배포(4-2)**: 클라이언트 라우트(`/issues/5`·`/post/12`)가 Flask API 경로와 충돌 → **웹앱은 별도 오리진(서브도메인) 권장**. nginx 정적+SPA fallback, API는 절대 URL(`EXPO_PUBLIC_API_BASE_URL`)로 직접 호출(프록시 불요). 동일 오리진 불가피 시 `experiments.baseUrl:"/app"` 서브패스 격리. 상세 `WEB_DEPLOY.md`.
+
+## 게시판 확장 + 인증·사진 + 광고 + SEO (신규)
+- **카테고리 확장**: `POST_CATEGORIES` superset(+dating/daily/photo, 기존 4종 유지 → 데이터 이관 불필요). 라벨 개편(love=연애, dating=썸·소개팅, marriage=결혼·동거, counsel=인간관계, daily=일상잡담, free=자유, photo=인증·사진). enum ALTER 마이그레이션. 텍스트 피드/전체는 `photo` 제외(앨범 전용).
+- **퀵메뉴**: SVG→이모지 타일(틴트 배경) 8종. 연애유형테스트 타일 제거(테스트존은 MY 유지). `photo`는 `/photos` 앨범 진입.
+- **사진 저장**: 서버 **로컬 디스크**(`config.UPLOAD_DIR`, 기본 `server/uploads/`, uuid 파일명, 8MB 제한). `POST /uploads`(multipart, login) + `GET /uploads/<name>` 서빙. 운영은 nginx 정적 서빙 권장. `.gitignore`에 `uploads/`. 앱은 `expo-image-picker`(Expo Go 내장).
+- **광고 이미지**: 관리자 입력 **URL**(업로드 아님) — 광고주 소재는 외부 CDN 가정. `impressions`=활성조회 GET 시 +1, `clicks`=클릭 엔드포인트 +1. AdSlot은 포지션별 **모듈 캐시 1회 fetch**(노출/요청 폭주 방지 → 화면당 1노출). 활성 없으면 `null`(placeholder 금지).
+- **광고 배치**: feed_native=커뮤니티 5번째 글마다(단일 활성광고 반복 노출), issue_bottom=연애이슈 오늘카드 아래, web_rail=레일(300×100), web_wing_l/r=`width≥1460`일 때 좌우 절대배치(240×600).
+- **웹 SEO**: 앱은 SPA라 개별 색인 불가 → Flask 서버렌더 공개 페이지 `/p/<id>`(제목·본문·작성자 + OG/canonical, /t 패턴 재사용) + `/sitemap.xml`(비블라인드 글) + `/robots.txt`. 앱 공유 링크로 `WEB_BASE_URL/p/<id>` 사용 가능.

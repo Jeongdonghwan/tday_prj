@@ -1,6 +1,7 @@
-/** 홈 퀵메뉴 그리드 4×2 (게시판 개편). 이모지 타일 + 틴트 배경, 프레스 스케일 .96. */
+/** 홈 퀵메뉴 그리드 4×2 (게시판 개편). 48px SVG 아이콘(자립형) + 라벨, 프레스 스케일 .96. */
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { SvgXml } from 'react-native-svg';
 
 import { QUICK_ITEMS, type QuickItem } from '@/quickmenu';
 import { colors, weight } from '@/theme';
@@ -23,9 +24,7 @@ export function QuickMenu() {
           key={item.key}
           style={({ pressed }) => [styles.cell, pressed && styles.pressed]}
           onPress={() => go(item)}>
-          <View style={[styles.tile, { backgroundColor: item.bg }]}>
-            <Text style={styles.emoji}>{item.emoji}</Text>
-          </View>
+          <SvgXml xml={item.xml} width={48} height={48} />
           <Text style={styles.label} numberOfLines={1}>{item.label}</Text>
         </Pressable>
       ))}
@@ -46,7 +45,5 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   pressed: { transform: [{ scale: 0.96 }], opacity: 0.9 },
-  tile: { width: 48, height: 48, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
-  emoji: { fontSize: 24, lineHeight: 30 },
   label: { fontSize: 11.5, fontWeight: weight.semibold as '600', color: colors.ink, marginTop: 6 },
 });

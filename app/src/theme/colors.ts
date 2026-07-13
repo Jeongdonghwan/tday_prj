@@ -43,6 +43,7 @@ export const categoryLabel = {
   marriage: '결혼·동거',
   counsel: '인간관계',
   daily: '일상잡담',
+  story: '썰·후기',
   free: '자유',
   photo: '인증·사진',
 } as const;
