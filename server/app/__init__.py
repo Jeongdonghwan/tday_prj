@@ -23,12 +23,14 @@ def create_app(config_object=None) -> Flask:
 
     register_blueprints(app)
 
-    # 웹(심리테스트존) + 관리자 (DESIGN_UPDATE §5·§6) — Jinja 템플릿/정적
+    # 웹(심리테스트존) + 관리자 (DESIGN_UPDATE §5·§6) + SEO 공개 글페이지 — Jinja
     from .admin import bp as admin_bp
+    from .seo import bp as seo_bp
     from .web import bp as web_bp
 
     app.register_blueprint(web_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(seo_bp)
 
     @app.get("/health")
     def health():

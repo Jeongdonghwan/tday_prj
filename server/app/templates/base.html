@@ -8,6 +8,7 @@
   <meta property="og:title" content="{% block og_title %}오늘연애 연애 심리테스트{% endblock %}" />
   <meta property="og:description" content="{% block og_desc %}12개 질문으로 알아보는 내 연애 스타일{% endblock %}" />
   <meta property="og:image" content="{% block og_image %}{{ url_for('static', filename='og_default.png', _external=True) }}{% endblock %}" />
+  {% block head_extra %}{% endblock %}
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
 </head>
 <body>

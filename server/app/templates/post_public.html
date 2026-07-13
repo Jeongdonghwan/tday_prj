@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ post.title }} · 오늘연애{% endblock %}
+{% block og_title %}{{ post.title }}{% endblock %}
+{% block og_desc %}{{ (post.body or post.title)[:80] }}{% endblock %}
+{% block og_image %}{{ post.image_url or url_for('static', filename='og_default.png', _external=True) }}{% endblock %}
+{% block head_extra %}
+  <meta property="og:url" content="{{ canonical }}" />
+  <link rel="canonical" href="{{ canonical }}" />
+  <meta name="description" content="{{ (post.body or post.title)[:120] }}" />
+{% endblock %}
+{% block content %}
+<article class="post">
+  <p class="cat">{{ category_label }}</p>
+  <h1>{{ post.title }}</h1>
+  <p class="meta">{{ post.author.nickname if post.author else '익명' }} · {{ post.created_at.strftime('%Y-%m-%d') if post.created_at else '' }} · 조회 {{ post.view_count }}</p>
+  {% if post.image_url %}<img src="{{ post.image_url }}" alt="{{ post.title }}" style="max-width:100%;border-radius:12px;margin:12px 0" />{% endif %}
+  {% if post.body %}<div class="body">{{ post.body | replace('\n', '<br>') | safe }}</div>{% endif %}
+  <p class="app-cta"><a href="{{ config.APP_INSTALL_URL }}">오늘연애 앱에서 더 보기 →</a></p>
+</article>
+{% endblock %}
