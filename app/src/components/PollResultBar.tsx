@@ -5,6 +5,7 @@
  */
 import { StyleSheet, Text, View } from 'react-native';
 
+import { pollBar, segColor, sideColors } from '@/components/pollResultStyle';
 import { colors, weight } from '@/theme';
 
 type Props = {
@@ -16,10 +17,7 @@ type Props = {
 };
 
 export function PollResultBar({ aLabel, bLabel, aPct, total, myVote }: Props) {
-  const bPct = 100 - aPct;
-  const tie = aPct === 50;
-  const aWin = aPct > 50;
-  const bWin = aPct < 50;
+  const { bPct, tie, aWin, bWin } = pollBar(aPct);
 
   return (
     <View style={styles.wrap}>
@@ -32,10 +30,10 @@ export function PollResultBar({ aLabel, bLabel, aPct, total, myVote }: Props) {
       {/* 결과 바: 두 세그먼트 + 2px 갭 */}
       <View style={styles.track}>
         {aPct > 0 && (
-          <View style={[styles.seg, { flexGrow: aPct, backgroundColor: aWin ? colors.rose : colors.neutralBar }]} />
+          <View style={[styles.seg, { flexGrow: aPct, backgroundColor: segColor(aWin) }]} />
         )}
         {bPct > 0 && (
-          <View style={[styles.seg, { flexGrow: bPct, backgroundColor: bWin ? colors.rose : colors.neutralBar }]} />
+          <View style={[styles.seg, { flexGrow: bPct, backgroundColor: segColor(bWin) }]} />
         )}
       </View>
 
@@ -61,9 +59,8 @@ function SideLabel({
   mine: boolean;
   align: 'left' | 'right';
 }) {
-  // 우세측: 라벨 700 잉크 + 퍼센트 로즈 / 열세측: 전체 그레이 / 동률: 라벨 그레이 + 퍼센트 잉크
-  const labelColor = win ? colors.ink : colors.sub;
-  const pctColor = win ? colors.rose : tie ? colors.ink : colors.sub;
+  // 색 결정은 순수 함수(sideColors)로 분리 — pollResultStyle.test 로 검증
+  const { label: labelColor, pct: pctColor } = sideColors(win, tie);
   return (
     <Text style={[styles.label, align === 'right' && styles.right]} numberOfLines={1}>
       <Text style={[styles.labelText, { color: labelColor, fontWeight: (win ? weight.bold : weight.semibold) as '700' }]}>

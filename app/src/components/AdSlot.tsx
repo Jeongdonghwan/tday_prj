@@ -7,14 +7,9 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import * as WebBrowser from 'expo-web-browser';
 
-import { clickAd, getAd, type Ad, type AdPosition } from '@/api/ads';
+import { clickAd, type Ad, type AdPosition } from '@/api/ads';
+import { adSize, fetchAd } from '@/components/adSlotData';
 import { colors, weight } from '@/theme';
-
-const cache: Partial<Record<AdPosition, Promise<Ad | null>>> = {};
-function fetchAd(position: AdPosition) {
-  if (!cache[position]) cache[position] = getAd(position).then((r) => r.ad).catch(() => null);
-  return cache[position]!;
-}
 
 export function AdSlot({ position }: { position: AdPosition }) {
   const [ad, setAd] = useState<Ad | null>(null);
@@ -33,12 +28,7 @@ export function AdSlot({ position }: { position: AdPosition }) {
     WebBrowser.openBrowserAsync(ad.link_url);
   };
 
-  const fixed =
-    position === 'web_rail'
-      ? { width: 300, height: 100 }
-      : position === 'web_wing_l' || position === 'web_wing_r'
-        ? { width: 240, height: 600 }
-        : null; // feed_native / issue_bottom = 가변 폭 배너
+  const fixed = adSize(position); // feed_native / issue_bottom = null(가변 폭 배너)
 
   return (
     <View style={fixed ? undefined : styles.banner}>
