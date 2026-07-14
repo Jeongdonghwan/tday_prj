@@ -3,6 +3,11 @@ import { API_BASE_URL, apiRequest } from './client';
 
 export type TestPromo = { slug: string; title: string } | null;
 export type TestBadge = { code: string; title: string; avatar_no: number } | null;
+export type TestListItem = { slug: string; title: string; emoji: string };
+
+export function getTests(token: string) {
+  return apiRequest<{ items: TestListItem[] }>('/tests', { token });
+}
 
 export function getTestPromo(token: string) {
   return apiRequest<{ test: TestPromo }>('/tests/promo', { token });

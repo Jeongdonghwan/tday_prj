@@ -99,3 +99,17 @@ def test_promo_null_when_no_recent_test(client, token, bearer):
 
 def test_badge_null_when_no_attempt(client, token, bearer):
     assert client.get("/me/test-badge", headers=bearer(token)).get_json()["badge"] is None
+
+
+def test_tests_list_with_emoji(client, token, bearer, app):
+    from app.services.psych import create_test_from_data
+    with app.app_context():
+        create_test_from_data(_mini_test_data())
+    items = client.get("/tests", headers=bearer(token)).get_json()["items"]
+    assert any(i["slug"] == "mini-love" for i in items)
+    row = next(i for i in items if i["slug"] == "mini-love")
+    assert row["title"] and row["emoji"]
+
+
+def test_tests_list_requires_auth(client):
+    assert client.get("/tests").status_code == 401

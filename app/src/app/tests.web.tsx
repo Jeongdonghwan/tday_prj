@@ -3,7 +3,7 @@
  * 데스크톱/웹에서는 <iframe> 으로 동일한 /t 를 임베드한다. tests.tsx(네이티브)와 병행.
  */
 import { StyleSheet, Text, View, Pressable } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { WEB_BASE_URL } from '@/api/tests';
@@ -14,8 +14,9 @@ import { colors, weight } from '@/theme';
 export default function TestsScreenWeb() {
   const router = useRouter();
   const { user } = useAuth();
+  const { slug } = useLocalSearchParams<{ slug?: string }>();
   const uid = user?.id ? `&app_uid=${user.id}` : '';
-  const uri = `${WEB_BASE_URL}/t?ref=app${uid}`;
+  const uri = `${WEB_BASE_URL}${slug ? `/t/${slug}` : '/t'}?ref=app${uid}`;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>

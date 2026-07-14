@@ -1,5 +1,6 @@
 """심리테스트 앱 연동 JSON API (DESIGN_UPDATE §6).
 
+  GET /tests            활성 테스트 목록 (홈 테스트 섹션용, 이모지 테마 포함)
   GET /tests/promo      출시 7일 내 활성 테스트 (피드 홍보 카드용)
   GET /me/test-badge    내 최근 결과 유형 (프로필 뱃지용)
 """
@@ -11,8 +12,22 @@ from sqlalchemy import select
 from ..auth import login_required
 from ..extensions import db
 from ..models import Test, TestAttempt, TestResult
+from ..seeds.love_tests import DEFAULT_THEME, THEMES
 
 bp = Blueprint("tests_api", __name__)
+
+
+@bp.get("/tests")
+@login_required
+def list_tests():
+    tests = db.session.scalars(
+        select(Test).where(Test.is_active.is_(True)).order_by(Test.created_at.desc())
+    ).all()
+    items = [
+        {"slug": t.slug, "title": t.title, "emoji": THEMES.get(t.slug, DEFAULT_THEME)["emoji"]}
+        for t in tests
+    ]
+    return jsonify({"items": items})
 
 
 @bp.get("/tests/promo")

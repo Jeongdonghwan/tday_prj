@@ -9,6 +9,7 @@ import { Image } from 'react-native';
 import { bestPosts } from '@/api/best';
 import { getTrending, type TrendingItem } from '@/api/home';
 import { getIssueArchive, getTodayIssue } from '@/api/issues';
+import { getTests, type TestListItem } from '@/api/tests';
 import { useAuth } from '@/auth/AuthContext';
 import { BrandLogo } from '@/components/BrandLogo';
 import { DailyPollCard } from '@/components/DailyPollCard';
@@ -43,6 +44,7 @@ export default function HomeScreen() {
         </View>
         <HotSection />
         <IssueSection />
+        <TestSection />
       </ScrollView>
     </SafeAreaView>
   );
@@ -168,6 +170,51 @@ function IssueSection() {
   );
 }
 
+/** 연애 심리테스트 — 홈에서 바로 진입(오늘의 질문/연애이슈처럼 하단 섹션). */
+function TestSection() {
+  const { token } = useAuth();
+  const router = useRouter();
+  const [items, setItems] = useState<TestListItem[]>([]);
+
+  const load = useCallback(async () => {
+    if (!token) return;
+    try {
+      setItems((await getTests(token)).items);
+    } catch {
+      setItems([]);
+    }
+  }, [token]);
+
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
+
+  if (!items.length) return null;
+
+  return (
+    <View style={styles.card}>
+      <View style={styles.secHead}>
+        <Text style={styles.secTitle}>연애 심리테스트</Text>
+        <Pressable onPress={() => router.push('/tests')} hitSlop={6}>
+          <Text style={styles.more}>더보기</Text>
+        </Pressable>
+      </View>
+      {items.slice(0, 4).map((t) => (
+        <Pressable
+          key={t.slug}
+          style={styles.testRow}
+          onPress={() => router.push({ pathname: '/tests', params: { slug: t.slug } })}>
+          <Text style={styles.testEmoji}>{t.emoji}</Text>
+          <Text style={styles.testTitle} numberOfLines={1}>{t.title}</Text>
+          <Text style={styles.testGo}>›</Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 6, paddingBottom: 14 },
@@ -210,4 +257,8 @@ const styles = StyleSheet.create({
   hotTag: { backgroundColor: colors.roseBg, borderRadius: 5, paddingHorizontal: 6, paddingVertical: 2 },
   hotTagText: { fontSize: 9.5, fontWeight: weight.bold as '700', color: colors.rose },
   issueMeta: { fontSize: 11.5, color: colors.sub, fontWeight: weight.semibold as '600' },
+  testRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
+  testEmoji: { fontSize: 22, width: 30, textAlign: 'center' },
+  testTitle: { flex: 1, fontSize: 14, fontWeight: weight.semibold as '600', color: colors.ink },
+  testGo: { fontSize: 18, color: colors.sub2, fontWeight: weight.bold as '700' },
 });
