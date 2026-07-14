@@ -87,3 +87,35 @@ def token(register):
 @pytest.fixture
 def bearer():
     return lambda tok: {"Authorization": f"Bearer {tok}"}
+
+
+@pytest.fixture
+def make_token(app):
+    """임의 user_id 로 JWT 발급 (expired=True 면 만료된 토큰)."""
+    import jwt as pyjwt
+    from datetime import datetime, timedelta, timezone
+
+    def _make(user_id, expired=False):
+        with app.app_context():
+            now = datetime.now(timezone.utc)
+            exp = now - timedelta(hours=1) if expired else now + timedelta(days=1)
+            return pyjwt.encode(
+                {"sub": str(user_id), "iat": now, "exp": exp},
+                app.config["JWT_SECRET"], algorithm="HS256",
+            )
+
+    return _make
+
+
+@pytest.fixture
+def deleted_user_token(app, register):
+    """가입 후 유저 행을 삭제 — 토큰은 유효하나 유저 없음(user_not_found)."""
+    from app.models import User
+
+    tok, uid = register("ghost")
+    with app.app_context():
+        u = db.session.get(User, uid)
+        if u:
+            db.session.delete(u)
+            db.session.commit()
+    return tok
