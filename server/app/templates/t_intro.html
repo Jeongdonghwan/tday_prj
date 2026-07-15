@@ -9,6 +9,15 @@
     <h1 class="intro-title">{{ test.title }}</h1>
     <p class="intro-desc">{{ test.intro }}</p>
     <a class="btn-primary" style="background:{{ th.theme }}" href="{{ url_for('web.test_quiz', slug=test.slug) }}{% if ref %}?ref={{ ref }}{% endif %}">시작하기</a>
+    <button class="btn-ghost" style="color:{{ th.theme }};border-color:{{ th.theme }}44" onclick="shareTest()">친구에게 공유하기</button>
     <a class="link-muted" href="{{ url_for('web.test_list') }}">다른 테스트 보기</a>
   </div>
+  <script>
+    function shareTest() {
+      var url = location.origin + '{{ url_for('web.test_intro', slug=test.slug) }}?ref=share';
+      var title = {{ (test.title ~ ' — 나랑 같이 해볼래?')|tojson }};
+      if (navigator.share) { navigator.share({ title: title, url: url }); }
+      else { navigator.clipboard.writeText(url).then(function(){ alert('링크를 복사했어요! 친구에게 붙여넣기 하세요.'); }); }
+    }
+  </script>
 {% endblock %}

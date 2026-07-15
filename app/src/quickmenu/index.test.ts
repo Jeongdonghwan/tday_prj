@@ -13,15 +13,13 @@ describe('QUICK_ITEMS', () => {
     }
   });
 
-  it('인증·사진(photo) 타일은 빠지고 썰·후기(story) 포함', () => {
-    const keys = QUICK_ITEMS.map((i) => i.key);
-    expect(keys).toContain('story');
-    expect(QUICK_ITEMS.some((i) => i.kind === 'photo')).toBe(false);
+  it('썰·후기(story) 포함, 전부 community(사진 앨범 비활성)', () => {
+    expect(QUICK_ITEMS.map((i) => i.key)).toContain('story');
+    expect(QUICK_ITEMS.every((i) => i.kind === 'community')).toBe(true);
   });
 
-  it('community 항목은 category 보유(전체=all)', () => {
-    const comm = QUICK_ITEMS.filter((i) => i.kind === 'community');
-    expect(comm.every((i) => 'category' in i && !!i.category)).toBe(true);
-    expect(comm.some((i) => i.category === 'all')).toBe(true);
+  it('모든 항목이 category 보유(전체=all)', () => {
+    expect(QUICK_ITEMS.every((i) => !!i.category)).toBe(true);
+    expect(QUICK_ITEMS.some((i) => i.category === 'all')).toBe(true);
   });
 });

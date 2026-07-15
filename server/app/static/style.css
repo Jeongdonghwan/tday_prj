@@ -23,8 +23,13 @@ body{font-family:'Pretendard',system-ui,-apple-system,'Apple SD Gothic Neo',sans
 .badge-new{display:inline-block;background:var(--rose-bg);color:var(--rose);font-weight:800;font-size:11px;padding:4px 10px;border-radius:999px;letter-spacing:.05em;}
 .intro-title{font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1.35;margin-top:18px;}
 .intro-desc{font-size:15px;color:var(--body);line-height:1.6;margin-top:16px;}
-.btn-primary{display:block;background:var(--rose);color:#fff;font-weight:800;font-size:16px;text-align:center;padding:16px;border-radius:14px;margin-top:28px;text-decoration:none;}
+.btn-primary{display:block;background:var(--rose);color:#fff;font-weight:800;font-size:16px;text-align:center;padding:16px;border-radius:14px;margin-top:16px;text-decoration:none;border:none;width:100%;cursor:pointer;}
+.btn-ghost{display:block;background:#fff;color:var(--rose);font-weight:800;font-size:15px;text-align:center;padding:14px;border-radius:14px;margin-top:10px;text-decoration:none;border:1.5px solid var(--line);width:100%;cursor:pointer;}
 .link-muted{display:block;text-align:center;color:var(--sub);font-size:13px;margin-top:16px;text-decoration:none;}
+.app-cta{margin-top:22px;padding:18px;border:1.5px solid var(--line);border-radius:16px;background:var(--soft);text-align:center;}
+.app-cta-t{font-size:15px;font-weight:800;color:var(--ink);}
+.app-cta-s{font-size:12.5px;color:var(--body);margin-top:5px;line-height:1.5;}
+.app-cta .btn-primary{margin-top:12px;}
 
 .quiz{padding-top:16px;}
 .q-emoji{font-size:34px;text-align:center;margin-bottom:14px;}

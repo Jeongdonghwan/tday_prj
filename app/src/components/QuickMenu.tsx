@@ -10,11 +10,7 @@ export function QuickMenu() {
   const router = useRouter();
 
   const go = (item: QuickItem) => {
-    if (item.kind === 'photo') {
-      router.push('/photos/index');
-    } else {
-      router.push({ pathname: '/community', params: { category: item.category } });
-    }
+    router.push({ pathname: '/community', params: { category: item.category } });
   };
 
   return (

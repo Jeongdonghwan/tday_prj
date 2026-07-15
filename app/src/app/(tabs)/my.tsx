@@ -60,7 +60,7 @@ export default function MyScreen() {
     { icon: 'chat', label: '내 글·댓글', onPress: () => router.push('/my-activity') },
     { icon: 'heart', label: dday?.connected ? '공유 캘린더' : '캘린더', onPress: () => router.push('/calendar') },
     { icon: 'chat', label: '오늘의 질문 (커플)', onPress: () => router.push('/daily') },
-    { icon: 'best', label: '테스트존', onPress: () => router.push('/tests') },
+    { icon: 'best', label: '연애 심리테스트', onPress: () => router.push('/tests') },
   ];
 
   return (

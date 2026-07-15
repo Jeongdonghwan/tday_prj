@@ -2,9 +2,7 @@
  * 홈 퀵메뉴 8종 (게시판 개편). 자립형 48×48 SVG 아이콘(틴트 라운드 배경 포함, 아바타와 동일 방식).
  * community = 게시판 카테고리 진입, photo = 인증·사진 앨범(초기 비활성, /photos).
  */
-export type QuickItem =
-  | { key: string; label: string; xml: string; kind: 'photo' }
-  | { key: string; label: string; xml: string; kind: 'community'; category: string };
+export type QuickItem = { key: string; label: string; xml: string; kind: 'community'; category: string };
 
 const W = (bg: string, inner: string) =>
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><rect width="48" height="48" rx="15" fill="${bg}"/><g transform="translate(4.8,4.8) scale(0.8)">${inner}</g></svg>`;

@@ -7,6 +7,7 @@ import { WebView } from 'react-native-webview';
 import { WEB_BASE_URL } from '@/api/tests';
 import { useAuth } from '@/auth/AuthContext';
 import { Icon } from '@/components/Icon';
+import { shareUrl } from '@/lib/share';
 import { colors, weight } from '@/theme';
 
 export default function TestsScreen() {
@@ -17,6 +18,7 @@ export default function TestsScreen() {
   const uid = user?.id ? `&app_uid=${user.id}` : '';
   const path = slug ? `/t/${slug}` : '/t';
   const uri = `${WEB_BASE_URL}${path}?ref=app${uid}`;
+  const shareHref = `${WEB_BASE_URL}${path}?ref=share`; // 공유용 퍼블릭 링크
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -24,8 +26,10 @@ export default function TestsScreen() {
         <Pressable onPress={() => router.back()} hitSlop={8}>
           <Icon name="back" size={24} color={colors.ink} strokeWidth={1.9} />
         </Pressable>
-        <Text style={styles.title}>테스트존</Text>
-        <View style={{ width: 24 }} />
+        <Text style={styles.title}>연애 심리테스트</Text>
+        <Pressable onPress={() => shareUrl(shareHref, '나랑 연애 심리테스트 해볼래? 결과 궁금해!')} hitSlop={8}>
+          <Icon name="share" size={22} color={colors.ink} strokeWidth={1.9} />
+        </Pressable>
       </View>
       <WebView source={{ uri }} style={{ flex: 1 }} />
     </SafeAreaView>
