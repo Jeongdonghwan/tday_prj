@@ -127,9 +127,9 @@ def _register_cli(app: Flask):
 
         n = 0
         for data in TESTS:
-            if create_test_from_data(data):
+            if create_test_from_data(data, update=True):
                 n += 1
-        click.echo(f"연애 테스트 시드 완료: {n}개 신규 등록 (전체 {len(TESTS)}종).")
+        click.echo(f"연애 테스트 시드/갱신 완료: {n}개 (전체 {len(TESTS)}종).")
 
     @app.cli.command("seed-issue")
     def seed_issue():

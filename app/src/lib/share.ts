@@ -3,22 +3,29 @@ import { Platform, Share } from 'react-native';
 
 export async function shareUrl(url: string, message?: string) {
   if (Platform.OS === 'web') {
-    const nav = globalThis.navigator as unknown as {
-      share?: (d: { title?: string; text?: string; url?: string }) => Promise<void>;
-      clipboard?: { writeText: (t: string) => Promise<void> };
+    const g = globalThis as unknown as {
+      navigator?: {
+        share?: (d: { title?: string; text?: string; url?: string }) => Promise<void>;
+        clipboard?: { writeText: (t: string) => Promise<void> };
+      };
+      alert?: (m: string) => void;
+      prompt?: (m: string, v?: string) => void;
     };
-    if (nav?.share) {
+    // 네이티브 공유 시트가 있으면 그것만 사용(취소해도 복사로 넘어가지 않음)
+    if (g.navigator?.share) {
       try {
-        await nav.share({ text: message, url });
-        return;
+        await g.navigator.share({ text: message, url });
       } catch {
-        /* 취소 등 — 폴백 */
+        /* 사용자 취소 */
       }
+      return;
     }
+    // 없으면 클립보드 복사 + 안내(데스크톱 브라우저 다수)
     try {
-      await nav?.clipboard?.writeText(url);
+      await g.navigator?.clipboard?.writeText(url);
+      g.alert?.('공유 링크를 복사했어요! 친구에게 붙여넣기 해주세요.');
     } catch {
-      /* noop */
+      g.prompt?.('아래 링크를 복사해 공유하세요', url);
     }
     return;
   }

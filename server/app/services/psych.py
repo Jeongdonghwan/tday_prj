@@ -117,19 +117,31 @@ def seed_test(text: str):
     return test
 
 
-def create_test_from_data(data: dict):
-    """구조화 데이터(app/seeds/love_tests.py 형식) → DB 등록. slug 중복이면 건너뜀."""
+def create_test_from_data(data: dict, update: bool = False):
+    """구조화 데이터(app/seeds/love_tests.py 형식) → DB 등록.
+
+    slug 중복 시: update=False → 건너뜀(None), update=True → 내용 갱신(문항 교체,
+    결과는 코드별 in-place 업데이트로 result_id 보존 → 기존 TestAttempt 무해).
+    """
     from ..models import Test, TestQuestion, TestResult
 
-    if not data.get("slug") or Test.query.filter_by(slug=data["slug"]).first():
+    if not data.get("slug"):
         return None
-    test = Test(
-        slug=data["slug"], title=data["title"], intro=data.get("intro"),
-        tiebreak=",".join(data.get("tiebreak", [])), is_active=True,
-    )
-    db.session.add(test)
+    existing = Test.query.filter_by(slug=data["slug"]).first()
+    if existing and not update:
+        return None
+
+    test = existing or Test(slug=data["slug"], is_active=True)
+    test.title = data["title"]
+    test.intro = data.get("intro")
+    test.tiebreak = ",".join(data.get("tiebreak", []))
+    if not existing:
+        db.session.add(test)
     db.session.flush()
 
+    # 문항: 전체 교체 (FK 의존 없음)
+    if existing:
+        TestQuestion.query.filter_by(test_id=test.id).delete()
     for i, (q, choices) in enumerate(data["questions"], 1):
         db.session.add(TestQuestion(
             test_id=test.id, sort_order=i, question=q,
@@ -138,13 +150,21 @@ def create_test_from_data(data: dict):
             choice3=choices[2][0] if len(choices) > 2 else None,
             choice3_code=choices[2][1] if len(choices) > 2 else None,
         ))
+
+    # 결과: 코드별 upsert (삭제하지 않아 result_id 보존)
     codes = data["codes"]
     for code, r in data["results"].items():
-        db.session.add(TestResult(
-            test_id=test.id, code=code, title=r["title"], catchphrase=r.get("catch"),
-            description=r["desc"], match_code=r.get("match"), clash_code=r.get("clash"),
-            avatar_no=codes[code][1],
-        ))
+        res = TestResult.query.filter_by(test_id=test.id, code=code).first()
+        if not res:
+            res = TestResult(test_id=test.id, code=code)
+            db.session.add(res)
+        res.title = r["title"]
+        res.catchphrase = r.get("catch")
+        res.description = r["desc"]
+        res.match_code = r.get("match")
+        res.clash_code = r.get("clash")
+        res.avatar_no = codes[code][1]
+
     db.session.commit()
     return test
 
