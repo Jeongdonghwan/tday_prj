@@ -34,7 +34,8 @@ def test_poll_suggest_requires_title(client, token, bearer):
 
 def test_poll_suggest_returns_two_options(client, token, bearer, monkeypatch):
     client.application.config["ANTHROPIC_API_KEY"] = "test-key"
-    monkeypatch.setattr("app.services.ai.Anthropic", FakeAnthropic)
+    # 지연 임포트로 전환 — 원본 모듈의 심볼을 패치
+    monkeypatch.setattr("anthropic.Anthropic", FakeAnthropic)
     r = client.post("/ai/poll-suggest", json={"title": "기념일 까먹은 남친", "body": "..."}, headers=bearer(token))
     assert r.status_code == 200
     d = r.get_json()
