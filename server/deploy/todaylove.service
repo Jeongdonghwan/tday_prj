@@ -7,9 +7,9 @@ After=network.target mariadb.service
 [Service]
 User=todaylove
 Group=todaylove
-WorkingDirectory=/srv/todaylove/server
+WorkingDirectory=/srv/todaylove/app-repo/server
 Environment=FLASK_ENV=production
-ExecStart=/srv/todaylove/server/.venv/bin/gunicorn \
+ExecStart=/srv/todaylove/app-repo/server/.venv/bin/gunicorn \
     --workers 2 --threads 2 \
     --bind 127.0.0.1:8000 \
     --timeout 60 \
