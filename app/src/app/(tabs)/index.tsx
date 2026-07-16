@@ -57,7 +57,6 @@ function HotSection() {
   const [items, setItems] = useState<TrendingItem[]>([]);
 
   const load = useCallback(async () => {
-    if (!token) return;
     try {
       // 최근 24h 트렌딩 우선, 부족분은 실시간 베스트(hot_score)로 보충해 항상 5줄 채움
       const [trendRes, bestRes] = await Promise.all([
@@ -117,7 +116,6 @@ function IssueSection() {
   const [rows, setRows] = useState<IssueRow[]>([]);
 
   const load = useCallback(async () => {
-    if (!token) return;
     try {
       const [todayRes, archiveRes] = await Promise.all([getTodayIssue(token), getIssueArchive(token)]);
       const list: IssueRow[] = [];
@@ -177,7 +175,6 @@ function TestSection() {
   const [items, setItems] = useState<TestListItem[]>([]);
 
   const load = useCallback(async () => {
-    if (!token) return;
     try {
       setItems((await getTests(token)).items);
     } catch {

@@ -43,7 +43,8 @@ function GnbMenu() {
 
 function TopGnb() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
+  const isGuest = !token;
   return (
     <View style={styles.gnb}>
       <View style={styles.gnbInner}>
@@ -57,16 +58,26 @@ function TopGnb() {
           <Pressable hitSlop={8} style={styles.iconBtn} onPress={() => router.push('/search')}>
             <Icon name="search" size={22} color={colors.ink} strokeWidth={1.9} />
           </Pressable>
-          <View style={styles.iconBtn}>
-            <NotificationBell />
-          </View>
-          <Pressable style={styles.writeBtn} onPress={() => router.push('/write')}>
+          {!isGuest && (
+            <View style={styles.iconBtn}>
+              <NotificationBell />
+            </View>
+          )}
+          <Pressable
+            style={styles.writeBtn}
+            onPress={() => router.push(isGuest ? '/(auth)/login' : '/write')}>
             <Icon name="plus" size={18} color="#fff" strokeWidth={2.2} />
             <Text style={styles.writeText}>글쓰기</Text>
           </Pressable>
-          <Pressable hitSlop={8} onPress={() => router.navigate('/my')}>
-            <Avatar avatarNo={user?.avatar_no} size={32} />
-          </Pressable>
+          {isGuest ? (
+            <Pressable style={styles.loginBtn} onPress={() => router.push('/(auth)/login')}>
+              <Text style={styles.loginText}>로그인</Text>
+            </Pressable>
+          ) : (
+            <Pressable hitSlop={8} onPress={() => router.navigate('/my')}>
+              <Avatar avatarNo={user?.avatar_no} size={32} />
+            </Pressable>
+          )}
         </View>
       </View>
     </View>
@@ -142,6 +153,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   writeText: { color: '#fff', fontSize: 13.5, fontWeight: weight.bold as '700' },
+  loginBtn: { borderWidth: 1.5, borderColor: colors.line, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7 },
+  loginText: { fontSize: 13.5, fontWeight: weight.bold as '700', color: colors.ink },
   wing: { position: 'absolute', top: 80, width: 240, alignItems: 'center', zIndex: 5 },
   wingL: { left: 24 },
   wingR: { right: 24 },

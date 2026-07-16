@@ -14,15 +14,11 @@ PROTECTED = [
     ("POST", "/posts/1/like"),
     ("POST", "/posts/1/comments"),
     ("POST", "/comments/1/like"),
-    ("GET", "/issues/today"),
-    ("GET", "/issues/archive"),
     ("POST", "/issues/1/vote"),
     ("POST", "/issues/1/comments"),
     ("GET", "/daily/today"),
     ("POST", "/daily/answer"),
     ("POST", "/daily-poll/vote"),
-    ("GET", "/daily-poll/today"),
-    ("GET", "/home/trending"),
     ("GET", "/me"),
     ("PATCH", "/me"),
     ("GET", "/me/posts"),
@@ -40,7 +36,6 @@ PROTECTED = [
     ("DELETE", "/blocks/1"),
     ("GET", "/notifications"),
     ("POST", "/uploads"),
-    ("GET", "/tests/promo"),
     ("GET", "/me/test-badge"),
 ]
 
@@ -73,3 +68,15 @@ def test_expired_token_401(client, method, path, bearer, make_token):
 def test_deleted_user_token_401(client, method, path, bearer, deleted_user_token):
     r = _call(client, method, path, bearer(deleted_user_token))
     assert r.status_code == 401 and r.get_json()["error"] == "user_not_found"
+
+
+# 게스트(비로그인) 공개 읽기 — 웹 미로그인 열람 허용 라우트는 200 이어야 한다
+import pytest as _pytest
+
+
+@_pytest.mark.parametrize("path", [
+    "/issues/today", "/issues/archive", "/daily-poll/today",
+    "/home/trending", "/tests", "/tests/promo",
+])
+def test_guest_readable_routes_200(client, path):
+    assert client.get(path).status_code == 200

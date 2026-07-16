@@ -79,6 +79,22 @@ export default function MyScreen() {
     ]);
   }
 
+  // 게스트(웹 미로그인) — 로그인 유도 화면
+  if (!token) {
+    return (
+      <SafeAreaView style={styles.safe} edges={['top']}>
+        <View style={styles.guestBox}>
+          <Avatar avatarNo={1} size={64} />
+          <Text style={styles.guestTitle}>로그인하고 시작해보세요</Text>
+          <Text style={styles.guestSub}>투표·댓글·커플 기능까지, 3초면 충분해요.</Text>
+          <Pressable style={styles.guestBtn} onPress={() => router.push('/(auth)/login')}>
+            <Text style={styles.guestBtnText}>로그인 / 회원가입</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   const links: { icon: IconName; label: string; onPress: () => void }[] = [
     { icon: 'chat', label: '내 글·댓글', onPress: () => router.push('/my-activity') },
     { icon: 'heart', label: dday?.connected ? '공유 캘린더' : '캘린더', onPress: () => router.push('/calendar') },
@@ -200,4 +216,9 @@ const styles = StyleSheet.create({
   logoutText: { fontSize: 14, color: colors.sub, fontWeight: weight.semibold as '600' },
   withdraw: { marginHorizontal: 20, marginTop: 2, paddingVertical: 8, alignItems: 'center' },
   withdrawText: { fontSize: 12.5, color: colors.sub2, fontWeight: weight.semibold as '600', textDecorationLine: 'underline' },
+  guestBox: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 32, paddingBottom: 60 },
+  guestTitle: { fontSize: 18, fontWeight: weight.extrabold as '800', color: colors.ink, marginTop: 8 },
+  guestSub: { fontSize: 13.5, color: colors.sub, textAlign: 'center' },
+  guestBtn: { marginTop: 14, backgroundColor: colors.rose, borderRadius: radius.input, paddingVertical: 14, paddingHorizontal: 40 },
+  guestBtnText: { color: '#fff', fontSize: 15, fontWeight: weight.bold as '700' },
 });

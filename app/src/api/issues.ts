@@ -34,11 +34,11 @@ export type IssueArchiveItem = {
   comment_count: number;
 };
 
-export function getTodayIssue(token: string) {
+export function getTodayIssue(token?: string | null) {
   return apiRequest<{ issue: Issue | null }>('/issues/today', { token });
 }
 
-export function getIssueArchive(token: string) {
+export function getIssueArchive(token?: string | null) {
   return apiRequest<{ items: IssueArchiveItem[] }>('/issues/archive', { token });
 }
 

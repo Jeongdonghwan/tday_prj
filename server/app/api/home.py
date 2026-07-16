@@ -7,7 +7,6 @@ from datetime import datetime, timedelta
 from flask import Blueprint, jsonify
 from sqlalchemy import select
 
-from ..auth import login_required
 from ..extensions import db
 from ..models import Post
 from ..ranking import cache_get, cache_set
@@ -23,8 +22,8 @@ def _weight(p: Post) -> int:
 
 
 @bp.get("/home/trending")
-@login_required
 def trending():
+    """실시간 인기 — 게스트 열람 허용."""
     cached = cache_get(_CACHE_KEY, _TTL)
     if cached is not None:
         return jsonify(cached)

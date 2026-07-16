@@ -5,7 +5,7 @@ export type TestPromo = { slug: string; title: string } | null;
 export type TestBadge = { code: string; title: string; avatar_no: number } | null;
 export type TestListItem = { slug: string; title: string; emoji: string };
 
-export function getTests(token: string) {
+export function getTests(token?: string | null) {
   return apiRequest<{ items: TestListItem[] }>('/tests', { token });
 }
 

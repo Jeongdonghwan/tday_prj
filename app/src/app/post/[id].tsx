@@ -33,7 +33,7 @@ import { Avatar } from '@/components/Avatar';
 import { Icon } from '@/components/Icon';
 import { PollResultBar } from '@/components/PollResultBar';
 import { StatusChip } from '@/components/StatusChip';
-import { confirmAsync, notify } from '@/lib/dialogs';
+import { confirmAsync, notify, requireLogin } from '@/lib/dialogs';
 import { colors, radius, statusTheme, weight } from '@/theme';
 
 export default function PostDetail() {
@@ -68,7 +68,7 @@ export default function PostDetail() {
   );
 
   async function onVote(side: 'A' | 'B') {
-    if (!token) return;
+    if (!token) return requireLogin();
     try {
       const updated = await votePost(id, side, token);
       setPost(updated);
@@ -79,7 +79,7 @@ export default function PostDetail() {
   }
 
   async function onLike() {
-    if (!token) return;
+    if (!token) return requireLogin();
     try {
       const { like_count, liked } = await likePost(id, token);
       setPost((p) => (p ? { ...p, like_count, liked } : p));
@@ -99,7 +99,7 @@ export default function PostDetail() {
             label: '삭제하기',
             destructive: true,
             onPress: async () => {
-              if (!token) return;
+              if (!token) return requireLogin();
               if (!(await confirmAsync('글 삭제', '이 글과 댓글·투표가 모두 삭제돼요. 계속할까요?', '삭제'))) return;
               try {
                 await deletePost(post.id, token);
@@ -114,7 +114,7 @@ export default function PostDetail() {
           {
             label: '신고하기',
             onPress: async () => {
-              if (!token) return;
+              if (!token) return requireLogin();
               if (!(await confirmAsync('신고', '이 글을 신고할까요?', '신고'))) return;
               try {
                 const r = await reportTarget({ target_type: 'post', target_id: post.id, reason: '부적절' }, token);

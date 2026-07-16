@@ -23,7 +23,7 @@ def _active_poll():
 
 
 def _partner_id(user):
-    if not user.couple_id:
+    if user is None or not user.couple_id:
         return None
     couple = db.session.get(Couple, user.couple_id)
     if not couple:
@@ -54,7 +54,8 @@ def _poll_dict(poll, user):
         {"side": s, "label": label, "count": counts.get(s, 0), "pct": round(counts.get(s, 0) / total * 100) if total else 0}
         for s, label in _sides(poll)
     ]
-    my = db.session.scalar(
+    # 게스트(비로그인)는 내 투표 없음
+    my = None if user is None else db.session.scalar(
         select(DailyPollVote.side).where(DailyPollVote.poll_id == poll.id, DailyPollVote.user_id == user.id)
     )
     partner_vote = None
@@ -67,10 +68,12 @@ def _poll_dict(poll, user):
 
 
 @bp.get("/daily-poll/today")
-@login_required
 def today():
+    """오늘의 밸런스 투표 — 게스트 열람 허용 (투표는 로그인 필요)."""
+    from ..auth import current_user_optional
+
     poll = _active_poll()
-    data = {"poll": _poll_dict(poll, g.user) if poll else None}
+    data = {"poll": _poll_dict(poll, current_user_optional()) if poll else None}
 
     past = []
     for p in db.session.scalars(

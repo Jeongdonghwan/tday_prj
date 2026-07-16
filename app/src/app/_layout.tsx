@@ -4,6 +4,7 @@
  */
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -21,7 +22,9 @@ function useProtectedRoute() {
   useEffect(() => {
     if (!ready) return;
     const inAuthGroup = segments[0] === '(auth)';
-    if (!token && !inAuthGroup) {
+    // 웹은 게스트 열람 허용 (SEO·유입) — 로그인 화면으로 강제 이동하지 않음.
+    // 네이티브 앱은 로그인 우선 유지.
+    if (!token && !inAuthGroup && Platform.OS !== 'web') {
       router.replace('/(auth)/login');
     } else if (token && inAuthGroup) {
       router.replace('/(tabs)');

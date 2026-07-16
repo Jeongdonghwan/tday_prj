@@ -3,6 +3,6 @@ import { apiRequest } from './client';
 
 export type TrendingItem = { id: number; title: string; comment_count: number };
 
-export function getTrending(token: string) {
+export function getTrending(token?: string | null) {
   return apiRequest<{ items: TrendingItem[] }>('/home/trending', { token });
 }

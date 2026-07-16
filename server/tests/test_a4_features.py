@@ -111,5 +111,5 @@ def test_tests_list_with_emoji(client, token, bearer, app):
     assert row["title"] and row["emoji"]
 
 
-def test_tests_list_requires_auth(client):
-    assert client.get("/tests").status_code == 401
+def test_tests_list_guest_readable(client):
+    assert client.get("/tests").status_code == 200

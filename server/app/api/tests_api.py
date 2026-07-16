@@ -18,7 +18,6 @@ bp = Blueprint("tests_api", __name__)
 
 
 @bp.get("/tests")
-@login_required
 def list_tests():
     tests = db.session.scalars(
         select(Test).where(Test.is_active.is_(True)).order_by(Test.created_at.desc())
@@ -31,7 +30,6 @@ def list_tests():
 
 
 @bp.get("/tests/promo")
-@login_required
 def promo():
     since = datetime.utcnow() - timedelta(days=7)
     test = db.session.scalar(

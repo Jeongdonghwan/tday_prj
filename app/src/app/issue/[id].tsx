@@ -20,6 +20,7 @@ import { ApiError } from '@/api/client';
 import { createIssueComment, getIssue, listIssueComments, voteIssue, type Issue } from '@/api/issues';
 import type { ApiComment } from '@/api/posts';
 import { useAuth } from '@/auth/AuthContext';
+import { requireLogin } from '@/lib/dialogs';
 import { Avatar } from '@/components/Avatar';
 import { Icon } from '@/components/Icon';
 import { StatusChip } from '@/components/StatusChip';
@@ -41,7 +42,7 @@ export default function IssueDetail() {
   const [sending, setSending] = useState(false);
 
   const reload = useCallback(async () => {
-    if (!token) return;
+    if (!token) return requireLogin();
     try {
       const [i, c] = await Promise.all([getIssue(id, token), listIssueComments(id, token)]);
       setIssue(i.issue);

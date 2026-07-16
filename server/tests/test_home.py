@@ -39,5 +39,5 @@ def test_trending_top5_only(client, register, bearer, app):
     assert len(items) == 5
 
 
-def test_trending_requires_auth(client):
-    assert client.get("/home/trending").status_code == 401
+def test_trending_guest_readable(client):
+    assert client.get("/home/trending").status_code == 200

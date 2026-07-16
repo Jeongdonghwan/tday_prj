@@ -11,7 +11,7 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
-from ..auth import login_required
+from ..auth import current_user_optional, login_required
 from ..extensions import db
 from ..models import Issue, IssueComment, IssueVote
 from .serializers import comment_dict
@@ -35,7 +35,8 @@ def _poll(issue, user):
     )
     a, b = int(counts.get("a", 0)), int(counts.get("b", 0))
     total = a + b
-    my = db.session.scalar(
+    # 게스트(비로그인)는 내 투표 없음
+    my = None if user is None else db.session.scalar(
         select(IssueVote.side).where(IssueVote.issue_id == issue.id, IssueVote.user_id == user.id)
     )
     return {
@@ -65,14 +66,13 @@ def _issue_dict(issue, user, detail=False):
 
 
 @bp.get("/issues/today")
-@login_required
 def today():
+    """오늘의 이슈 — 게스트 열람 허용 (투표는 로그인 필요)."""
     issue = _active_issue()
-    return jsonify({"issue": _issue_dict(issue, g.user) if issue else None})
+    return jsonify({"issue": _issue_dict(issue, current_user_optional()) if issue else None})
 
 
 @bp.get("/issues/archive")
-@login_required
 def archive():
     """지난(비활성) 이슈 아카이브 — 날짜·제목·최종 결과·댓글수 (HOME_UPDATE §3)."""
     rows = db.session.scalars(
@@ -103,12 +103,11 @@ def archive():
 
 
 @bp.get("/issues/<int:issue_id>")
-@login_required
 def detail(issue_id: int):
     issue = db.session.get(Issue, issue_id)
     if not issue:
         return jsonify({"error": "not_found"}), 404
-    return jsonify({"issue": _issue_dict(issue, g.user, detail=True)})
+    return jsonify({"issue": _issue_dict(issue, current_user_optional(), detail=True)})
 
 
 @bp.post("/issues/<int:issue_id>/vote")
