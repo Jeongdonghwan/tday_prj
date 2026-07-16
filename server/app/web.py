@@ -29,6 +29,12 @@ def _test_or_404(slug):
     return t
 
 
+@bp.get("/")
+def root():
+    """도메인 루트 — 웹 SPA 배포 전 임시 홈: 테스트존 목록 렌더 (검색엔진 인증 메타 포함)."""
+    return test_list()
+
+
 @bp.get("/terms")
 def terms():
     """이용약관 — 스토어 심사·카카오 간편가입용 공개 URL."""

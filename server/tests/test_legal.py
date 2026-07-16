@@ -18,3 +18,10 @@ def test_privacy_page(client):
 def test_pages_cross_link(client):
     assert '/privacy' in client.get("/terms").get_data(as_text=True)
     assert '/terms' in client.get("/privacy").get_data(as_text=True)
+
+
+def test_root_landing(client):
+    """도메인 루트 — 404 아님 (검색엔진 수집·인증용)."""
+    r = client.get("/")
+    assert r.status_code == 200
+    assert "오늘연애" in r.get_data(as_text=True)

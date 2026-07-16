@@ -39,7 +39,7 @@ def sitemap():
     ).all()
     tests = db.session.scalars(select(Test).where(Test.is_active.is_(True))).all()
     urls = (
-        [f"{base}/t"]
+        [base, f"{base}/t"]
         + [f"{base}/t/{t.slug}" for t in tests]  # 테스트 인트로 — 검색 유입 핵심 페이지
         + [f"{base}/terms", f"{base}/privacy"]
         + [f"{base}/p/{p.id}" for p in posts]
