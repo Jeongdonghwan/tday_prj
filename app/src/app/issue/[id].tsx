@@ -42,7 +42,7 @@ export default function IssueDetail() {
   const [sending, setSending] = useState(false);
 
   const reload = useCallback(async () => {
-    if (!token) return requireLogin();
+    // 게스트도 열람 가능 (읽기는 공개 API — 투표/댓글만 로그인)
     try {
       const [i, c] = await Promise.all([getIssue(id, token), listIssueComments(id, token)]);
       setIssue(i.issue);
@@ -59,7 +59,8 @@ export default function IssueDetail() {
   }, [reload]);
 
   async function onVote(side: 'a' | 'b') {
-    if (!token || !issue || issue.my_vote) return;
+    if (!token) return requireLogin();
+    if (!issue || issue.my_vote) return;
     try {
       setIssue((await voteIssue(id, side, token)).issue);
     } catch (e) {
@@ -68,7 +69,8 @@ export default function IssueDetail() {
   }
 
   async function onSend() {
-    if (!token || !input.trim()) return;
+    if (!token) return requireLogin();
+    if (!input.trim()) return;
     setSending(true);
     try {
       await createIssueComment(id, input.trim(), token);

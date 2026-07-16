@@ -42,7 +42,7 @@ export function getIssueArchive(token?: string | null) {
   return apiRequest<{ items: IssueArchiveItem[] }>('/issues/archive', { token });
 }
 
-export function getIssue(id: number | string, token: string) {
+export function getIssue(id: number | string, token?: string | null) {
   return apiRequest<{ issue: Issue }>(`/issues/${id}`, { token });
 }
 

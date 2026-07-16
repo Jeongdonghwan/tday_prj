@@ -141,7 +141,8 @@ export default function PostDetail() {
         ];
 
   async function onSend() {
-    if (!token || !input.trim()) return;
+    if (!token) return requireLogin();
+    if (!input.trim()) return;
     setSending(true);
     try {
       await createComment(id, input.trim(), token);

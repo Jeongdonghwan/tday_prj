@@ -19,7 +19,7 @@ export default function IssuesScreen() {
   const [archive, setArchive] = useState<IssueArchiveItem[]>([]);
 
   const load = useCallback(async () => {
-    if (!token) return;
+    // 게스트도 열람 가능 (아카이브는 공개 API)
     try {
       setArchive((await getIssueArchive(token)).items);
     } catch {
