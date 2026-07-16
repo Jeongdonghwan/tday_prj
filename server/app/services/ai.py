@@ -6,7 +6,6 @@ Claude API(anthropic SDK)로 제목/본문에서 편 갈리는 2지선다 A/B �
 import json
 import re
 
-from anthropic import Anthropic
 from flask import current_app
 
 _PROMPT = """다음 글을 보고, 편이 갈리는 2지선다 투표 선택지 A/B를 만들어줘.
@@ -37,6 +36,12 @@ def _parse(text: str) -> dict:
 def suggest_poll(title: str, body: str = "") -> dict:
     key = current_app.config.get("ANTHROPIC_API_KEY")
     if not key:
+        raise AIUnavailable("AI 기능이 아직 설정되지 않았습니다.")
+
+    try:
+        # 선택 의존성 — anthropic 미설치 서버에서도 앱은 뜨고, 이 기능만 비활성
+        from anthropic import Anthropic
+    except ImportError:
         raise AIUnavailable("AI 기능이 아직 설정되지 않았습니다.")
 
     client = Anthropic(api_key=key)
