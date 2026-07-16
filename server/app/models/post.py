@@ -103,3 +103,18 @@ class Comment(db.Model):
     __table_args__ = (
         Index("idx_post", "post_id", "created_at"),
     )
+
+
+class CommentLike(db.Model):
+    """댓글 좋아요 — 유저당 1회 토글. like_count 는 comments 에 캐시."""
+
+    __tablename__ = "comment_likes"
+
+    id = db.Column(BigInteger, primary_key=True, autoincrement=True)
+    comment_id = db.Column(BigInteger, db.ForeignKey("comments.id"), nullable=False)
+    user_id = db.Column(BigInteger, db.ForeignKey("users.id"), nullable=False)
+    created_at = db.Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    __table_args__ = (
+        UniqueConstraint("comment_id", "user_id", name="uq_comment_like"),
+    )

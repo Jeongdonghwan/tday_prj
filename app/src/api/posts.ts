@@ -44,6 +44,7 @@ export type ApiComment = {
   parent_id: number | null;
   body: string;
   like_count: number;
+  liked?: boolean; // 내가 좋아요 눌렀는지 (게스트/미로그인 false)
   author: ApiAuthor;
   time_text: string;
   created_at: string | null;
@@ -145,7 +146,7 @@ export function createComment(id: number | string, body: string, token: string, 
 }
 
 export function likeComment(id: number | string, token: string) {
-  return apiRequest<{ like_count: number }>(`/comments/${id}/like`, { method: 'POST', token });
+  return apiRequest<{ like_count: number; liked: boolean }>(`/comments/${id}/like`, { method: 'POST', token });
 }
 
 /** AI 투표 선택지 제안 (스펙 §6: 비워두면 AI가 제안). 키 미설정 시 503. */

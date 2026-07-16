@@ -8,9 +8,9 @@ from flask import Blueprint, g, jsonify, request
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
-from ..auth import login_required
+from ..auth import current_user_optional, login_required
 from ..extensions import db
-from ..models import Comment, Post
+from ..models import Comment, CommentLike, Post
 from .serializers import comment_dict
 
 bp = Blueprint("comments", __name__)
@@ -31,7 +31,26 @@ def list_comments(post_id: int):
             replies_by_parent.setdefault(c.parent_id, []).append(c)
 
     tops = [c for c in rows if c.parent_id is None]
-    items = [comment_dict(c, replies_by_parent.get(c.id, [])) for c in tops]
+
+    # 내가 좋아요한 댓글 표시 (게스트는 빈 집합)
+    user = current_user_optional()
+    liked_ids: set[int] = set()
+    if user and rows:
+        liked_ids = set(
+            db.session.scalars(
+                select(CommentLike.comment_id).where(
+                    CommentLike.user_id == user.id,
+                    CommentLike.comment_id.in_([c.id for c in rows]),
+                )
+            ).all()
+        )
+
+    def _with_liked(d: dict) -> dict:
+        d["liked"] = d["id"] in liked_ids
+        d["replies"] = [_with_liked(r) for r in d["replies"]]
+        return d
+
+    items = [_with_liked(comment_dict(c, replies_by_parent.get(c.id, []))) for c in tops]
     return jsonify({"items": items, "count": len(rows)})
 
 
@@ -71,9 +90,21 @@ def create_comment(post_id: int):
 @bp.post("/comments/<int:comment_id>/like")
 @login_required
 def like_comment(comment_id: int):
+    """댓글 좋아요 토글 — 유저당 1회 (글 공감과 동일 패턴)."""
     comment = db.session.get(Comment, comment_id)
     if not comment:
         return jsonify({"error": "not_found"}), 404
-    comment.like_count += 1
+
+    existing = db.session.scalar(
+        select(CommentLike).where(CommentLike.comment_id == comment_id, CommentLike.user_id == g.user.id)
+    )
+    if existing:
+        db.session.delete(existing)
+        comment.like_count = max(0, comment.like_count - 1)
+        liked = False
+    else:
+        db.session.add(CommentLike(comment_id=comment_id, user_id=g.user.id))
+        comment.like_count += 1
+        liked = True
     db.session.commit()
-    return jsonify({"like_count": comment.like_count})
+    return jsonify({"like_count": comment.like_count, "liked": liked})

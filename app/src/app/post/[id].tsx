@@ -21,6 +21,7 @@ import {
   createComment,
   deletePost,
   getPost,
+  likeComment,
   likePost,
   listComments,
   votePost,
@@ -140,6 +141,21 @@ export default function PostDetail() {
           },
         ];
 
+  async function onLikeComment(commentId: number) {
+    if (!token) return requireLogin();
+    try {
+      const { like_count, liked } = await likeComment(commentId, token);
+      // 트리(댓글+대댓글)에서 해당 댓글만 갱신
+      const patch = (c: ApiComment): ApiComment =>
+        c.id === commentId
+          ? { ...c, like_count, liked }
+          : { ...c, replies: c.replies.map(patch) };
+      setComments((prev) => prev.map(patch));
+    } catch {
+      /* noop */
+    }
+  }
+
   async function onSend() {
     if (!token) return requireLogin();
     if (!input.trim()) return;
@@ -220,7 +236,7 @@ export default function PostDetail() {
           {comments.length === 0 ? (
             <Text style={styles.noComment}>첫 댓글을 남겨보세요.</Text>
           ) : (
-            comments.map((c) => <CommentItem key={c.id} comment={c} />)
+            comments.map((c) => <CommentItem key={c.id} comment={c} onLike={onLikeComment} />)
           )}
         </ScrollView>
 
@@ -279,7 +295,22 @@ function DetailBar({
   );
 }
 
-function CommentItem({ comment }: { comment: ApiComment }) {
+function CommentLikeBtn({ comment, onLike }: { comment: ApiComment; onLike: (id: number) => void }) {
+  return (
+    <Pressable onPress={() => onLike(comment.id)} hitSlop={6} style={styles.cmLike}>
+      <Icon
+        name={comment.liked ? 'heartFill' : 'heart'}
+        size={13}
+        color={comment.liked ? colors.rose : colors.sub2}
+      />
+      <Text style={[styles.cmLikeText, comment.liked && { color: colors.rose }]}>
+        {comment.like_count > 0 ? comment.like_count : '좋아요'}
+      </Text>
+    </Pressable>
+  );
+}
+
+function CommentItem({ comment, onLike }: { comment: ApiComment; onLike: (id: number) => void }) {
   return (
     <View style={styles.cmt}>
       <Avatar avatarNo={comment.author.avatar_no} size={28} />
@@ -289,10 +320,13 @@ function CommentItem({ comment }: { comment: ApiComment }) {
           <StatusChip status={comment.author.status} small />
         </View>
         <Text style={styles.cmText}>{comment.body}</Text>
-        <Text style={styles.cmMeta}>
-          {comment.time_text} · 좋아요 {comment.like_count}
-          {comment.reply_count > 0 ? ` · 답글 ${comment.reply_count}` : ''}
-        </Text>
+        <View style={styles.cmMetaRow}>
+          <Text style={styles.cmMeta}>
+            {comment.time_text}
+            {comment.reply_count > 0 ? ` · 답글 ${comment.reply_count}` : ''}
+          </Text>
+          <CommentLikeBtn comment={comment} onLike={onLike} />
+        </View>
         {comment.replies.map((r) => (
           <View key={r.id} style={styles.reply}>
             <Avatar avatarNo={r.author.avatar_no} size={24} />
@@ -302,7 +336,10 @@ function CommentItem({ comment }: { comment: ApiComment }) {
                 <StatusChip status={r.author.status} small />
               </View>
               <Text style={styles.cmText}>{r.body}</Text>
-              <Text style={styles.cmMeta}>{r.time_text} · 좋아요 {r.like_count}</Text>
+              <View style={styles.cmMetaRow}>
+                <Text style={styles.cmMeta}>{r.time_text}</Text>
+                <CommentLikeBtn comment={r} onLike={onLike} />
+              </View>
             </View>
           </View>
         ))}
@@ -336,6 +373,9 @@ const styles = StyleSheet.create({
   cmTop: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
   cmName: { fontSize: 12.5, fontWeight: weight.bold as '700', color: colors.ink },
   cmText: { fontSize: 14, lineHeight: 21, color: colors.body },
+  cmMetaRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 2 },
+  cmLike: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingVertical: 2, paddingHorizontal: 4 },
+  cmLikeText: { fontSize: 11.5, color: colors.sub2, fontWeight: '600' },
   cmMeta: { fontSize: 11.5, color: colors.sub2, marginTop: 6 },
   reply: { flexDirection: 'row', gap: 8, marginTop: 12, paddingLeft: 8, borderLeftWidth: 2, borderLeftColor: colors.line },
   composer: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, paddingHorizontal: 16, paddingVertical: 10, borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.bg },
