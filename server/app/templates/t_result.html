@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 {% set avatar = 'avatars/av_%02d.svg'|format(result.avatar_no or 1) %}
 {% block title %}나는 {{ result.title }}! · {{ test.title }}{% endblock %}
+{% block meta_desc %}{{ result.catchphrase or test.title }} — {{ test.title }} 결과. 나도 해보기!{% endblock %}
 {% block og_title %}나는 {{ result.title }}! 너는?{% endblock %}
 {% block og_desc %}{{ result.catchphrase or test.title }}{% endblock %}
-{% block og_image %}{{ url_for('static', filename=avatar, _external=True) }}{% endblock %}
+{# og:image 는 base 의 브랜드 카드(PNG) 사용 — 카톡/페북 크롤러가 SVG 아바타를 못 읽음 #}
 {% block content %}
   <div class="result" style="--accent:{{ th.theme }}">
     <div class="result-hero" style="background:linear-gradient(160deg,{{ th.theme }}26,{{ th.theme }}0d)">
@@ -46,14 +47,31 @@
   </div>
 
   <script>
-    const SHARE_TITLE = {{ ('나는 ' ~ result.title ~ '! 너는?')|tojson }};
+    var SHARE_TITLE = {{ ('나는 ' ~ result.title ~ '! 너는?')|tojson }};
+    // 오늘연애 앱 WebView 안에서는 네이티브 공유 시트로 브리지 (navigator.share/clipboard 미지원 대응)
+    var IN_APP = !!window.ReactNativeWebView;
     function shareUrl() { var u = new URL(location.href); u.searchParams.set('ref', 'share'); return u.toString(); }
+    function postToApp(type) {
+      window.ReactNativeWebView.postMessage(JSON.stringify({ type: type, url: shareUrl(), title: SHARE_TITLE }));
+    }
     function copyLink() {
-      navigator.clipboard.writeText(shareUrl()).then(function () { alert('링크를 복사했어요! 친구에게 붙여넣기 하세요.'); });
+      if (IN_APP) return postToApp('copy');
+      function fallback() { window.prompt('아래 링크를 복사해 공유하세요', shareUrl()); }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareUrl())
+          .then(function () { alert('링크를 복사했어요! 친구에게 붙여넣기 하세요.'); })
+          .catch(fallback);
+      } else fallback();
     }
     function share() {
+      if (IN_APP) return postToApp('share');
       if (navigator.share) { navigator.share({ title: SHARE_TITLE, text: SHARE_TITLE, url: shareUrl() }); }
       else { copyLink(); }
+    }
+    // 이미 앱 안이면 "앱에서 결과 저장하기" CTA 숨김
+    if (IN_APP) {
+      var cta = document.querySelector('.app-cta');
+      if (cta) cta.style.display = 'none';
     }
   </script>
 {% endblock %}

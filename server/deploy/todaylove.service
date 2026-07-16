@@ -1,0 +1,23 @@
+# /etc/systemd/system/todaylove.service
+# gunicorn 으로 Flask 구동 (2GB 서버: 워커 2 + 스레드 2 = 동시 4요청, 메모리 안전)
+[Unit]
+Description=todaylove flask (gunicorn)
+After=network.target mariadb.service
+
+[Service]
+User=todaylove
+Group=todaylove
+WorkingDirectory=/srv/todaylove/server
+Environment=FLASK_ENV=production
+ExecStart=/srv/todaylove/server/.venv/bin/gunicorn \
+    --workers 2 --threads 2 \
+    --bind 127.0.0.1:8000 \
+    --timeout 60 \
+    --access-logfile /var/log/todaylove/access.log \
+    --error-logfile /var/log/todaylove/error.log \
+    wsgi:app
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

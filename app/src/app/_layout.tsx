@@ -9,6 +9,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 
 import { AuthProvider, useAuth } from '@/auth/AuthContext';
+import { DesktopShell } from '@/components/web/DesktopShell';
+import { useIsDesktop } from '@/hooks/useResponsive';
 import { usePushRouting } from '@/push/usePushRouting';
 
 function useProtectedRoute() {
@@ -29,12 +31,14 @@ function useProtectedRoute() {
 
 function RootNavigator() {
   const { ready } = useAuth();
+  const isDesktop = useIsDesktop();
+  const segments = useSegments();
   useProtectedRoute();
   usePushRouting();
 
   if (!ready) return null; // 스플래시 유지 구간 (토큰 복원 중)
 
-  return (
+  const stack = (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#FFFFFF' } }}>
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(tabs)" />
@@ -53,6 +57,10 @@ function RootNavigator() {
       <Stack.Screen name="profile-edit" />
     </Stack>
   );
+
+  // 데스크톱(웹): 로그인 화면을 제외한 모든 화면(글쓰기·글상세 포함)을 GNB 아래에 렌더
+  if (isDesktop && segments[0] !== '(auth)') return <DesktopShell>{stack}</DesktopShell>;
+  return stack;
 }
 
 export default function RootLayout() {

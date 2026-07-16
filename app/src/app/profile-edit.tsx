@@ -43,8 +43,8 @@ export default function ProfileEditScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.safe, isDesktop && styles.safeDesktop]} edges={['top']}>
-      <View style={[styles.col, isDesktop && styles.colDesktop]}>
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <View style={styles.col}>
         <AppBar
           title="프로필 수정"
           onBack={() => router.back()}
@@ -85,9 +85,7 @@ export default function ProfileEditScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
-  safeDesktop: { alignItems: 'center' },
   col: { flex: 1, width: '100%' },
-  colDesktop: { maxWidth: 680, borderLeftWidth: 1, borderRightWidth: 1, borderColor: colors.line },
   save: { fontSize: 14, fontWeight: weight.bold as '700', color: colors.sub2 },
   saveOn: { color: colors.rose },
   avatarHead: { alignItems: 'center', marginBottom: 20 },

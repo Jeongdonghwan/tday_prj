@@ -35,6 +35,7 @@ class Config:
 
     # 소셜 키 (없으면 해당 provider 비활성)
     KAKAO_REST_API_KEY = os.getenv("KAKAO_REST_API_KEY", "")
+    KAKAO_CLIENT_SECRET = os.getenv("KAKAO_CLIENT_SECRET", "")  # 콘솔에서 활성화 시(웹 code 교환)
     APPLE_CLIENT_ID = os.getenv("APPLE_CLIENT_ID", "")
     APPLE_TEAM_ID = os.getenv("APPLE_TEAM_ID", "")
     APPLE_KEY_ID = os.getenv("APPLE_KEY_ID", "")
@@ -47,6 +48,13 @@ class Config:
     ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "dev-admin-token")
     WEB_BASE_URL = os.getenv("WEB_BASE_URL", "http://127.0.0.1:5050")
     APP_INSTALL_URL = os.getenv("APP_INSTALL_URL", "#")
+
+    # CORS 허용 오리진 — "*"(전체) 또는 콤마 구분 도메인 목록. 운영은 앱/웹 도메인만.
+    CORS_ORIGINS = os.getenv("CORS_ORIGINS", "*")
+
+    # 검색엔진 사이트 소유 확인 (서치콘솔/서치어드바이저 등록 시 발급되는 content 값)
+    NAVER_SITE_VERIFICATION = os.getenv("NAVER_SITE_VERIFICATION", "")
+    GOOGLE_SITE_VERIFICATION = os.getenv("GOOGLE_SITE_VERIFICATION", "")
 
     # 인증·사진 업로드 (로컬 디스크). 운영은 nginx 정적 서빙 권장.
     UPLOAD_DIR = os.getenv("UPLOAD_DIR", os.path.join(os.path.dirname(__file__), "uploads"))

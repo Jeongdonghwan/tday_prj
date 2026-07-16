@@ -20,6 +20,8 @@ const MENU = [
   { label: '홈', path: '/' },
   { label: '커뮤니티', path: '/community' },
   { label: '연애이슈', path: '/issues' },
+  { label: 'BEST', path: '/best' },
+  { label: '연애심리테스트', path: '/tests' },
 ] as const;
 
 function GnbMenu() {

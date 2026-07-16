@@ -7,8 +7,8 @@ RELATIONSHIP_STATUSES = ("couple", "single", "married")
 # photo = 인증·사진 앨범(이미지 글, 초기엔 비활성 — 텍스트 피드 제외). story = 썰·후기 텍스트 게시판.
 POST_CATEGORIES = ("love", "dating", "marriage", "counsel", "daily", "story", "free", "photo")
 
-# 소셜 provider. dev 는 개발용 모의 로그인.
-SOCIAL_PROVIDERS = ("kakao", "apple", "dev")
+# 소셜 provider. dev 는 개발용 모의 로그인, email 은 이메일+비밀번호 간편가입.
+SOCIAL_PROVIDERS = ("kakao", "apple", "email", "dev")
 
 # 투표 선택지
 POLL_SIDES = ("A", "B")

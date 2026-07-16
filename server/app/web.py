@@ -29,6 +29,18 @@ def _test_or_404(slug):
     return t
 
 
+@bp.get("/terms")
+def terms():
+    """이용약관 — 스토어 심사·카카오 간편가입용 공개 URL."""
+    return render_template("terms.html")
+
+
+@bp.get("/privacy")
+def privacy():
+    """개인정보처리방침 — 스토어 심사·카카오 간편가입용 공개 URL."""
+    return render_template("privacy.html")
+
+
 @bp.get("/t")
 def test_list():
     tests = db.session.query(Test).filter_by(is_active=True).order_by(Test.created_at.desc()).all()

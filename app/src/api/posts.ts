@@ -110,6 +110,20 @@ export function createPost(body: CreatePostBody, token: string) {
   return apiRequest<ApiPost>('/posts', { method: 'POST', body, token });
 }
 
+/** 내 글 수정 — 제목/본문/카테고리만 (투표 선택지는 수정 불가). */
+export function updatePost(
+  id: number | string,
+  body: { title?: string; body?: string; category?: string },
+  token: string,
+) {
+  return apiRequest<ApiPost>(`/posts/${id}`, { method: 'PATCH', body, token });
+}
+
+/** 내 글 삭제. */
+export function deletePost(id: number | string, token: string) {
+  return apiRequest<{ ok: boolean }>(`/posts/${id}`, { method: 'DELETE', token });
+}
+
 export function votePost(id: number | string, side: 'A' | 'B', token: string) {
   return apiRequest<ApiPost>(`/posts/${id}/vote`, { method: 'POST', body: { side }, token });
 }

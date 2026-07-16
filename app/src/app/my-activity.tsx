@@ -46,8 +46,8 @@ export default function MyActivityScreen() {
   const empty = tab === 'posts' ? posts.length === 0 : comments.length === 0;
 
   return (
-    <SafeAreaView style={[styles.safe, isDesktop && styles.safeDesktop]} edges={['top']}>
-      <View style={[styles.col, isDesktop && styles.colDesktop]}>
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <View style={styles.col}>
         <AppBar title="내 활동" onBack={() => router.back()} />
         <View style={styles.tabs}>
           {(['posts', 'comments'] as Tab[]).map((t) => (
@@ -87,9 +87,7 @@ export default function MyActivityScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
-  safeDesktop: { alignItems: 'center' },
   col: { flex: 1, width: '100%' },
-  colDesktop: { maxWidth: 680, borderLeftWidth: 1, borderRightWidth: 1, borderColor: colors.line },
   tabs: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: colors.line },
   tab: { flex: 1, alignItems: 'center', paddingVertical: 12 },
   tabText: { fontSize: 14, fontWeight: weight.semibold as '600', color: colors.sub },

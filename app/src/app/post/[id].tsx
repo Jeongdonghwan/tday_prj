@@ -1,8 +1,7 @@
 /** 오늘연애 상세 (스펙 §5-2). API 연동: 투표(중복 불가) + 댓글 목록/작성 + 좋아요. */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -13,13 +12,14 @@ import {
   View,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError } from '@/api/client';
 import { blockUser, reportTarget } from '@/api/moderation';
 import {
   createComment,
+  deletePost,
   getPost,
   likePost,
   listComments,
@@ -28,24 +28,25 @@ import {
   type ApiPost,
 } from '@/api/posts';
 import { useAuth } from '@/auth/AuthContext';
+import { ActionSheet, type SheetAction } from '@/components/ActionSheet';
 import { Avatar } from '@/components/Avatar';
 import { Icon } from '@/components/Icon';
 import { PollResultBar } from '@/components/PollResultBar';
 import { StatusChip } from '@/components/StatusChip';
-import { useIsDesktop } from '@/hooks/useResponsive';
+import { confirmAsync, notify } from '@/lib/dialogs';
 import { colors, radius, statusTheme, weight } from '@/theme';
 
 export default function PostDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { token } = useAuth();
-  const isDesktop = useIsDesktop();
+  const { token, user } = useAuth();
 
   const [post, setPost] = useState<ApiPost | null>(null);
   const [comments, setComments] = useState<ApiComment[]>([]);
   const [loading, setLoading] = useState(true);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const reload = useCallback(async () => {
     try {
@@ -53,15 +54,18 @@ export default function PostDetail() {
       setPost(p);
       setComments(c.items);
     } catch {
-      Alert.alert('오류', '글을 불러오지 못했어요.');
+      notify('오류', '글을 불러오지 못했어요.');
     } finally {
       setLoading(false);
     }
   }, [id, token]);
 
-  useEffect(() => {
-    reload();
-  }, [reload]);
+  // 수정 화면에서 돌아올 때도 갱신되도록 포커스 시 재로드
+  useFocusEffect(
+    useCallback(() => {
+      reload();
+    }, [reload]),
+  );
 
   async function onVote(side: 'A' | 'B') {
     if (!token) return;
@@ -70,7 +74,7 @@ export default function PostDetail() {
       setPost(updated);
     } catch (e) {
       const msg = e instanceof ApiError && e.status === 409 ? '이미 투표했어요.' : '투표에 실패했어요.';
-      Alert.alert('투표', msg);
+      notify('투표', msg);
     }
   }
 
@@ -84,47 +88,57 @@ export default function PostDetail() {
     }
   }
 
-  function onMore() {
-    if (!post) return;
-    Alert.alert('이 글', undefined, [
-      {
-        text: '신고하기',
-        onPress: () =>
-          Alert.alert('신고', '이 글을 신고할까요?', [
-            { text: '취소', style: 'cancel' },
-            {
-              text: '신고',
-              style: 'destructive',
-              onPress: async () => {
-                if (!token) return;
-                try {
-                  const r = await reportTarget({ target_type: 'post', target_id: post.id, reason: '부적절' }, token);
-                  Alert.alert('신고', r.blinded ? '신고가 누적되어 가려졌어요.' : '신고가 접수됐어요.');
-                } catch {
-                  Alert.alert('신고', '신고에 실패했어요.');
-                }
-              },
+  const isMine = post != null && user != null && post.author.id === user.id;
+
+  const menuActions: SheetAction[] = !post
+    ? []
+    : isMine
+      ? [
+          { label: '수정하기', onPress: () => router.push(`/write?edit=${post.id}`) },
+          {
+            label: '삭제하기',
+            destructive: true,
+            onPress: async () => {
+              if (!token) return;
+              if (!(await confirmAsync('글 삭제', '이 글과 댓글·투표가 모두 삭제돼요. 계속할까요?', '삭제'))) return;
+              try {
+                await deletePost(post.id, token);
+                router.back();
+              } catch {
+                notify('삭제', '삭제에 실패했어요.');
+              }
             },
-          ]),
-      },
-      {
-        text: '작성자 차단',
-        style: 'destructive',
-        onPress: async () => {
-          if (!token || !post.author.id) return;
-          try {
-            await blockUser(post.author.id, token);
-            Alert.alert('차단', '차단했어요. 이 유저의 글이 보이지 않아요.', [
-              { text: '확인', onPress: () => router.back() },
-            ]);
-          } catch {
-            Alert.alert('차단', '차단에 실패했어요.');
-          }
-        },
-      },
-      { text: '취소', style: 'cancel' },
-    ]);
-  }
+          },
+        ]
+      : [
+          {
+            label: '신고하기',
+            onPress: async () => {
+              if (!token) return;
+              if (!(await confirmAsync('신고', '이 글을 신고할까요?', '신고'))) return;
+              try {
+                const r = await reportTarget({ target_type: 'post', target_id: post.id, reason: '부적절' }, token);
+                notify('신고', r.blinded ? '신고가 누적되어 가려졌어요.' : '신고가 접수됐어요.');
+              } catch {
+                notify('신고', '신고에 실패했어요.');
+              }
+            },
+          },
+          {
+            label: '작성자 차단',
+            destructive: true,
+            onPress: async () => {
+              if (!token || !post.author.id) return;
+              try {
+                await blockUser(post.author.id, token);
+                notify('차단', '차단했어요. 이 유저의 글이 보이지 않아요.');
+                router.back();
+              } catch {
+                notify('차단', '차단에 실패했어요.');
+              }
+            },
+          },
+        ];
 
   async function onSend() {
     if (!token || !input.trim()) return;
@@ -136,7 +150,7 @@ export default function PostDetail() {
       setComments(c.items);
       setPost((p) => (p ? { ...p, comment_count: c.count } : p));
     } catch {
-      Alert.alert('댓글', '댓글 등록에 실패했어요.');
+      notify('댓글', '댓글 등록에 실패했어요.');
     } finally {
       setSending(false);
     }
@@ -154,9 +168,10 @@ export default function PostDetail() {
   const voted = post.poll?.my_vote != null;
 
   return (
-    <SafeAreaView style={[styles.safe, isDesktop && styles.safeDesktop]} edges={['top']}>
-     <View style={[styles.col, isDesktop && styles.colDesktop]}>
-      <DetailBar onBack={() => router.back()} onLike={onLike} onMore={onMore} liked={post.liked} likeCount={post.like_count} />
+    <SafeAreaView style={styles.safe} edges={['top']}>
+     <View style={styles.col}>
+      <ActionSheet visible={menuOpen} actions={menuActions} onClose={() => setMenuOpen(false)} />
+      <DetailBar onBack={() => router.back()} onLike={onLike} onMore={() => setMenuOpen(true)} liked={post.liked} likeCount={post.like_count} />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -297,9 +312,7 @@ function CommentItem({ comment }: { comment: ApiComment }) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
-  safeDesktop: { alignItems: 'center' },
   col: { flex: 1, width: '100%' },
-  colDesktop: { maxWidth: 680, borderLeftWidth: 1, borderRightWidth: 1, borderColor: colors.line },
   bar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 8 },
   barRight: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   likeBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },

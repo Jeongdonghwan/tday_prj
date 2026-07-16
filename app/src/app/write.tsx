@@ -1,16 +1,16 @@
-/** 글쓰기 (목업 v3-1). 골격: 카테고리 + 제목/본문 + 작성자 상태칩 + 투표 토글 + A/B 입력. */
-import { useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { useRouter } from 'expo-router';
+/** 글쓰기 + 내 글 수정(?edit=<id>). 골격: 카테고리 + 제목/본문 + 작성자 상태칩 + 투표 토글 + A/B 입력. */
+import { useEffect, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError } from '@/api/client';
-import { createPost, suggestPoll } from '@/api/posts';
+import { createPost, getPost, updatePost } from '@/api/posts';
 import { useAuth } from '@/auth/AuthContext';
+import { notify } from '@/lib/dialogs';
 import { FilterRow } from '@/components/FilterRow';
 import { Icon } from '@/components/Icon';
 import { StatusChip } from '@/components/StatusChip';
-import { useIsDesktop } from '@/hooks/useResponsive';
 import { QUICK_ITEMS } from '@/quickmenu';
 import { colors, radius, weight, type PostCategory } from '@/theme';
 
@@ -23,8 +23,8 @@ const WRITE_CATEGORIES = QUICK_ITEMS.flatMap((q) =>
 
 export default function WriteScreen() {
   const router = useRouter();
+  const { edit } = useLocalSearchParams<{ edit?: string }>();
   const { user, token } = useAuth();
-  const isDesktop = useIsDesktop();
   const [cat, setCat] = useState(WRITE_CATEGORIES[0].key);
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
@@ -32,7 +32,21 @@ export default function WriteScreen() {
   const [a, setA] = useState('');
   const [b, setB] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [suggesting, setSuggesting] = useState(false);
+
+  const isEdit = !!edit;
+
+  // 수정 모드: 기존 글 로드 → 프리필 (투표 선택지는 공정성 위해 수정 불가)
+  useEffect(() => {
+    if (!edit) return;
+    getPost(edit, token ?? undefined)
+      .then((p) => {
+        setTitle(p.title);
+        setBody(p.body ?? '');
+        const found = WRITE_CATEGORIES.find((c) => c.category === p.category);
+        if (found) setCat(found.key);
+      })
+      .catch(() => notify('수정', '글을 불러오지 못했어요.'));
+  }, [edit, token]);
 
   const pollValid = !poll || (a.trim().length > 0 && b.trim().length > 0);
   const canPost = title.trim().length > 0 && pollValid && !submitting;
@@ -43,56 +57,41 @@ export default function WriteScreen() {
       .category as PostCategory;
     setSubmitting(true);
     try {
-      await createPost(
-        {
-          category: selectedCategory,
-          title: title.trim(),
-          body: body.trim() || undefined,
-          is_poll: poll,
-          poll: poll ? { a: a.trim(), b: b.trim() } : undefined,
-        },
-        token,
-      );
-      router.back(); // 피드는 포커스 시 자동 새로고침
+      if (isEdit) {
+        await updatePost(edit!, { title: title.trim(), body: body.trim(), category: selectedCategory }, token);
+      } else {
+        await createPost(
+          {
+            category: selectedCategory,
+            title: title.trim(),
+            body: body.trim() || undefined,
+            is_poll: poll,
+            poll: poll ? { a: a.trim(), b: b.trim() } : undefined,
+          },
+          token,
+        );
+      }
+      router.back(); // 피드/상세는 포커스 시 자동 새로고침
     } catch (e) {
-      const msg = e instanceof ApiError ? e.message : '등록에 실패했어요.';
-      Alert.alert('글쓰기', msg);
+      const msg = e instanceof ApiError ? e.message : isEdit ? '수정에 실패했어요.' : '등록에 실패했어요.';
+      notify('글쓰기', msg);
     } finally {
       setSubmitting(false);
     }
   }
 
-  async function onSuggest() {
-    if (!token || !title.trim()) {
-      Alert.alert('AI 추천', '먼저 제목을 입력해주세요.');
-      return;
-    }
-    setSuggesting(true);
-    try {
-      const r = await suggestPoll({ title: title.trim(), body: body.trim() || undefined }, token);
-      setA(r.a);
-      setB(r.b);
-    } catch (e) {
-      const msg =
-        e instanceof ApiError && e.status === 503
-          ? 'AI 추천은 아직 준비 중이에요.'
-          : 'AI 추천을 가져오지 못했어요.';
-      Alert.alert('AI 추천', msg);
-    } finally {
-      setSuggesting(false);
-    }
-  }
-
   return (
-    <SafeAreaView style={[styles.safe, isDesktop && styles.safeDesktop]}>
-     <View style={[styles.col, isDesktop && styles.colDesktop]}>
+    <SafeAreaView style={styles.safe}>
+     <View style={styles.col}>
       <View style={styles.bar}>
         <Pressable onPress={() => router.back()} hitSlop={8}>
           <Text style={styles.cancel}>취소</Text>
         </Pressable>
-        <Text style={styles.barTitle}>글쓰기</Text>
+        <Text style={styles.barTitle}>{isEdit ? '글 수정' : '글쓰기'}</Text>
         <Pressable hitSlop={8} disabled={!canPost} onPress={onSubmit}>
-          <Text style={[styles.post, canPost && styles.postActive]}>{submitting ? '등록 중' : '등록'}</Text>
+          <Text style={[styles.post, canPost && styles.postActive]}>
+            {submitting ? (isEdit ? '수정 중' : '등록 중') : isEdit ? '수정' : '등록'}
+          </Text>
         </Pressable>
       </View>
 
@@ -123,15 +122,18 @@ export default function WriteScreen() {
           <Text style={[styles.metaLabel, { marginLeft: 'auto' }]}>자동 표시</Text>
         </View>
 
-        <View style={styles.toggleRow}>
-          <View>
-            <Text style={styles.toggleTitle}>투표 만들기</Text>
-            <Text style={styles.toggleSub}>편 갈리는 주제면 켜보세요</Text>
+        {/* 수정 모드에선 투표 구조 변경 불가(공정성) — 토글 숨김 */}
+        {!isEdit && (
+          <View style={styles.toggleRow}>
+            <View>
+              <Text style={styles.toggleTitle}>투표 만들기</Text>
+              <Text style={styles.toggleSub}>편 갈리는 주제면 켜보세요</Text>
+            </View>
+            <Pressable style={[styles.toggle, !poll && styles.toggleOff]} onPress={() => setPoll((p) => !p)}>
+              <View style={[styles.knob, !poll && styles.knobOff]} />
+            </Pressable>
           </View>
-          <Pressable style={[styles.toggle, !poll && styles.toggleOff]} onPress={() => setPoll((p) => !p)}>
-            <View style={[styles.knob, !poll && styles.knobOff]} />
-          </Pressable>
-        </View>
+        )}
 
         {poll && (
           <View style={styles.vinputs}>
@@ -143,14 +145,11 @@ export default function WriteScreen() {
               <Text style={[styles.sideTag, { color: colors.blue }]}>B</Text>
               <TextInput style={styles.vinbox} placeholder="두 번째 선택지" placeholderTextColor={colors.sub2} value={b} onChangeText={setB} />
             </View>
-            <Pressable style={[styles.aiBtn, suggesting && styles.aiBtnOff]} disabled={suggesting} onPress={onSuggest}>
-              <Text style={styles.aiBtnText}>{suggesting ? 'AI가 고민 중…' : 'AI 추천 받기'}</Text>
-            </Pressable>
             <View style={styles.hint}>
               <Icon name="info" size={15} color={colors.sub} strokeWidth={2} />
               <Text style={styles.hintText}>
                 <Text style={{ fontWeight: weight.bold as '700', color: colors.ink }}>둘 중 하나를 고르게</Text> 적어야 투표가
-                재밌어요. 비워두면 AI가 제안해줘요.
+                재밌어요.
               </Text>
             </View>
           </View>
@@ -163,9 +162,7 @@ export default function WriteScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
-  safeDesktop: { alignItems: 'center' },
   col: { flex: 1, width: '100%' },
-  colDesktop: { maxWidth: 680, borderLeftWidth: 1, borderRightWidth: 1, borderColor: colors.line },
   bar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 18, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.line },
   cancel: { fontSize: 14, color: colors.sub, fontWeight: weight.semibold as '600' },
   barTitle: { fontSize: 15, fontWeight: weight.extrabold as '800', color: colors.ink },
@@ -186,9 +183,6 @@ const styles = StyleSheet.create({
   vin: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
   sideTag: { fontSize: 11, fontWeight: weight.extrabold as '800', width: 20 },
   vinbox: { flex: 1, borderWidth: 1.5, borderColor: colors.line, borderRadius: radius.button, paddingHorizontal: 14, paddingVertical: 13, fontSize: 14, fontWeight: weight.semibold as '600', color: colors.ink },
-  aiBtn: { alignSelf: 'flex-start', borderWidth: 1.5, borderColor: colors.rose, borderRadius: radius.chip, paddingHorizontal: 14, paddingVertical: 8, marginBottom: 10 },
-  aiBtnOff: { opacity: 0.5 },
-  aiBtnText: { color: colors.rose, fontSize: 13, fontWeight: weight.bold as '700' },
   hint: { flexDirection: 'row', alignItems: 'flex-start', gap: 7, backgroundColor: colors.soft, borderRadius: radius.button, padding: 13 },
   hintText: { flex: 1, fontSize: 12, color: colors.sub, lineHeight: 18 },
 });

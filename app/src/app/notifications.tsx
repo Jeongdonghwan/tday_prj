@@ -40,8 +40,8 @@ export default function NotificationsScreen() {
   );
 
   return (
-    <SafeAreaView style={[styles.safe, isDesktop && styles.safeDesktop]} edges={['top']}>
-      <View style={[styles.col, isDesktop && styles.colDesktop]}>
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <View style={styles.col}>
         <AppBar title="알림" onBack={() => router.back()} />
         <ScrollView contentContainerStyle={items.length === 0 ? styles.empty : { paddingVertical: 6 }}>
           {items.map((n) => (
@@ -68,9 +68,7 @@ export default function NotificationsScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
-  safeDesktop: { alignItems: 'center' },
   col: { flex: 1, width: '100%' },
-  colDesktop: { maxWidth: 680, borderLeftWidth: 1, borderRightWidth: 1, borderColor: colors.line },
   row: { flexDirection: 'row', gap: 12, alignItems: 'center', paddingHorizontal: 18, paddingVertical: 14, borderBottomWidth: 0.5, borderBottomColor: colors.line },
   body: { flex: 1, gap: 3 },
   text: { fontSize: 13.5, color: colors.ink, lineHeight: 19 },

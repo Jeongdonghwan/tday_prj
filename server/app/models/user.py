@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import BigInteger, DateTime, Enum, Index, SmallInteger, String
+from sqlalchemy import BigInteger, Boolean, DateTime, Enum, Index, SmallInteger, String
 
 from ..extensions import db
 from .enums import RELATIONSHIP_STATUSES, SOCIAL_PROVIDERS, STATUS_LABELS
@@ -22,6 +22,12 @@ class User(db.Model):
     couple_id = db.Column(BigInteger, nullable=True)
     push_token = db.Column(String(255), nullable=True)  # Expo Push
     avatar_no = db.Column(SmallInteger, nullable=True)  # 기본 아바타 1..12 (DESIGN_UPDATE §1)
+    # 카카오/애플 계정 이메일 (동의 시) 또는 이메일 가입 주소 — CS·계정 안내용. 탈퇴 시 삭제.
+    email = db.Column(String(255), nullable=True)
+    # 이메일 간편가입 전용 (소셜 로그인 유저는 NULL). werkzeug 해시.
+    password_hash = db.Column(String(255), nullable=True)
+    # 회원 탈퇴(소프트 삭제) — 개인정보 익명화 + 재로그인 차단 (애플/구글 심사 요건)
+    is_deleted = db.Column(Boolean, nullable=False, default=False)
     created_at = db.Column(DateTime, nullable=False, default=datetime.utcnow)
 
     __table_args__ = (
@@ -39,6 +45,7 @@ class User(db.Model):
         return {
             "id": self.id,
             "nickname": self.nickname,
+            "email": self.email,
             "relationship_status": self.relationship_status,
             "status_label": self.status_label(),
             "couple_id": self.couple_id,

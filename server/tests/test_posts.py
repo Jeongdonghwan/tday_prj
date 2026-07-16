@@ -69,3 +69,25 @@ def test_delete_requires_owner(client, register, bearer):
     pid = _create(client, bearer(t1)).get_json()["id"]
     assert client.delete(f"/posts/{pid}", headers=bearer(t2)).status_code == 403
     assert client.delete(f"/posts/{pid}", headers=bearer(t1)).status_code == 200
+
+
+def test_update_post_by_owner(client, token, bearer):
+    pid = _create(client, bearer(token)).get_json()["id"]
+    r = client.patch(f"/posts/{pid}", json={"title": "고친 제목", "body": "고친 본문", "category": "love"}, headers=bearer(token))
+    assert r.status_code == 200
+    d = r.get_json()
+    assert d["title"] == "고친 제목" and d["body"] == "고친 본문" and d["category"] == "love"
+
+
+def test_update_post_requires_owner(client, register, bearer):
+    t1, _ = register("owner2")
+    t2, _ = register("other2")
+    pid = _create(client, bearer(t1)).get_json()["id"]
+    assert client.patch(f"/posts/{pid}", json={"title": "탈취"}, headers=bearer(t2)).status_code == 403
+
+
+def test_update_post_validates(client, token, bearer):
+    pid = _create(client, bearer(token)).get_json()["id"]
+    assert client.patch(f"/posts/{pid}", json={"title": "  "}, headers=bearer(token)).status_code == 400
+    assert client.patch(f"/posts/{pid}", json={"category": "bogus"}, headers=bearer(token)).status_code == 400
+    assert client.patch("/posts/999999", json={"title": "x"}, headers=bearer(token)).status_code == 404

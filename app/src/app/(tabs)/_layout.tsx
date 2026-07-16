@@ -8,7 +8,6 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon, type IconName } from '@/components/Icon';
-import { DesktopShell } from '@/components/web/DesktopShell';
 import { useIsDesktop } from '@/hooks/useResponsive';
 import { colors, weight } from '@/theme';
 
@@ -86,8 +85,8 @@ export default function TabsLayout() {
     </Tabs>
   );
 
-  // 데스크톱: 3영역 셸로 감싸고 FAB 미노출
-  if (isDesktop) return <DesktopShell>{tabs}</DesktopShell>;
+  // 데스크톱: 셸(GNB+3영역)은 루트 _layout 에서 감싸므로 여기선 탭바·FAB 만 숨김
+  if (isDesktop) return tabs;
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>

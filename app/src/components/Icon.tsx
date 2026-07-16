@@ -111,13 +111,13 @@ export function Icon({ name, size = 22, color = colors.ink, strokeWidth = 1.8, f
     case 'heart':
       return (
         <Svg width={size} height={size} viewBox="0 0 24 24">
-          <Path d="M12 21s-7-4.6-9.5-9C1 9 2.5 5.5 6 5.5c2 0 3.2 1.2 4 2.3.8-1.1 2-2.3 4-2.3 3.5 0 5 3.5 3.5 6.5C19 16.4 12 21 12 21z" {...stroke} />
+          <Path d="M12 20.5C7 17 3 13.4 3 9.5 3 6.5 5.2 4.5 7.8 4.5c1.8 0 3.3 1 4.2 2.5.9-1.5 2.4-2.5 4.2-2.5 2.6 0 4.8 2 4.8 5 0 3.9-4 7.5-9 11z" {...stroke} />
         </Svg>
       );
     case 'heartFill':
       return (
         <Svg width={size} height={size} viewBox="0 0 24 24">
-          <Path d="M12 21s-7-4.6-9.5-9C1 9 2.5 5.5 6 5.5c2 0 3.2 1.2 4 2.3.8-1.1 2-2.3 4-2.3 3.5 0 5 3.5 3.5 6.5C19 16.4 12 21 12 21z" fill={fill ?? color} />
+          <Path d="M12 20.5C7 17 3 13.4 3 9.5 3 6.5 5.2 4.5 7.8 4.5c1.8 0 3.3 1 4.2 2.5.9-1.5 2.4-2.5 4.2-2.5 2.6 0 4.8 2 4.8 5 0 3.9-4 7.5-9 11z" fill={fill ?? color} />
         </Svg>
       );
     case 'fire':

@@ -38,8 +38,8 @@ export default function SearchScreen() {
   }, [q, token]);
 
   return (
-    <SafeAreaView style={[styles.safe, isDesktop && styles.safeDesktop]} edges={['top']}>
-      <View style={[styles.col, isDesktop && styles.colDesktop]}>
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <View style={styles.col}>
         <View style={styles.bar}>
           <Pressable onPress={() => router.back()} hitSlop={8}>
             <Icon name="back" size={24} color={colors.ink} strokeWidth={1.9} />
@@ -82,9 +82,7 @@ export default function SearchScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
-  safeDesktop: { alignItems: 'center' },
   col: { flex: 1, width: '100%' },
-  colDesktop: { maxWidth: 680, borderLeftWidth: 1, borderRightWidth: 1, borderColor: colors.line },
   bar: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: colors.line },
   inputWrap: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.soft, borderRadius: 12, paddingHorizontal: 12, height: 40 },
   input: { flex: 1, fontSize: 14, color: colors.ink },

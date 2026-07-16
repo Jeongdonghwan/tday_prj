@@ -130,6 +130,37 @@ def get_post(post_id: int):
     return jsonify(post_dict(post, my_vote, liked))
 
 
+@bp.patch("/posts/<int:post_id>")
+@login_required
+def update_post(post_id: int):
+    """내 글 수정 — 제목/본문/카테고리만. 투표 선택지는 공정성 위해 수정 불가."""
+    post = db.session.get(Post, post_id)
+    if not post:
+        return jsonify({"error": "not_found"}), 404
+    if post.user_id != g.user.id:
+        return jsonify({"error": "forbidden"}), 403
+
+    data = request.get_json(silent=True) or {}
+    if "title" in data:
+        title = (data.get("title") or "").strip()
+        if not title:
+            return jsonify({"error": "title_required"}), 400
+        post.title = title
+    if "body" in data:
+        post.body = (data.get("body") or "").strip() or None
+    if "category" in data:
+        category = data.get("category")
+        if category not in POST_CATEGORIES:
+            return jsonify({"error": "invalid_category"}), 400
+        post.category = category
+
+    db.session.commit()
+    my_vote = db.session.scalar(
+        select(Vote.option_side).where(Vote.post_id == post_id, Vote.user_id == g.user.id)
+    )
+    return jsonify(post_dict(post, my_vote))
+
+
 @bp.delete("/posts/<int:post_id>")
 @login_required
 def delete_post(post_id: int):

@@ -39,7 +39,10 @@ def current_user_optional():
         payload = decode_token(token)
     except jwt.PyJWTError:
         return None
-    return db.session.get(User, int(payload["sub"]))
+    user = db.session.get(User, int(payload["sub"]))
+    if user is None or user.is_deleted:
+        return None
+    return user
 
 
 def login_required(fn):
@@ -58,7 +61,7 @@ def login_required(fn):
             return jsonify({"error": "invalid_token"}), 401
 
         user = db.session.get(User, int(payload["sub"]))
-        if user is None:
+        if user is None or user.is_deleted:
             return jsonify({"error": "user_not_found"}), 401
         g.user = user
         return fn(*args, **kwargs)

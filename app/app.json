@@ -31,7 +31,8 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/brand/splash.png",
+          "image": "./assets/brand/splash_icon.png",
+          "imageWidth": 220,
           "backgroundColor": "#FFFFFF",
           "resizeMode": "contain"
         }
@@ -42,11 +43,25 @@
         {
           "color": "#F23B5F"
         }
+      ],
+      [
+        "@react-native-seoul/kakao-login",
+        {
+          "kakaoAppKey": "8ac781d72168f57e5f49ae2e5e78319a",
+          "kotlinVersion": "2.1.20"
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "5941a78b-0da8-4ff9-99ea-15bf51ee4281"
+      }
+    },
+    "owner": "jdh227"
   }
 }

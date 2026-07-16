@@ -31,11 +31,19 @@ def public_post(post_id: int):
 
 @bp.get("/sitemap.xml")
 def sitemap():
+    from .models import Test
+
     base = current_app.config["WEB_BASE_URL"].rstrip("/")
     posts = db.session.scalars(
         select(Post).where(Post.is_blinded.is_(False)).order_by(Post.id.desc()).limit(2000)
     ).all()
-    urls = [f"{base}/p/{p.id}" for p in posts] + [f"{base}/t"]
+    tests = db.session.scalars(select(Test).where(Test.is_active.is_(True))).all()
+    urls = (
+        [f"{base}/t"]
+        + [f"{base}/t/{t.slug}" for t in tests]  # 테스트 인트로 — 검색 유입 핵심 페이지
+        + [f"{base}/terms", f"{base}/privacy"]
+        + [f"{base}/p/{p.id}" for p in posts]
+    )
     return Response(render_template("sitemap.xml", urls=urls), mimetype="application/xml")
 
 

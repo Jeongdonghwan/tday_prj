@@ -16,7 +16,12 @@ def create_app(config_object=None) -> Flask:
     # 확장 초기화
     db.init_app(app)
     migrate.init_app(app, db)
-    CORS(app)  # 앱(Expo) 에서 호출 — 초기엔 전체 허용, 운영에서 도메인 제한
+    # CORS — 운영은 CORS_ORIGINS(콤마 목록)로 앱/웹 도메인만 허용
+    _origins = app.config.get("CORS_ORIGINS", "*")
+    origins = "*" if _origins.strip() == "*" else [o.strip() for o in _origins.split(",") if o.strip()]
+    CORS(app, origins=origins)
+
+    _prod_safety_check(app)
 
     # 모델 import (마이그레이션/create_all 이 인식하도록)
     from . import models  # noqa: F401
@@ -38,6 +43,25 @@ def create_app(config_object=None) -> Flask:
 
     _register_cli(app)
     return app
+
+
+def _prod_safety_check(app):
+    """운영(DEBUG=False)에서 기본 시크릿/개발 로그인이 켜져 있으면 경고(치명 설정은 예외)."""
+    if app.debug or app.config.get("TESTING"):
+        return
+    problems = []
+    if app.config.get("JWT_SECRET") in (None, "", "dev-jwt-secret"):
+        problems.append("JWT_SECRET 이 기본값입니다 — 강력한 값으로 설정하세요.")
+    if app.config.get("SECRET_KEY") in (None, "", "change-me"):
+        problems.append("SECRET_KEY 가 기본값입니다.")
+    if app.config.get("ADMIN_TOKEN") in (None, "", "dev-admin-token"):
+        problems.append("ADMIN_TOKEN 이 기본값입니다 — 관리자 페이지가 노출됩니다.")
+    if app.config.get("DEV_LOGIN_ENABLED"):
+        problems.append("DEV_LOGIN_ENABLED 가 켜져 있습니다 — 운영에서는 끄세요(키 없이 로그인 가능).")
+    if app.config.get("CORS_ORIGINS", "*").strip() == "*":
+        problems.append("CORS_ORIGINS 가 전체 허용(*)입니다 — 도메인을 제한하세요.")
+    for p in problems:
+        app.logger.warning("[보안 경고] %s", p)
 
 
 def _register_cli(app: Flask):

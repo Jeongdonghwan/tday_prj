@@ -1,10 +1,10 @@
 /** 마이페이지 (스펙 §5-5). API 연동: 상태 전환 + D-day + 캘린더/커플 진입. */
 import { useCallback, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { updateMe } from '@/api/auth';
+import { deleteMe, updateMe } from '@/api/auth';
 import { getDday, type Dday } from '@/api/couple';
 import { getTestBadge, type TestBadge } from '@/api/tests';
 import { useAuth } from '@/auth/AuthContext';
@@ -54,6 +54,29 @@ export default function MyScreen() {
     } catch {
       /* noop */
     }
+  }
+
+  async function doDeleteAccount() {
+    if (!token) return;
+    try {
+      await deleteMe(token);
+    } catch {
+      /* 서버 오류여도 로컬 세션은 정리 */
+    }
+    await signOut();
+  }
+
+  function confirmDeleteAccount() {
+    const msg = '탈퇴하면 프로필·커플 연결이 삭제되고 되돌릴 수 없어요. 계속할까요?';
+    if (Platform.OS === 'web') {
+      const g = globalThis as unknown as { confirm?: (m: string) => boolean };
+      if (g.confirm?.('회원 탈퇴\n\n' + msg)) doDeleteAccount();
+      return;
+    }
+    Alert.alert('회원 탈퇴', msg, [
+      { text: '취소', style: 'cancel' },
+      { text: '탈퇴하기', style: 'destructive', onPress: doDeleteAccount },
+    ]);
   }
 
   const links: { icon: IconName; label: string; onPress: () => void }[] = [
@@ -142,6 +165,10 @@ export default function MyScreen() {
         <Pressable style={styles.logout} onPress={signOut}>
           <Text style={styles.logoutText}>로그아웃</Text>
         </Pressable>
+
+        <Pressable style={styles.withdraw} onPress={confirmDeleteAccount} hitSlop={8}>
+          <Text style={styles.withdrawText}>회원 탈퇴</Text>
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
@@ -171,4 +198,6 @@ const styles = StyleSheet.create({
   rowLabel: { flex: 1, fontSize: 14.5, fontWeight: weight.semibold as '600', color: colors.ink },
   logout: { marginHorizontal: 20, marginTop: 18, paddingVertical: 14, alignItems: 'center' },
   logoutText: { fontSize: 14, color: colors.sub, fontWeight: weight.semibold as '600' },
+  withdraw: { marginHorizontal: 20, marginTop: 2, paddingVertical: 8, alignItems: 'center' },
+  withdrawText: { fontSize: 12.5, color: colors.sub2, fontWeight: weight.semibold as '600', textDecorationLine: 'underline' },
 });

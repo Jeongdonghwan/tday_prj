@@ -2,11 +2,12 @@
 import { StyleSheet, Text, View, Pressable } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { WebView } from 'react-native-webview';
+import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 
 import { WEB_BASE_URL } from '@/api/tests';
 import { useAuth } from '@/auth/AuthContext';
 import { Icon } from '@/components/Icon';
+import { notify } from '@/lib/dialogs';
 import { shareUrl } from '@/lib/share';
 import { colors, weight } from '@/theme';
 
@@ -20,6 +21,27 @@ export default function TestsScreen() {
   const uri = `${WEB_BASE_URL}${path}?ref=app${uid}`;
   const shareHref = `${WEB_BASE_URL}${path}?ref=share`; // 공유용 퍼블릭 링크
 
+  // 결과 페이지(t_result.html)의 공유/복사 버튼 → 네이티브 공유 시트/클립보드 브리지
+  async function onWebMessage(e: WebViewMessageEvent) {
+    try {
+      const msg = JSON.parse(e.nativeEvent.data) as { type?: string; url?: string; title?: string };
+      if (msg.type === 'share' && msg.url) {
+        await shareUrl(msg.url, msg.title || '나랑 연애 심리테스트 해볼래?');
+      } else if (msg.type === 'copy' && msg.url) {
+        try {
+          // 네이티브 모듈 — 구 빌드(미포함)에서는 catch 로 공유 시트 폴백 (시트에 '복사' 있음)
+          const Clipboard = await import('expo-clipboard');
+          await Clipboard.setStringAsync(msg.url);
+          notify('링크 복사', '링크를 복사했어요! 친구에게 붙여넣기 하세요.');
+        } catch {
+          await shareUrl(msg.url, msg.title || '');
+        }
+      }
+    } catch {
+      /* 웹페이지의 다른 메시지 무시 */
+    }
+  }
+
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.bar}>
@@ -31,7 +53,7 @@ export default function TestsScreen() {
           <Icon name="share" size={22} color={colors.ink} strokeWidth={1.9} />
         </Pressable>
       </View>
-      <WebView source={{ uri }} style={{ flex: 1 }} />
+      <WebView source={{ uri }} style={{ flex: 1 }} onMessage={onWebMessage} />
     </SafeAreaView>
   );
 }

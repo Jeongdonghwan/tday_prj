@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 {% block title %}{{ test.title }} · 오늘연애{% endblock %}
+{% block meta_desc %}{{ test.intro or '오늘연애 연애 심리테스트' }}{% endblock %}
 {% block og_title %}{{ test.title }}{% endblock %}
 {% block og_desc %}{{ test.intro or '오늘연애 연애 심리테스트' }}{% endblock %}
+{% block head_extra %}<link rel="canonical" href="{{ config.WEB_BASE_URL.rstrip('/') }}/t/{{ test.slug }}" />{% endblock %}
 {% block content %}
   <div class="intro">
     <div class="intro-emoji" style="background:{{ th.theme }}22">{{ th.emoji }}</div>
@@ -16,8 +18,18 @@
     function shareTest() {
       var url = location.origin + '{{ url_for('web.test_intro', slug=test.slug) }}?ref=share';
       var title = {{ (test.title ~ ' — 나랑 같이 해볼래?')|tojson }};
+      // 오늘연애 앱 WebView 안 → 네이티브 공유 시트 (navigator.share/clipboard 미지원 대응)
+      if (window.ReactNativeWebView) {
+        window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'share', url: url, title: title }));
+        return;
+      }
       if (navigator.share) { navigator.share({ title: title, url: url }); }
-      else { navigator.clipboard.writeText(url).then(function(){ alert('링크를 복사했어요! 친구에게 붙여넣기 하세요.'); }); }
+      else if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url)
+          .then(function(){ alert('링크를 복사했어요! 친구에게 붙여넣기 하세요.'); })
+          .catch(function(){ window.prompt('아래 링크를 복사해 공유하세요', url); });
+      }
+      else { window.prompt('아래 링크를 복사해 공유하세요', url); }
     }
   </script>
 {% endblock %}

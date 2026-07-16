@@ -25,6 +25,16 @@ export function socialLogin(params: {
   return apiRequest<SocialLoginResult>('/auth/social', { method: 'POST', body: params });
 }
 
+/** 이메일 간편가입 — 이메일+비밀번호(8자+)만으로 가입. */
+export function emailSignup(email: string, password: string): Promise<SocialLoginResult> {
+  return apiRequest<SocialLoginResult>('/auth/signup', { method: 'POST', body: { email, password } });
+}
+
+/** 이메일 로그인. */
+export function emailLogin(email: string, password: string): Promise<SocialLoginResult> {
+  return apiRequest<SocialLoginResult>('/auth/login', { method: 'POST', body: { email, password } });
+}
+
 export function fetchMe(token: string): Promise<Me> {
   return apiRequest<Me>('/me', { token });
 }
@@ -34,4 +44,9 @@ export function updateMe(
   token: string,
 ): Promise<Me> {
   return apiRequest<Me>('/me', { method: 'PATCH', body, token });
+}
+
+/** 회원 탈퇴 — 개인정보 익명화 + 재로그인 차단. 성공 후 로컬 로그아웃 필요. */
+export function deleteMe(token: string): Promise<{ ok: boolean }> {
+  return apiRequest<{ ok: boolean }>('/me', { method: 'DELETE', token });
 }

@@ -3,11 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <title>{% block title %}오늘연애 테스트존{% endblock %}</title>
+  <title>{% block title %}오늘연애 — 연애 커뮤니티·심리테스트{% endblock %}</title>
+  <meta name="description" content="{% block meta_desc %}연애 고민 커뮤니티와 밸런스 투표, 연애 심리테스트까지. 오늘의 연애, 어느 편이세요?{% endblock %}" />
+  <meta name="keywords" content="{% block meta_keywords %}연애, 연애고민, 연애상담, 연애 심리테스트, 밸런스게임, 커플, 소개팅, 썸{% endblock %}" />
+  {% if config.NAVER_SITE_VERIFICATION %}<meta name="naver-site-verification" content="{{ config.NAVER_SITE_VERIFICATION }}" />{% endif %}
+  {% if config.GOOGLE_SITE_VERIFICATION %}<meta name="google-site-verification" content="{{ config.GOOGLE_SITE_VERIFICATION }}" />{% endif %}
   <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="오늘연애" />
   <meta property="og:title" content="{% block og_title %}오늘연애 연애 심리테스트{% endblock %}" />
   <meta property="og:description" content="{% block og_desc %}12개 질문으로 알아보는 내 연애 스타일{% endblock %}" />
   <meta property="og:image" content="{% block og_image %}{{ url_for('static', filename='og_default.png', _external=True) }}{% endblock %}" />
+  <meta name="twitter:card" content="summary_large_image" />
   {% block head_extra %}{% endblock %}
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
 </head>
