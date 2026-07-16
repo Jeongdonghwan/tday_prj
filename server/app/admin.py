@@ -73,6 +73,20 @@ def _members(q):
     ]
 
 
+def _daily_questions():
+    """오늘 기준 ±7일 커플 '오늘의 질문' 목록 (빈 날짜 확인용)."""
+    from .models import DailyQuestion
+
+    today = datetime.utcnow().date()
+    return (
+        db.session.query(DailyQuestion)
+        .filter(DailyQuestion.scheduled_date >= today - timedelta(days=3))
+        .order_by(DailyQuestion.scheduled_date)
+        .limit(14)
+        .all()
+    )
+
+
 @bp.get("/admin")
 def dashboard():
     token = _check_token()
@@ -82,6 +96,7 @@ def dashboard():
         "admin.html",
         token=token,
         issues=db.session.query(Issue).order_by(Issue.created_at.desc()).limit(10).all(),
+        daily_questions=_daily_questions(),
         tests=db.session.query(Test).order_by(Test.created_at.desc()).all(),
         polls=db.session.query(DailyPoll).order_by(DailyPoll.created_at.desc()).limit(10).all(),
         ads=db.session.query(AdSlot).order_by(AdSlot.created_at.desc()).limit(20).all(),
@@ -166,6 +181,29 @@ def add_daily_poll():
         choice_c=(f.get("choice_c") or "").strip() or None,
     )
     return redirect(url_for("admin.dashboard", token=token, flash="오늘의 질문을 등록했어요 (이전 질문 비활성)."))
+
+
+@bp.post("/admin/daily-question")
+def add_daily_question():
+    """커플 '오늘의 질문' 문항 등록 — scheduled_date 에 노출 (날짜당 1건)."""
+    from .models import DailyQuestion
+
+    token = _check_token()
+    f = request.form
+    question = (f.get("question") or "").strip()
+    date = _parse_dt(f.get("scheduled_date"))
+    if not question or not date:
+        return redirect(url_for("admin.dashboard", token=token, flash="질문과 날짜를 입력하세요."))
+
+    d = date.date()
+    existing = db.session.query(DailyQuestion).filter_by(scheduled_date=d).first()
+    if existing:
+        existing.question = question  # 같은 날짜면 문항 교체
+        db.session.commit()
+        return redirect(url_for("admin.dashboard", token=token, flash=f"{d} 질문을 교체했어요."))
+    db.session.add(DailyQuestion(question=question, scheduled_date=d))
+    db.session.commit()
+    return redirect(url_for("admin.dashboard", token=token, flash=f"{d} 질문을 등록했어요."))
 
 
 @bp.post("/admin/tests/<int:test_id>/activate")

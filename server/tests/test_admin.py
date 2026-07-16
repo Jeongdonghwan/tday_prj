@@ -74,3 +74,26 @@ def test_moderate_user_blinds_and_restores(client, app, register, bearer):
     client.post(f"/admin/users/{uid}/moderate", data={"token": tok, "op": "unblind"})
     with app.app_context():
         assert db.session.get(Post, pid).is_blinded is False
+
+
+def test_add_daily_question_and_replace(client, app):
+    """커플 오늘의 질문 등록 + 같은 날짜 재등록 시 교체."""
+    from app.extensions import db
+    from app.models import DailyQuestion
+
+    tok = _token(app)
+    r = client.post("/admin/daily-question", data={"token": tok, "question": "첫 설렘 순간은?", "scheduled_date": "2026-08-01"})
+    assert r.status_code == 302
+
+    r = client.post("/admin/daily-question", data={"token": tok, "question": "교체된 질문", "scheduled_date": "2026-08-01"})
+    assert r.status_code == 302
+
+    with app.app_context():
+        rows = db.session.query(DailyQuestion).filter_by(scheduled_date=__import__("datetime").date(2026, 8, 1)).all()
+        assert len(rows) == 1 and rows[0].question == "교체된 질문"
+
+
+def test_add_daily_question_requires_fields(client, app):
+    tok = _token(app)
+    r = client.post("/admin/daily-question", data={"token": tok, "question": "", "scheduled_date": ""}, follow_redirects=True)
+    assert "질문과 날짜" in r.get_data(as_text=True)

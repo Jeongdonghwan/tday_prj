@@ -48,7 +48,7 @@
     {% endfor %}
   </table>
 
-  <h2>오늘의 질문 등록</h2>
+  <h2>오늘의 질문 등록 (홈 밸런스 투표)</h2>
   <form method="post" action="{{ url_for('admin.add_daily_poll') }}">
     <input type="hidden" name="token" value="{{ token }}" />
     <label>질문</label><input name="question" maxlength="200" required />
@@ -65,6 +65,25 @@
     <tr><th>질문</th><th>활성</th></tr>
     {% for p in polls %}
     <tr><td>{{ p.question }}</td><td>{{ '●' if p.is_active else '' }}</td></tr>
+    {% endfor %}
+  </table>
+
+  <h2>커플 오늘의 질문 등록 (문답)</h2>
+  <form method="post" action="{{ url_for('admin.add_daily_question') }}">
+    <input type="hidden" name="token" value="{{ token }}" />
+    <label>질문</label><input name="question" maxlength="200" required placeholder="예: 상대의 어떤 순간에 제일 설렜어?" />
+    <label>노출 날짜</label><input type="date" name="scheduled_date" required />
+    <button type="submit">커플 질문 등록</button>
+    <p style="color:#888;font-size:12px;margin:6px 0 0">같은 날짜에 다시 등록하면 문항이 교체됩니다.</p>
+  </form>
+
+  <h2>커플 질문 일정 (최근 3일~)</h2>
+  <table>
+    <tr><th>날짜</th><th>질문</th></tr>
+    {% for dq in daily_questions %}
+    <tr><td>{{ dq.scheduled_date }}</td><td>{{ dq.question }}</td></tr>
+    {% else %}
+    <tr><td colspan="2" style="color:#888">등록된 질문이 없습니다 — 날짜별로 미리 채워두세요.</td></tr>
     {% endfor %}
   </table>
 
