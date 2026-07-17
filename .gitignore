@@ -23,3 +23,6 @@ Thumbs.db
 dist/
 *.log
 e2e/shots/
+
+# 심사 계정 비밀번호 포함 — 공개 저장소 커밋 금지
+app/store/review-account.md

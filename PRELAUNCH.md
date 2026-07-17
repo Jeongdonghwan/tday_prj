@@ -98,7 +98,7 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"   # 아래 3개 각
 3. **iOS(APNs)**: Apple 푸시 키(.p8) 발급 → `eas credentials` 로 등록
 4. 앱은 이미 Expo Push 토큰을 서버에 저장하도록 되어 있음(마이/설정 진입 시).
 
-### B-2. EAS 빌드 & 제출
+### B-2. EAS 빌드 & 제출 → 상세 런북: [app/store/PLAY_RUNBOOK.md](app/store/PLAY_RUNBOOK.md)
 ```bash
 cd app
 eas build --platform all           # 스토어용 빌드
