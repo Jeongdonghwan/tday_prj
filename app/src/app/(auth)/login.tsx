@@ -173,26 +173,28 @@ export default function LoginScreen() {
           </Text>
         </View>
 
-        {/* 개발용 로그인 (DEV_LOGIN_ENABLED) — 키 없이 인증 경로 테스트 */}
-        <View style={styles.devBox}>
-          <View style={styles.devHead}>
-            <Icon name="info" size={14} color={colors.sub} strokeWidth={2} />
-            <Text style={styles.devLabel}>개발용 로그인</Text>
+        {/* 개발용 로그인 — 개발 모드에서만 노출(프로덕션 빌드엔 미포함). 서버도 운영에선 403 차단 */}
+        {__DEV__ && (
+          <View style={styles.devBox}>
+            <View style={styles.devHead}>
+              <Icon name="info" size={14} color={colors.sub} strokeWidth={2} />
+              <Text style={styles.devLabel}>개발용 로그인</Text>
+            </View>
+            <View style={styles.devRow}>
+              <TextInput
+                value={devId}
+                onChangeText={setDevId}
+                placeholder="dev social_id"
+                placeholderTextColor={colors.sub2}
+                autoCapitalize="none"
+                style={styles.devInput}
+              />
+              <Pressable style={[styles.devBtn, busy && styles.btnDim]} disabled={!!busy} onPress={onDev}>
+                <Text style={styles.devBtnText}>{busy === 'dev' ? '...' : '로그인'}</Text>
+              </Pressable>
+            </View>
           </View>
-          <View style={styles.devRow}>
-            <TextInput
-              value={devId}
-              onChangeText={setDevId}
-              placeholder="dev social_id"
-              placeholderTextColor={colors.sub2}
-              autoCapitalize="none"
-              style={styles.devInput}
-            />
-            <Pressable style={[styles.devBtn, busy && styles.btnDim]} disabled={!!busy} onPress={onDev}>
-              <Text style={styles.devBtnText}>{busy === 'dev' ? '...' : '로그인'}</Text>
-            </Pressable>
-          </View>
-        </View>
+        )}
       </View>
     </SafeAreaView>
   );
