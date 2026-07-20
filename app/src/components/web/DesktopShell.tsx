@@ -114,7 +114,7 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
         {/* 사업자 정보 푸터 — 카카오 비즈앱/전자상거래 표시 요건 */}
         <View style={styles.footer}>
           <Text style={styles.footerLine}>
-            <Text style={styles.footerBrand}>오늘연애</Text> · 상호 에이치코 · 대표 정동환 · 사업자등록번호 280-206-00396
+            <Text style={styles.footerBrand}>오늘연애</Text> · 상호 에이치코 · 대표 정동환 · 사업자등록번호 280-26-00396
           </Text>
           <Text style={styles.footerLine}>대표번호 1566-3046 · 경기도 하남시 조정대로 45, D911호 · jdhwan0227@gmail.com</Text>
           <Text style={styles.footerLine}>
