@@ -38,3 +38,25 @@ def test_block_excludes_from_feed_and_can_unblock(client, register, bearer):
 def test_cannot_block_self(client, register, bearer):
     me, me_id = register("me")
     assert client.post("/blocks", json={"blocked_user_id": me_id}, headers=bearer(me)).status_code == 400
+
+
+def test_report_threshold_blinds_issue_comment(client, token, bearer, app):
+    """이슈 댓글 신고 누적 → 자동 블라인드 (UGC 개별 신고 요건)."""
+    from app.services.issues import create_issue
+
+    with app.app_context():
+        issue = create_issue(title="이슈", summary="요약", source=None, url=None,
+                             poll_option_a="A", poll_option_b="B")
+        iid = issue.id
+
+    cid = client.post(f"/issues/{iid}/comments", json={"body": "신고대상"}, headers=bearer(token)).get_json()["id"]
+
+    blinded = False
+    for _ in range(5):
+        r = client.post("/reports", json={"target_type": "issue_comment", "target_id": cid, "reason": "spam"}, headers=bearer(token))
+        assert r.status_code == 201
+        blinded = r.get_json()["blinded"] or blinded
+    assert blinded
+    # 블라인드된 이슈 댓글은 목록에서 제외
+    items = client.get(f"/issues/{iid}/comments").get_json()["items"]
+    assert cid not in [c["id"] for c in items]

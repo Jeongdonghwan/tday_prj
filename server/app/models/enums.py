@@ -17,7 +17,7 @@ POLL_SIDES = ("A", "B")
 SCHEDULE_OWNERS = ("a", "b", "both")
 
 # 신고 대상
-REPORT_TARGETS = ("post", "comment", "user")
+REPORT_TARGETS = ("post", "comment", "issue_comment", "user")
 
 # 상태값 -> 한글 라벨 (서버 응답에 함께 실어주면 클라가 매핑 불필요)
 STATUS_LABELS = {"couple": "커플", "single": "돌싱", "married": "유부"}

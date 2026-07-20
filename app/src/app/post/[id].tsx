@@ -34,6 +34,7 @@ import { Avatar } from '@/components/Avatar';
 import { Icon } from '@/components/Icon';
 import { PollResultBar } from '@/components/PollResultBar';
 import { StatusChip } from '@/components/StatusChip';
+import { useCommentActions } from '@/components/useCommentActions';
 import { confirmAsync, notify, requireLogin } from '@/lib/dialogs';
 import { colors, radius, statusTheme, weight } from '@/theme';
 
@@ -48,6 +49,7 @@ export default function PostDetail() {
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const cmActions = useCommentActions('comment', () => reload());
 
   const reload = useCallback(async () => {
     try {
@@ -188,6 +190,7 @@ export default function PostDetail() {
     <SafeAreaView style={styles.safe} edges={['top']}>
      <View style={styles.col}>
       <ActionSheet visible={menuOpen} actions={menuActions} onClose={() => setMenuOpen(false)} />
+      {cmActions.sheet}
       <DetailBar onBack={() => router.back()} onLike={onLike} onMore={() => setMenuOpen(true)} liked={post.liked} likeCount={post.like_count} />
 
       <KeyboardAvoidingView
@@ -236,7 +239,9 @@ export default function PostDetail() {
           {comments.length === 0 ? (
             <Text style={styles.noComment}>첫 댓글을 남겨보세요.</Text>
           ) : (
-            comments.map((c) => <CommentItem key={c.id} comment={c} onLike={onLikeComment} />)
+            comments.map((c) => (
+              <CommentItem key={c.id} comment={c} onLike={onLikeComment} onMore={cmActions.openFor} canReport={(x) => !cmActions.isMine(x)} />
+            ))
           )}
         </ScrollView>
 
@@ -310,7 +315,17 @@ function CommentLikeBtn({ comment, onLike }: { comment: ApiComment; onLike: (id:
   );
 }
 
-function CommentItem({ comment, onLike }: { comment: ApiComment; onLike: (id: number) => void }) {
+function CommentItem({
+  comment,
+  onLike,
+  onMore,
+  canReport,
+}: {
+  comment: ApiComment;
+  onLike: (id: number) => void;
+  onMore: (c: ApiComment) => void;
+  canReport: (c: ApiComment) => boolean;
+}) {
   return (
     <View style={styles.cmt}>
       <Avatar avatarNo={comment.author.avatar_no} size={28} />
@@ -318,6 +333,11 @@ function CommentItem({ comment, onLike }: { comment: ApiComment; onLike: (id: nu
         <View style={styles.cmTop}>
           <Text style={styles.cmName}>{comment.author.nickname}</Text>
           <StatusChip status={comment.author.status} small />
+          {canReport(comment) && (
+            <Pressable onPress={() => onMore(comment)} hitSlop={8} style={{ marginLeft: 'auto' }}>
+              <Icon name="more" size={16} color={colors.sub2} />
+            </Pressable>
+          )}
         </View>
         <Text style={styles.cmText}>{comment.body}</Text>
         <View style={styles.cmMetaRow}>
@@ -334,6 +354,11 @@ function CommentItem({ comment, onLike }: { comment: ApiComment; onLike: (id: nu
               <View style={styles.cmTop}>
                 <Text style={styles.cmName}>{r.author.nickname}</Text>
                 <StatusChip status={r.author.status} small />
+                {canReport(r) && (
+                  <Pressable onPress={() => onMore(r)} hitSlop={8} style={{ marginLeft: 'auto' }}>
+                    <Icon name="more" size={15} color={colors.sub2} />
+                  </Pressable>
+                )}
               </View>
               <Text style={styles.cmText}>{r.body}</Text>
               <View style={styles.cmMetaRow}>

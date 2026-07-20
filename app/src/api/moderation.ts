@@ -4,7 +4,7 @@ import { apiRequest } from './client';
 export type Block = { block_id: number; user_id: number; nickname: string };
 
 export function reportTarget(
-  params: { target_type: 'post' | 'comment' | 'user'; target_id: number; reason?: string },
+  params: { target_type: 'post' | 'comment' | 'issue_comment' | 'user'; target_id: number; reason?: string },
   token: string,
 ) {
   return apiRequest<{ ok: boolean; blinded: boolean }>('/reports', { method: 'POST', body: params, token });

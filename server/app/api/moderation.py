@@ -35,17 +35,19 @@ def create_report():
     )
     db.session.flush()
 
-    # 임계치 넘으면 자동 가림 (post/comment 대상)
+    # 임계치 넘으면 자동 가림 (콘텐츠 대상)
+    from ..models import IssueComment
+
+    BLIND_MODELS = {"post": Post, "comment": Comment, "issue_comment": IssueComment}
     blinded = False
-    if target_type in ("post", "comment"):
+    if target_type in BLIND_MODELS:
         count = db.session.scalar(
             select(func.count(Report.id)).where(
                 Report.target_type == target_type, Report.target_id == target_id
             )
         )
         if count and count >= BLIND_THRESHOLD:
-            Model = Post if target_type == "post" else Comment
-            obj = db.session.get(Model, target_id)
+            obj = db.session.get(BLIND_MODELS[target_type], target_id)
             if obj and not obj.is_blinded:
                 obj.is_blinded = True
                 blinded = True

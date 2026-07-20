@@ -4,7 +4,9 @@
  */
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { usePathname, useRouter } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
 
+import { WEB_BASE_URL } from '@/api/tests';
 import { useAuth } from '@/auth/AuthContext';
 import { AdSlot } from '@/components/AdSlot';
 import { Avatar } from '@/components/Avatar';
@@ -109,6 +111,18 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
           </View>
           <View style={styles.center}>{children}</View>
         </View>
+        {/* 사업자 정보 푸터 — 카카오 비즈앱/전자상거래 표시 요건 */}
+        <View style={styles.footer}>
+          <Text style={styles.footerLine}>
+            <Text style={styles.footerBrand}>오늘연애</Text> · 상호 에이치코 · 대표 정동환 · 사업자등록번호 280-206-00396
+          </Text>
+          <Text style={styles.footerLine}>대표번호 1566-3046 · 경기도 하남시 조정대로 45, D911호 · jdhwan0227@gmail.com</Text>
+          <Text style={styles.footerLine}>
+            <Text style={styles.footerLink} onPress={() => WebBrowser.openBrowserAsync(`${WEB_BASE_URL}/terms`)}>이용약관</Text>
+            {'  ·  '}
+            <Text style={styles.footerLink} onPress={() => WebBrowser.openBrowserAsync(`${WEB_BASE_URL}/privacy`)}>개인정보처리방침</Text>
+          </Text>
+        </View>
       </View>
     </View>
   );
@@ -178,4 +192,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   railCol: { width: RAIL_W },
+  footer: { alignItems: 'center', gap: 3, paddingVertical: 26, marginTop: 8, borderTopWidth: 1, borderTopColor: colors.line, width: '100%' },
+  footerLine: { fontSize: 11.5, color: colors.sub2, textAlign: 'center' },
+  footerBrand: { fontWeight: weight.bold as '700', color: colors.sub },
+  footerLink: { color: colors.sub, textDecorationLine: 'underline' },
 });

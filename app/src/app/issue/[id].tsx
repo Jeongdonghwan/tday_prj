@@ -24,6 +24,7 @@ import { requireLogin } from '@/lib/dialogs';
 import { Avatar } from '@/components/Avatar';
 import { Icon } from '@/components/Icon';
 import { StatusChip } from '@/components/StatusChip';
+import { useCommentActions } from '@/components/useCommentActions';
 import { useIsDesktop } from '@/hooks/useResponsive';
 import { colors, radius, weight } from '@/theme';
 
@@ -40,6 +41,7 @@ export default function IssueDetail() {
   const [loading, setLoading] = useState(true);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const cmActions = useCommentActions('issue_comment', () => reload());
 
   const reload = useCallback(async () => {
     // 게스트도 열람 가능 (읽기는 공개 API — 투표/댓글만 로그인)
@@ -99,6 +101,7 @@ export default function IssueDetail() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
      <View style={styles.col}>
+      {cmActions.sheet}
       <Bar onBack={() => router.back()} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={8}>
         <ScrollView contentContainerStyle={styles.wrap} keyboardShouldPersistTaps="handled">
@@ -139,6 +142,11 @@ export default function IssueDetail() {
                   <View style={styles.cmTop}>
                     <Text style={styles.cmName}>{c.author.nickname}</Text>
                     <StatusChip status={c.author.status} small />
+                    {!cmActions.isMine(c) && (
+                      <Pressable onPress={() => cmActions.openFor(c)} hitSlop={8} style={{ marginLeft: 'auto' }}>
+                        <Icon name="more" size={16} color={colors.sub2} />
+                      </Pressable>
+                    )}
                   </View>
                   <Text style={styles.cmText}>{c.body}</Text>
                   <Text style={styles.cmMeta}>{c.time_text} · 좋아요 {c.like_count}</Text>
