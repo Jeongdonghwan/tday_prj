@@ -67,8 +67,26 @@ export default function LoginScreen() {
   };
 
   const onApple = () => {
-    // 서버 검증(_resolve_apple)은 완료. 앱은 expo-apple-authentication(네이티브·iOS 빌드) 필요 — PRELAUNCH.md 참고.
-    notify('Apple 로그인', 'Apple 로그인은 준비 중이에요. 곧 오픈됩니다!');
+    // iOS 전용 — identityToken(JWT)을 서버(_resolve_apple JWKS 검증)로 전달
+    run('apple', async () => {
+      try {
+        const AppleAuthentication = await import('expo-apple-authentication');
+        const credential = await AppleAuthentication.signInAsync({
+          requestedScopes: [
+            AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+            AppleAuthentication.AppleAuthenticationScope.EMAIL,
+          ],
+        });
+        if (!credential.identityToken) throw new Error('no identity token');
+        await signIn({ provider: 'apple', token: credential.identityToken });
+      } catch (e) {
+        const code = (e as { code?: string })?.code;
+        if (code === 'ERR_REQUEST_CANCELED') return; // 사용자 취소는 조용히
+        if (e instanceof ApiError) throw e; // 서버 오류는 공통 핸들러(run)로
+        // 네이티브 모듈 부재(구 빌드/Expo Go) 등
+        notify('Apple 로그인', 'Apple 로그인은 최신 iOS 빌드에서 이용할 수 있어요.');
+      }
+    });
   };
 
   const onDev = () => run('dev', () => signIn({ provider: 'dev', social_id: devId.trim() || 'tester1' }));
@@ -89,12 +107,15 @@ export default function LoginScreen() {
             <Text style={[styles.btnText, { color: '#3A1D1D' }]}>카카오로 시작하기</Text>
           </Pressable>
 
-          <Pressable
-            style={[styles.btn, styles.apple, busy && styles.btnDim]}
-            disabled={!!busy}
-            onPress={onApple}>
-            <Text style={[styles.btnText, { color: '#fff' }]}>Apple로 시작하기</Text>
-          </Pressable>
+          {/* Apple 로그인은 iOS 전용 (expo-apple-authentication) — 안드로이드/웹에선 미노출 */}
+          {Platform.OS === 'ios' && (
+            <Pressable
+              style={[styles.btn, styles.apple, busy && styles.btnDim]}
+              disabled={!!busy}
+              onPress={onApple}>
+              <Text style={[styles.btnText, { color: '#fff' }]}>Apple로 시작하기</Text>
+            </Pressable>
+          )}
 
           {/* 이메일 간편가입/로그인 — 접이식 */}
           {!emailOpen ? (
