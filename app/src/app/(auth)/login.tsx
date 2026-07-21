@@ -100,12 +100,15 @@ export default function LoginScreen() {
         </View>
 
         <View style={styles.actions}>
-          <Pressable
-            style={[styles.btn, styles.kakao, busy && styles.btnDim]}
-            disabled={!!busy}
-            onPress={onKakao}>
-            <Text style={[styles.btnText, { color: '#3A1D1D' }]}>카카오로 시작하기</Text>
-          </Pressable>
+          {/* 카카오: iOS 네이티브 SDK 이슈로 v1에서는 iOS 미노출 (안드로이드·웹은 정상). v1.1에서 복구 예정 */}
+          {Platform.OS !== 'ios' && (
+            <Pressable
+              style={[styles.btn, styles.kakao, busy && styles.btnDim]}
+              disabled={!!busy}
+              onPress={onKakao}>
+              <Text style={[styles.btnText, { color: '#3A1D1D' }]}>카카오로 시작하기</Text>
+            </Pressable>
+          )}
 
           {/* Apple 로그인은 iOS 전용 (expo-apple-authentication) — 안드로이드/웹에선 미노출 */}
           {Platform.OS === 'ios' && (
