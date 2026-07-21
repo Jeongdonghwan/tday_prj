@@ -5,12 +5,17 @@ import os
 
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
+import sys
+
 HERE = os.path.dirname(__file__)
 SHOTS = os.path.join(HERE, "screenshots")
-OUT = os.path.join(HERE, "marketing")
+
+# 인자로 ios 주면 아이폰 6.7형(1290x2796), 기본은 플레이(1080x1920)
+IOS = len(sys.argv) > 1 and sys.argv[1] == "ios"
+OUT = os.path.join(HERE, "marketing_ios" if IOS else "marketing")
 os.makedirs(OUT, exist_ok=True)
 
-W, H = 1080, 1920
+W, H = (1290, 2796) if IOS else (1080, 1920)
 BOLD = "C:/Windows/Fonts/malgunbd.ttf"
 REG = "C:/Windows/Fonts/malgun.ttf"
 
@@ -75,21 +80,22 @@ def make(slide, idx):
     canvas = vgrad(W, H, top, bot).convert("RGBA")
     d = ImageDraw.Draw(canvas)
 
-    # 헤드라인
-    f = ImageFont.truetype(BOLD, 78)
-    y = 150
+    # 헤드라인 (캔버스 크기에 비례)
+    fs = int(78 * W / 1080)
+    f = ImageFont.truetype(BOLD, fs)
+    line_h = int(96 * W / 1080)
+    y = int(150 * H / 1920)
     for i, line in enumerate(lines):
         w = d.textlength(line, font=f)
         color = accent if i == len(lines) - 1 else INK
         d.text(((W - w) / 2, y), line, font=f, fill=color)
-        y += 96
-    # 서브 점(브랜드 악센트 바)
+        y += line_h
     d.rounded_rectangle([(W - 90) // 2, y + 18, (W + 90) // 2, y + 26], radius=4, fill=accent)
 
-    # 폰 목업 — 하단 중앙, 살짝 잘리게(스토어 관습)
-    frame = phone_frame(os.path.join(SHOTS, shot), target_w=760)
+    # 폰 목업 — 하단 중앙, 헤드라인 아래
+    frame = phone_frame(os.path.join(SHOTS, shot), target_w=int(760 * W / 1080))
     fx = (W - frame.width) // 2
-    fy = 470
+    fy = y + int(80 * H / 1920)
     # 그림자
     shadow = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
     sd = ImageDraw.Draw(shadow)
