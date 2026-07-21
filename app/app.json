@@ -12,7 +12,8 @@
       "supportsTablet": true,
       "usesAppleSignIn": true,
       "infoPlist": {
-        "CFBundleDisplayName": "오늘연애"
+        "CFBundleDisplayName": "오늘연애",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {

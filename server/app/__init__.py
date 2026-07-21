@@ -155,6 +155,15 @@ def _register_cli(app: Flask):
                 n += 1
         click.echo(f"연애 테스트 시드/갱신 완료: {n}개 (전체 {len(TESTS)}종).")
 
+    @app.cli.command("seed-content")
+    @click.option("--reset/--no-reset", default=True, help="기존 글/댓글/투표 삭제 후 재구성")
+    def seed_content_cmd(reset):
+        """실서비스 톤 커뮤니티 콘텐츠 시드 (글 35+·댓글·투표·오늘의질문 2주)."""
+        from .seeds.content import seed_content
+
+        r = seed_content(reset=reset)
+        click.echo(f"콘텐츠 시드 완료: 글 {r['posts']} / 댓글 {r['comments']} / 오늘의질문 {r['daily_questions']}")
+
     @app.cli.command("seed-issue")
     def seed_issue():
         """활성 이슈가 없으면 데모 1건 삽입 (idempotent, DESIGN_UPDATE §5)."""
