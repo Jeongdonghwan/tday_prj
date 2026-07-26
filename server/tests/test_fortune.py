@@ -193,3 +193,37 @@ def test_notify_cohort_no_token_skipped(client, app, register, bearer, monkeypat
     with app.app_context():
         r = notify_mod.notify_cohort("00", kst_today())
     assert r["targets"] == 0 and r["sent"] == 0
+
+
+# --- 데일리 스레드 ---
+def test_daily_thread_idempotent(app):
+    from app.fortune.thread import create_daily_thread, daily_thread_id, get_or_create_operator
+
+    d = kst_today()
+    with app.app_context():
+        op1 = get_or_create_operator()
+        op2 = get_or_create_operator()  # 재호출해도 동일 계정
+        assert op1.id == op2.id
+        pid1 = create_daily_thread(d)
+        pid2 = create_daily_thread(d)  # 같은 날짜 재생성 → 동일 글
+        assert pid1 == pid2
+        assert daily_thread_id(d) == pid1
+
+
+def test_today_includes_thread_id(client, app, token, bearer):
+    from app.fortune.thread import create_daily_thread
+
+    _gen_today(app)
+    _profile(client, bearer, token)
+    with app.app_context():
+        pid = create_daily_thread(kst_today())
+    d = client.get("/fortune/today", headers=bearer(token)).get_json()
+    assert d["thread_id"] == pid
+
+
+def test_get_profile_roundtrip(client, app, token, bearer):
+    _gen_today(app)
+    assert client.get("/fortune/profile", headers=bearer(token)).get_json() == {"registered": False}
+    _profile(client, bearer, token, push_enabled=True, push_time="07")
+    p = client.get("/fortune/profile", headers=bearer(token)).get_json()
+    assert p["registered"] and p["push_time"] == "07" and p["push_enabled"] is True and p["love_status"] == "couple"

@@ -1,5 +1,5 @@
 /** 오늘연애 탭 (fortune_tab.html 11섹션). 잠금/해제, 타로, 궁합, 오늘의 질문(DailyPollCard 재배치). */
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,9 +10,12 @@ import { AppBar } from '@/components/AppBar';
 import { DailyPollCard } from '@/components/DailyPollCard';
 import { Icon } from '@/components/Icon';
 import { NightCard, NightCardLocked } from '@/components/fortune/NightCard';
+import { CompatShareCard, FortuneShareCard } from '@/components/fortune/ShareCard';
 import { TarotCard } from '@/components/fortune/TarotCard';
 import { useFortune } from '@/fortune/FortuneContext';
+import { shareCardImage } from '@/fortune/shareCard';
 import { night } from '@/fortune/theme';
+import { useIsDesktop } from '@/hooks/useResponsive';
 import { notify, requireLogin } from '@/lib/dialogs';
 import { shareUrl } from '@/lib/share';
 import { WEB_BASE_URL } from '@/api/tests';
@@ -79,6 +82,10 @@ export default function FortuneScreen() {
 }
 
 function Registered({ data, token }: { data: Extract<FortuneToday, { registered: true }>; token: string }) {
+  const router = useRouter();
+  const isDesktop = useIsDesktop();
+  const shareRef = useRef<View>(null);
+  const shareMsg = `오늘 내 연애운 ${data.score}점! "${data.summary}"`;
   if (data.unavailable) {
     return (
       <View style={{ paddingTop: 8 }}>
@@ -95,13 +102,17 @@ function Registered({ data, token }: { data: Extract<FortuneToday, { registered:
         {data.published && <Text style={styles.dbU}>🌙 자정 업데이트 완료</Text>}
       </View>
 
-      {/* 2. 자정 카드 */}
-      <View style={{ marginHorizontal: 16 }}><NightCard data={data} /></View>
+      {/* 2. 자정 카드 (데스크톱: 전문 상시 노출, 링 110) */}
+      <View style={{ marginHorizontal: 16 }}><NightCard data={data} desktop={isDesktop} /></View>
 
-      {/* 3. 항목별 연애운 */}
+      {/* 3. 항목별 연애운 (데스크톱: 3열 그리드) */}
       <Section title="항목별 연애운">
-        <View style={{ gap: 8 }}>
-          {data.cats?.map((c, i) => <CatRow key={i} name={c.name} comment={c.comment} score={c.score} idx={i} />)}
+        <View style={isDesktop ? styles.catGrid : { gap: 8 }}>
+          {data.cats?.map((c, i) => (
+            <View key={i} style={isDesktop ? styles.catCell : undefined}>
+              <CatRow name={c.name} comment={c.comment} score={c.score} idx={i} />
+            </View>
+          ))}
         </View>
       </Section>
 
@@ -138,9 +149,9 @@ function Registered({ data, token }: { data: Extract<FortuneToday, { registered:
       {/* 7. 오늘의 질문 (재배치) */}
       <View style={{ marginTop: 22 }}><DailyPollCard /></View>
 
-      {/* 8. 공유 CTA */}
+      {/* 8. 공유 CTA (카드 이미지 캡처 → 실패 시 링크 폴백) */}
       <Section>
-        <Pressable style={styles.share} onPress={() => shareUrl(`${WEB_BASE_URL}/`, `오늘 내 연애운 ${data.score}점! "${data.summary}"`)}>
+        <Pressable style={styles.share} onPress={() => shareCardImage(shareRef, `${WEB_BASE_URL}/`, shareMsg)}>
           <Icon name="share" size={22} color="#191919" />
           <View style={{ flex: 1 }}>
             <Text style={styles.shareB}>내 연애운 카드 공유하기</Text>
@@ -148,6 +159,9 @@ function Registered({ data, token }: { data: Extract<FortuneToday, { registered:
           </View>
         </Pressable>
       </Section>
+
+      {/* off-screen 캡처 카드 */}
+      <FortuneShareCard ref={shareRef} nickname={data.nickname} score={data.score ?? 0} summary={data.summary ?? ''} dateLabel={todayLabel(data.date)} />
 
       {/* 9. 스트릭 */}
       <Section>
@@ -163,6 +177,19 @@ function Registered({ data, token }: { data: Extract<FortuneToday, { registered:
           </View>
         </View>
       </Section>
+
+      {/* 10. 데일리 스레드 (thread_id 있을 때만 노출) */}
+      {data.thread_id != null && (
+        <Section>
+          <Pressable style={styles.thread} onPress={() => router.push({ pathname: '/post/[id]', params: { id: data.thread_id! } })}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.threadB}>💬 오늘 운세, 실제로 맞았어요?</Text>
+              <Text style={styles.threadS}>매일 자정 열리는 운세 후기 스레드</Text>
+            </View>
+            <Text style={styles.threadGo}>참여하기</Text>
+          </Pressable>
+        </Section>
+      )}
 
       {/* 11. 면책 */}
       <Text style={styles.disclaimer}>운세 콘텐츠는 재미로 즐기는 참고용 정보예요.</Text>
@@ -208,6 +235,7 @@ function CompatBox({ token }: { token: string }) {
   const [birth, setBirth] = useState('');
   const [result, setResult] = useState<{ score: number; comment: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const compatRef = useRef<View>(null);
 
   async function onCheck() {
     if (!token) return requireLogin();
@@ -251,13 +279,16 @@ function CompatBox({ token }: { token: string }) {
           <Pressable style={styles.modalCard} onPress={(e) => e.stopPropagation()}>
             <Text style={styles.modalScore}>{result?.score}점</Text>
             <Text style={styles.modalComment}>{result?.comment}</Text>
-            <Pressable style={styles.modalShare} onPress={() => shareUrl(`${WEB_BASE_URL}/`, `오늘 우리 궁합 ${result?.score}점! ${result?.comment}`)}>
-              <Text style={styles.modalShareT}>카카오로 공유하기</Text>
+            <Pressable
+              style={styles.modalShare}
+              onPress={() => shareCardImage(compatRef, `${WEB_BASE_URL}/`, `오늘 우리 궁합 ${result?.score}점! ${result?.comment}`)}>
+              <Text style={styles.modalShareT}>결과 카드 공유하기</Text>
             </Pressable>
             <Pressable onPress={() => setResult(null)}><Text style={styles.modalClose}>닫기</Text></Pressable>
           </Pressable>
         </Pressable>
       </Modal>
+      {result && <CompatShareCard ref={compatRef} score={result.score} comment={result.comment} />}
     </View>
   );
 }
@@ -275,6 +306,8 @@ const styles = StyleSheet.create({
   secH: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
   secTitle: { fontSize: 15, fontWeight: weight.extrabold as '800', color: colors.ink, letterSpacing: -0.2 },
   secRight: { fontSize: 12, color: colors.sub2, fontWeight: weight.semibold as '600' },
+  catGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  catCell: { width: '32%', flexGrow: 1 },
   cat: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.soft, borderWidth: 1, borderColor: colors.line, borderRadius: radius.card, padding: 12 },
   catIc: { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   catName: { fontSize: 13.5, fontWeight: weight.bold as '700', color: colors.ink },
@@ -311,5 +344,9 @@ const styles = StyleSheet.create({
   dots: { flexDirection: 'row', gap: 5 },
   dot: { width: 9, height: 9, borderRadius: 5, backgroundColor: colors.line },
   dotOn: { backgroundColor: colors.rose },
+  thread: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderStyle: 'dashed', borderColor: '#F0AEBE', borderRadius: radius.cardLg, paddingVertical: 13, paddingHorizontal: 16, backgroundColor: '#FFF9FA' },
+  threadB: { fontSize: 13, fontWeight: weight.extrabold as '800', color: colors.ink },
+  threadS: { fontSize: 11.5, color: colors.sub2, fontWeight: weight.semibold as '600', marginTop: 2 },
+  threadGo: { color: colors.rose, fontWeight: weight.extrabold as '800', fontSize: 12 },
   disclaimer: { marginTop: 20, marginHorizontal: 16, fontSize: 10.5, color: colors.sub2, textAlign: 'center' },
 });

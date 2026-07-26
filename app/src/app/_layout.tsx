@@ -60,6 +60,7 @@ function RootNavigator() {
       <Stack.Screen name="photos/new" options={{ presentation: 'modal' }} />
       <Stack.Screen name="profile-edit" />
       <Stack.Screen name="fortune-onboarding" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="fortune-settings" />
     </Stack>
   );
 

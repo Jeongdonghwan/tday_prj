@@ -25,6 +25,7 @@ export type FortuneToday =
       lucky?: { color: LuckyItem; item: LuckyItem; time: LuckyItem; place: LuckyItem };
       tarot?: Tarot;
       streak?: number;
+      thread_id?: number | null;
     };
 
 export type FortuneProfileInput = {
@@ -38,6 +39,22 @@ export type FortuneProfileInput = {
 
 export function getFortuneToday(token: string) {
   return apiRequest<FortuneToday>('/fortune/today', { token });
+}
+
+export type FortuneProfileData =
+  | { registered: false }
+  | {
+      registered: true;
+      birth_date: string;
+      birth_time: number | null;
+      gender: 'F' | 'M';
+      love_status: LoveStatus;
+      push_enabled: boolean;
+      push_time: PushTime;
+    };
+
+export function getFortuneProfile(token: string) {
+  return apiRequest<FortuneProfileData>('/fortune/profile', { token });
 }
 
 export function saveFortuneProfile(body: FortuneProfileInput, token: string) {

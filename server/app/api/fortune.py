@@ -16,6 +16,7 @@ from ..extensions import db
 from ..fortune.constants import ZODIAC_KR
 from ..fortune.kst import kst_now, kst_today, zodiac_of
 from ..fortune.personalize import compatibility, personalize, tarot_card
+from ..fortune.thread import daily_thread_id
 from ..models import DailyFortune, FortuneProfile, FortuneRead
 from ..models.enums import FORTUNE_GENDERS, FORTUNE_LOVE_STATUSES, FORTUNE_PUSH_TIMES
 
@@ -93,6 +94,8 @@ def _today_payload(profile: FortuneProfile) -> dict:
         "lucky": pz["lucky"],
         "tarot": tarot_card(pz["tarot_index"]),
         "streak": _streak(profile.user_id, today),
+        # 데일리 스레드 배너 링크 (없으면 None → 배너 미노출)
+        "thread_id": daily_thread_id(today),
     }
 
 
@@ -103,6 +106,24 @@ def today():
     if profile is None:
         return jsonify({"registered": False})
     return jsonify(_today_payload(profile))
+
+
+@bp.get("/fortune/profile")
+@login_required
+def get_profile():
+    """운세 설정 화면용 — 저장된 프로필(없으면 registered:false)."""
+    p = db.session.get(FortuneProfile, g.user.id)
+    if p is None:
+        return jsonify({"registered": False})
+    return jsonify({
+        "registered": True,
+        "birth_date": p.birth_date.isoformat(),
+        "birth_time": p.birth_time,
+        "gender": p.gender,
+        "love_status": p.love_status,
+        "push_enabled": p.push_enabled,
+        "push_time": p.push_time,
+    })
 
 
 @bp.post("/fortune/profile")

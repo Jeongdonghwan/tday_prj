@@ -212,6 +212,25 @@ def _register_cli(app: Flask):
         r = notify_cohort(cohort, d)
         click.echo(f"운세 푸시({r['cohort']}시): {r['date']} 대상 {r['targets']} / 발송 {r['sent']} / 스킵 {r['skipped']}")
 
+    @app.cli.command("seed-operator")
+    def seed_operator():
+        """데일리 스레드 운영 계정(오늘연애) 시드 (idempotent)."""
+        from .fortune.thread import get_or_create_operator
+
+        u = get_or_create_operator()
+        click.echo(f"운영 계정: id={u.id} nickname={u.nickname}")
+
+    @app.cli.command("fortune-thread")
+    @click.option("--date", "date_str", default=None, help="YYYY-MM-DD (기본: 오늘 KST)")
+    def fortune_thread(date_str):
+        """데일리 스레드 자동 글 생성 (크론 00:00, idempotent)."""
+        from .fortune.kst import kst_today
+        from .fortune.thread import create_daily_thread
+
+        d = _parse_date_opt(date_str) or kst_today()
+        pid = create_daily_thread(d)
+        click.echo(f"데일리 스레드: {d} → post_id={pid}")
+
     @app.cli.command("seed-issue")
     def seed_issue():
         """활성 이슈가 없으면 데모 1건 삽입 (idempotent, DESIGN_UPDATE §5)."""

@@ -2,7 +2,7 @@
  *  STEP1 생년월일+태어난시 → STEP2 성별 → STEP3 연애상태 → STEP4 푸시 프라이머.
  *  "자정에 알림 받기" 탭 이후에만 OS 권한 요청(registerForPush). "알림 없이"는 권한 요청 없이 통과. */
 import { useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -162,7 +162,7 @@ export default function FortuneOnboarding() {
         <Pressable
           style={[styles.next, ((step === 1 && !step1ok) || (step === 2 && !gender) || (step === 3 && !status)) && styles.nextOff]}
           disabled={(step === 1 && !step1ok) || (step === 2 && !gender) || (step === 3 && !status)}
-          onPress={() => setStep(step + 1)}>
+          onPress={() => (step === 3 && Platform.OS === 'web' ? finish(false) : setStep(step + 1))}>
           <Text style={styles.nextT}>{step === 3 ? '내 연애운 보러 가기' : '다음'}</Text>
         </Pressable>
         {step === 1 && <Text style={styles.note}>입력한 정보는 마이페이지에서 언제든 수정할 수 있어요</Text>}

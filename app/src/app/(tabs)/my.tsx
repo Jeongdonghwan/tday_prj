@@ -97,6 +97,7 @@ export default function MyScreen() {
 
   const links: { icon: IconName; label: string; onPress: () => void }[] = [
     { icon: 'chat', label: '내 글·댓글', onPress: () => router.push('/my-activity') },
+    { icon: 'heartFill', label: '오늘연애 운세 설정', onPress: () => router.push('/fortune-settings') },
     { icon: 'heart', label: dday?.connected ? '공유 캘린더' : '캘린더', onPress: () => router.push('/calendar') },
     { icon: 'chat', label: '오늘의 질문 (커플)', onPress: () => router.push('/daily') },
     { icon: 'best', label: '연애 심리테스트', onPress: () => router.push('/tests') },

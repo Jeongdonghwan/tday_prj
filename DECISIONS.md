@@ -60,3 +60,20 @@
 ## 심리테스트 확장 + 테스트존 디자인 (신규)
 - **연애 테스트 10종 신규**: 애착유형/데이트스타일/사랑의언어/질투지수/밀당레벨/이별후유형/이상형동물상/커플역할/썸판독기/관계주도권. 구조화 데이터(`app/seeds/love_tests.py`) → `services.psych.create_test_from_data` → `flask seed-love-tests`(idempotent). 결과 일러스트는 기존 12 아바타(avatar_no) 재사용(신규 이미지 에셋 미도입).
 - **테스트존 디자인(연애톤)**: 테스트별 이모지+대표색 테마(`THEMES` by slug). 목록=이모지 타일+색 액센트, 인트로/결과=그라데이션 히어로+이모지, 퀴즈=테마색 진행바. 이미지 생성 의존성 없이 이모지+그라데이션+아바타로 시각화.
+
+## 오늘의 연애운세 (신규 — FORTUNE_UPDATE.md)
+### 사용자 확인 결정
+- **BEST 탭 제거 → 커뮤니티로 흡수**: 최종 5탭 = 홈·커뮤니티·**오늘연애(중앙 돌출)**·연애이슈·마이. `(tabs)/best.tsx` 라우트는 유지(탭바·데스크톱 MENU에서만 제외, `Tabs.Screen href:null`), 홈/커뮤니티에서 진입.
+- **운세 생성 = 폴백 풀 결정론 배정(무료, Claude API 미사용)**: `fallbacks.json` 상태별 10세트를 날짜+세그먼트 해시로 배정 → 48행/일. AI 경로는 `generate.py` 분기만 남기고 미사용(ANTHROPIC 키 확보 시 활성화 훅).
+- **스케줄러 = crontab + flask CLI**: APScheduler 미도입(기존 recompute-hot/notify-* 와 동일 방식). crontab 최상단 `TZ=Asia/Seoul`.
+
+### 자율 결정
+- **KST 처리**: 서버 TZ 미설정 → `app/fortune/kst.py`(utcnow+9). 운세 날짜·published_at 비교 전부 KST. 크론도 `TZ=Asia/Seoul`로 일치.
+- **운영 계정**: 전용 운영 유저 없음 → `flask seed-operator`로 `오늘연애`(social_provider=dev, social_id="system:official") 1개 시드해 데일리 스레드 author 로 사용. 데일리 스레드는 `category="daily"`(일상잡담) 보드, 제목 `[M월 D일] 오늘 연애운, 실제로 맞았어요? 🌙`, 날짜별 idempotent.
+- **오늘의 질문 이동**: 홈 `DailyPollCard`(A/B 밸런스투표, `/daily-poll`)를 오늘연애 탭으로 재배치(로직 불변). 커플 주관식 `/daily`는 별개 유지.
+- **퀵메뉴 스타일**: 실제 `QUICK_ITEMS` 8종 라벨·이동경로 유지(프로토타입 예시 라벨 무시). `W(bg,inner)` 헬퍼에서 배경 rect 제거하고 심볼만 44px 렌더, 홈 퀵메뉴 컨테이너 카드 배경/테두리 제거(home_fortune.html `.sec` 여백만).
+- **개인화 해시**: `personalize.py` sha256(user_id:date)로 score 55~99·항목점수 2개·행운 4종·타로 인덱스, 궁합 sha256(정렬생일쌍:date)로 50~99+코멘트(§4-3/4-4 공식 그대로). DB 저장 없이 재현.
+- **PC 브레이크포인트**: fortune_pc.html은 1000px 기준이나, 앱 전역 데스크톱 셸(`useIsDesktop`, 1240px, 센터600+레일280 sticky)과의 일관성을 위해 **오늘연애 탭도 1240px에서 데스크톱 전환**(NightCard 전문 상시·링110, 항목 3열 그리드). 별도 1000px 분기는 도입하지 않음. 웹 온보딩은 푸시 프라이머(STEP4) 건너뛰고 프로필 3스텝만.
+- **공유 카드**: `react-native-view-shot`(5.1.0)+`expo-sharing`(~56)으로 off-screen 자정테마 카드 캡처→이미지 공유. 웹/캡처 실패 시 기존 `shareUrl` 링크 공유로 폴백(Expo Go/웹은 캡처 미지원 → 링크). 네이티브 캡처 동작은 dev-client/EAS 빌드 필요(런타임 미검증).
+- **푸시 코호트**: `fortune_profiles(push_enabled, push_time)` × `users.push_token` 조인, 수신자별 `personalize` 점수/세그먼트 summary로 개인화 티저(§6). `send_push` 재사용(청크 100). data.type="fortune" → `todaylove://fortune`(usePushRouting). 토큰 정리(수신영수증 폴링)는 이번 범위 외.
+- **데일리 스레드 배너**: `/fortune/today` 응답에 `thread_id`(오늘 운영계정 daily 글 id, 없으면 null) 추가 → 탭 배너 노출/링크. 생성 실패 시 null → 배너 미노출.
