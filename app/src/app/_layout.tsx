@@ -10,6 +10,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 
 import { AuthProvider, useAuth } from '@/auth/AuthContext';
+import { FortuneProvider } from '@/fortune/FortuneContext';
 import { DesktopShell } from '@/components/web/DesktopShell';
 import { useIsDesktop } from '@/hooks/useResponsive';
 import { usePushRouting } from '@/push/usePushRouting';
@@ -58,6 +59,7 @@ function RootNavigator() {
       <Stack.Screen name="photos/index" />
       <Stack.Screen name="photos/new" options={{ presentation: 'modal' }} />
       <Stack.Screen name="profile-edit" />
+      <Stack.Screen name="fortune-onboarding" options={{ presentation: 'modal' }} />
     </Stack>
   );
 
@@ -71,8 +73,10 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <AuthProvider>
-          <StatusBar style="dark" />
-          <RootNavigator />
+          <FortuneProvider>
+            <StatusBar style="dark" />
+            <RootNavigator />
+          </FortuneProvider>
         </AuthProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

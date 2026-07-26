@@ -1,11 +1,12 @@
 /**
- * 홈 퀵메뉴 8종 (게시판 개편). 자립형 48×48 SVG 아이콘(틴트 라운드 배경 포함, 아바타와 동일 방식).
- * community = 게시판 카테고리 진입, photo = 인증·사진 앨범(초기 비활성, /photos).
+ * 홈 퀵메뉴 8종 (오늘연애 홈 개편). 자립형 44×44 SVG 심볼 — 틴트 라운드 배경 제거(home_fortune.html .qm .ic).
+ * community = 게시판 카테고리 진입. 첫 인자(bg)는 하위호환용으로 유지하나 배경 rect 는 그리지 않음.
  */
 export type QuickItem = { key: string; label: string; xml: string; kind: 'community'; category: string };
 
-const W = (bg: string, inner: string) =>
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><rect width="48" height="48" rx="15" fill="${bg}"/><g transform="translate(4.8,4.8) scale(0.8)">${inner}</g></svg>`;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const W = (_bg: string, inner: string) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><g transform="translate(4.8,4.8) scale(0.8)">${inner}</g></svg>`;
 
 // 연애고민 — 말풍선 + 하트
 const LOVE = W('#FDEAEE', '<path d="M13,8 h22 a7,7 0 0 1 7,7 v10 a7,7 0 0 1 -7,7 H22 l-7,7 v-7 h-2 a7,7 0 0 1 -7,-7 V15 a7,7 0 0 1 7,-7 z" fill="#F58AA0"/><path d="M24,29 Q15,23.5 15,17.8 Q15,13.5 19,13.5 Q22,13.5 24,16.5 Q26,13.5 29,13.5 Q33,13.5 33,17.8 Q33,23.5 24,29 Z" fill="#FFFFFF"/>');

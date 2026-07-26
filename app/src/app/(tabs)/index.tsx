@@ -1,4 +1,4 @@
-/** 홈 탭 (HOME_UPDATE §2): 오늘의 질문 + 퀵메뉴 + 지금 뜨는 글 + 연애이슈. */
+/** 홈 탭: 자정 운세 미니카드 + 퀵메뉴 + 지금 뜨는 글 + 연애이슈. (오늘의 질문은 오늘연애 탭으로 이동) */
 import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -12,7 +12,7 @@ import { getIssueArchive, getTodayIssue } from '@/api/issues';
 import { getTests, type TestListItem } from '@/api/tests';
 import { useAuth } from '@/auth/AuthContext';
 import { BrandLogo } from '@/components/BrandLogo';
-import { DailyPollCard } from '@/components/DailyPollCard';
+import { HomeFortuneCard } from '@/components/fortune/HomeFortuneCard';
 import { Icon } from '@/components/Icon';
 import { issueThumb } from '@/components/IssueCard';
 import { NotificationBell } from '@/components/NotificationBell';
@@ -38,7 +38,8 @@ export default function HomeScreen() {
         </View>
       )}
       <ScrollView style={styles.body} contentContainerStyle={{ paddingTop: 4, paddingBottom: 28 }}>
-        <DailyPollCard />
+        {/* 최상단 컴팩트 자정 운세 미니카드 (home_fortune.html). 오늘의 질문(DailyPollCard)은 오늘연애 탭으로 이동. */}
+        <HomeFortuneCard />
         <View style={styles.qmCard}>
           <QuickMenu />
         </View>
@@ -228,16 +229,12 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
   },
+  // 퀵메뉴 컨테이너 — 카드 배경/테두리 제거(home_fortune.html .sec: 여백만)
   qmCard: {
-    backgroundColor: colors.bg,
-    borderWidth: 0.5,
-    borderColor: colors.line,
-    borderRadius: 18,
     marginHorizontal: 16,
     marginBottom: 10,
-    marginTop: 4,
-    paddingVertical: 8,
-    paddingHorizontal: 4,
+    marginTop: 14,
+    paddingVertical: 4,
   },
   secHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
   secTitle: { fontSize: 15, fontWeight: weight.extrabold as '800', color: colors.ink },

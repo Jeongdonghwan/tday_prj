@@ -1,4 +1,4 @@
-/** 홈 퀵메뉴 그리드 4×2 (게시판 개편). 48px SVG 아이콘(자립형) + 라벨, 프레스 스케일 .96. */
+/** 홈 퀵메뉴 그리드 4×2 (오늘연애 홈 개편). 44px SVG 심볼(배경 없음) + 라벨, 프레스 스케일 .96. */
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SvgXml } from 'react-native-svg';
@@ -20,7 +20,7 @@ export function QuickMenu() {
           key={item.key}
           style={({ pressed }) => [styles.cell, pressed && styles.pressed]}
           onPress={() => go(item)}>
-          <SvgXml xml={item.xml} width={48} height={48} />
+          <SvgXml xml={item.xml} width={44} height={44} />
           <Text style={styles.label} numberOfLines={1}>{item.label}</Text>
         </Pressable>
       ))}
