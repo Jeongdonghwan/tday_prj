@@ -19,6 +19,11 @@ SCHEDULE_OWNERS = ("a", "b", "both")
 # 신고 대상
 REPORT_TARGETS = ("post", "comment", "issue_comment", "user")
 
+# 연애운세 — 연애상태(온보딩) / 성별 / 푸시 시간 코호트
+FORTUNE_LOVE_STATUSES = ("solo", "some", "couple", "rebound")
+FORTUNE_GENDERS = ("F", "M")
+FORTUNE_PUSH_TIMES = ("00", "07", "09")
+
 # 상태값 -> 한글 라벨 (서버 응답에 함께 실어주면 클라가 매핑 불필요)
 STATUS_LABELS = {"couple": "커플", "single": "돌싱", "married": "유부"}
 

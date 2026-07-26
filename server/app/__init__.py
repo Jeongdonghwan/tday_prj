@@ -64,6 +64,15 @@ def _prod_safety_check(app):
         app.logger.warning("[보안 경고] %s", p)
 
 
+def _parse_date_opt(date_str):
+    """--date YYYY-MM-DD 파싱 (없으면 None)."""
+    if not date_str:
+        return None
+    from datetime import datetime as _dt
+
+    return _dt.strptime(date_str, "%Y-%m-%d").date()
+
+
 def _register_cli(app: Flask):
     @app.cli.command("init-db")
     def init_db():
@@ -163,6 +172,33 @@ def _register_cli(app: Flask):
 
         r = seed_content(reset=reset)
         click.echo(f"콘텐츠 시드 완료: 글 {r['posts']} / 댓글 {r['comments']} / 오늘의질문 {r['daily_questions']}")
+
+    @app.cli.command("fortune-generate")
+    @click.option("--date", "date_str", default=None, help="YYYY-MM-DD (기본: 내일 KST)")
+    @click.option("--overwrite/--no-overwrite", default=False)
+    def fortune_generate(date_str, overwrite):
+        """연애운세 48세그먼트 생성 (크론 23:40). 기본은 내일 날짜(KST)."""
+        from datetime import timedelta
+
+        from .fortune.generate import generate_for_date
+        from .fortune.kst import kst_today
+
+        d = _parse_date_opt(date_str) or (kst_today() + timedelta(days=1))
+        n = generate_for_date(d, overwrite=overwrite)
+        click.echo(f"운세 생성: {d} → {n}세그먼트")
+
+    @app.cli.command("fortune-verify")
+    @click.option("--date", "date_str", default=None, help="YYYY-MM-DD (기본: 내일 KST)")
+    def fortune_verify(date_str):
+        """48행 미만이면 폴백으로 채움 (크론 23:55)."""
+        from datetime import timedelta
+
+        from .fortune.generate import verify_for_date
+        from .fortune.kst import kst_today
+
+        d = _parse_date_opt(date_str) or (kst_today() + timedelta(days=1))
+        n = verify_for_date(d)
+        click.echo(f"운세 검증: {d} → 부족분 {n}건 보충")
 
     @app.cli.command("seed-issue")
     def seed_issue():

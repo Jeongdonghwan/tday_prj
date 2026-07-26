@@ -11,6 +11,7 @@ os.environ.setdefault("FLASK_ENV", "testing")
 
 from app import create_app  # noqa: E402
 from app.extensions import db  # noqa: E402
+from app.api.fortune import reset_seg_cache  # noqa: E402
 from app.ranking import cache_clear  # noqa: E402
 from config import TestConfig  # noqa: E402
 
@@ -52,6 +53,7 @@ def _clean(app):
     """
     with app.app_context():
         cache_clear()
+        reset_seg_cache()
         db.session.remove()
         with db.engine.begin() as conn:
             conn.execute(text("SET FOREIGN_KEY_CHECKS=0"))

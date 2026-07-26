@@ -12,6 +12,7 @@ from .psych import Test, TestAttempt, TestQuestion, TestResult
 from .schedule import Schedule
 from .moderation import Block, Report
 from .ad import AdSlot
+from .fortune import CompatibilityLog, DailyFortune, FortuneProfile, FortuneRead
 
 __all__ = [
     "User",
@@ -37,4 +38,8 @@ __all__ = [
     "Report",
     "Block",
     "AdSlot",
+    "FortuneProfile",
+    "DailyFortune",
+    "FortuneRead",
+    "CompatibilityLog",
 ]
