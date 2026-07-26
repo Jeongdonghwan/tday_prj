@@ -52,7 +52,8 @@
           "kakaoAppKey": "8ac781d72168f57e5f49ae2e5e78319a",
           "kotlinVersion": "2.1.20"
         }
-      ]
+      ],
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true,
