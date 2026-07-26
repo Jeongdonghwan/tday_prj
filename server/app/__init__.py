@@ -200,6 +200,18 @@ def _register_cli(app: Flask):
         n = verify_for_date(d)
         click.echo(f"운세 검증: {d} → 부족분 {n}건 보충")
 
+    @app.cli.command("fortune-notify")
+    @click.option("--cohort", type=click.Choice(["00", "07", "09"]), required=True)
+    @click.option("--date", "date_str", default=None, help="YYYY-MM-DD (기본: 오늘 KST)")
+    def fortune_notify(cohort, date_str):
+        """코호트별 연애운세 푸시 발송 (크론 00:00/07:00/09:00). 기본은 오늘 날짜(KST)."""
+        from .fortune.kst import kst_today
+        from .fortune.notify import notify_cohort
+
+        d = _parse_date_opt(date_str) or kst_today()
+        r = notify_cohort(cohort, d)
+        click.echo(f"운세 푸시({r['cohort']}시): {r['date']} 대상 {r['targets']} / 발송 {r['sent']} / 스킵 {r['skipped']}")
+
     @app.cli.command("seed-issue")
     def seed_issue():
         """활성 이슈가 없으면 데모 1건 삽입 (idempotent, DESIGN_UPDATE §5)."""

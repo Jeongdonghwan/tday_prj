@@ -119,6 +119,9 @@ eas submit --platform android      # Play Console
 ### C-1. 크론(cron) 등록 — 배치 작업
 서버에서 주기 실행 (경로·venv 는 환경에 맞게):
 ```cron
+# 서버 TZ 가 UTC 여도 아래 연애운세 잡이 KST 기준으로 돌도록 crontab 최상단에 명시
+TZ=Asia/Seoul
+
 # hot_score 재계산 (베스트/홈 랭킹) — 5분마다
 */5 * * * *  cd /srv/todaylove/server && /srv/todaylove/server/.venv/bin/flask recompute-hot >> /var/log/todaylove/hot.log 2>&1
 
@@ -127,8 +130,27 @@ eas submit --platform android      # Play Console
 
 # 베스트 등재 알림 — hot 배치 후 (매일 오전 9시5분)
 5 9 * * *    cd /srv/todaylove/server && /srv/todaylove/server/.venv/bin/flask notify-best >> /var/log/todaylove/best.log 2>&1
+
+# ── 오늘의 연애운세 (KST) ─────────────────────────────
+# 23:40 다음날 48세그먼트 생성(폴백 결정론)
+40 23 * * *  cd /srv/todaylove/server && /srv/todaylove/server/.venv/bin/flask fortune-generate >> /var/log/todaylove/fortune.log 2>&1
+# 23:55 48행 미만이면 폴백으로 채움(방어)
+55 23 * * *  cd /srv/todaylove/server && /srv/todaylove/server/.venv/bin/flask fortune-verify >> /var/log/todaylove/fortune.log 2>&1
+# 00:00 자정 코호트 푸시 + 데일리 스레드 자동 글(운영 계정)
+0 0 * * *    cd /srv/todaylove/server && /srv/todaylove/server/.venv/bin/flask fortune-notify --cohort 00 >> /var/log/todaylove/fortune.log 2>&1
+0 0 * * *    cd /srv/todaylove/server && /srv/todaylove/server/.venv/bin/flask fortune-thread >> /var/log/todaylove/fortune.log 2>&1
+# 07:00 / 09:00 코호트 푸시
+0 7 * * *    cd /srv/todaylove/server && /srv/todaylove/server/.venv/bin/flask fortune-notify --cohort 07 >> /var/log/todaylove/fortune.log 2>&1
+0 9 * * *    cd /srv/todaylove/server && /srv/todaylove/server/.venv/bin/flask fortune-notify --cohort 09 >> /var/log/todaylove/fortune.log 2>&1
 ```
 > 실행 전 `FLASK_APP` 환경변수(예: `run:app` 또는 팩토리 경로)와 `.env` 로딩 확인.
+> `TZ=Asia/Seoul` 은 서버 자체 TZ 설정과 무관하게 이 crontab 의 시각 해석을 KST 로 고정한다(운세 날짜 로직도 앱에서 UTC+9 로 계산하므로 일치). 운영 계정 시드는 아래 C-1.6 참고.
+
+### C-1.6. 오늘의 연애운세 운영 준비
+- **운영 계정 시드**: `flask seed-operator` — 데일리 스레드 자동 글의 작성자(닉네임 `오늘연애`, social_id `system:official`). idempotent.
+- **최초 운세 생성**: 배포 직후 당일/익일 세그먼트가 없으면 탭이 잠기므로 수동 1회 실행 권장 —
+  `flask fortune-generate --date <오늘> --overwrite` 후 `flask fortune-generate`(내일분).
+- **푸시 고지(스토어 심사 메모)**: 자정/07/09시 운세 알림은 온보딩 STEP4에서 명시 동의를 받는 **정보성(구독형)** 알림이며, 마이 > 운세 설정에서 즉시 해제 가능하다고 심사 노트에 기재.
 
 ### C-1.5. 검색엔진 등록 (배포 후 — SEO 인프라는 코드에 내장됨)
 서버에 이미 있음: robots.txt, sitemap.xml(글+테스트+약관), 페이지별 title/description/OG/canonical.
@@ -157,4 +179,5 @@ eas submit --platform android      # Play Console
 - [ ] 개인정보처리방침/이용약관 URL, 계정삭제 안내
 - [ ] 푸시 자격증명(FCM/APNs), EAS 빌드·제출
 - [ ] 업로드 nginx 서빙 + `WEB_BASE_URL`
-- [ ] cron 3종 등록, 에러 모니터링
+- [ ] cron 등록(hot·notify + 연애운세 5종, `TZ=Asia/Seoul`), 에러 모니터링
+- [ ] 운영 계정 시드(`flask seed-operator`) + 최초 운세 생성(`flask fortune-generate`), 푸시 고지 심사 메모

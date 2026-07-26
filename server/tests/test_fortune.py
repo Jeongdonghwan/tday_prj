@@ -143,3 +143,53 @@ def test_profile_validation(client, token, bearer):
 # --- 로그인 필수 ---
 def test_today_requires_auth(client):
     assert client.get("/fortune/today").status_code == 401
+
+
+# --- 코호트 푸시 ---
+def _set_push(app, uid, token="ExponentPushToken[x]"):
+    from app.extensions import db
+    from app.models import User
+
+    with app.app_context():
+        u = db.session.get(User, uid)
+        u.push_token = token
+        db.session.commit()
+
+
+def test_notify_cohort_targets_only_matching(client, app, register, bearer, monkeypatch):
+    """push_time 코호트 + push_enabled + push_token 있는 유저만 발송 대상."""
+    from app.fortune import notify as notify_mod
+
+    _gen_today(app)
+    tok0, uid0 = register("c00")  # 00시 코호트, 푸시 on
+    tok9, uid9 = register("c09")  # 09시 코호트, 푸시 on
+    tokoff, uidoff = register("coff")  # 00시지만 푸시 off
+    _profile(client, bearer, tok0, push_enabled=True, push_time="00")
+    _profile(client, bearer, tok9, push_enabled=True, push_time="09")
+    _profile(client, bearer, tokoff, push_enabled=False, push_time="00")
+    for uid in (uid0, uid9, uidoff):
+        _set_push(app, uid)
+
+    calls = []
+    monkeypatch.setattr(notify_mod, "send_push", lambda tokens, title, body, data: calls.append((tokens, title, body, data)) or len(tokens))
+
+    with app.app_context():
+        r = notify_mod.notify_cohort("00", kst_today())
+    assert r["targets"] == 1 and r["sent"] == 1  # c00 만
+    assert len(calls) == 1
+    assert calls[0][3] == {"type": "fortune"}  # 딥링크 타입
+    assert "🌙" in calls[0][1]  # 자정 티저
+
+
+def test_notify_cohort_no_token_skipped(client, app, register, bearer, monkeypatch):
+    """push_token 없으면 대상에서 제외."""
+    from app.fortune import notify as notify_mod
+
+    _gen_today(app)
+    tok, _uid = register("notok")
+    _profile(client, bearer, tok, push_enabled=True, push_time="00")  # 토큰 미설정
+
+    monkeypatch.setattr(notify_mod, "send_push", lambda *a, **k: 1)
+    with app.app_context():
+        r = notify_mod.notify_cohort("00", kst_today())
+    assert r["targets"] == 0 and r["sent"] == 0
