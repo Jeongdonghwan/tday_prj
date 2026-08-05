@@ -1,0 +1,74 @@
+{
+  "tabs": {
+    "home": "홈",
+    "community": "커뮤니티",
+    "fortune": "오늘연애",
+    "issues": "연애이슈",
+    "my": "MY"
+  },
+  "common": {
+    "cancel": "취소",
+    "confirm": "확인",
+    "save": "저장",
+    "close": "닫기",
+    "more": "더보기",
+    "retry": "다시 시도",
+    "loading": "불러오는 중…",
+    "login": "로그인",
+    "loginSignup": "로그인 / 회원가입",
+    "logout": "로그아웃"
+  },
+  "community": {
+    "title": "커뮤니티",
+    "empty": "아직 글이 없어요.\n첫 글을 올려보세요!"
+  },
+  "post": {
+    "like": "공감",
+    "comment": "댓글",
+    "tagPoll": "투표",
+    "tagWorry": "고민",
+    "tagStory": "썰",
+    "kstoryBadge": "K-Story"
+  },
+  "feed": {
+    "kstory": "K-Story"
+  },
+  "my": {
+    "guestPrompt": "로그인하고 시작해보세요",
+    "myActivity": "내 글·댓글",
+    "fortuneSettings": "오늘연애 운세 설정",
+    "calendar": "캘린더",
+    "sharedCalendar": "공유 캘린더",
+    "coupleDaily": "오늘의 질문 (커플)",
+    "psychTest": "연애 심리테스트",
+    "language": "언어 / Language",
+    "withdraw": "회원 탈퇴",
+    "logout": "로그아웃"
+  },
+  "language": {
+    "title": "언어 설정",
+    "ko": "한국어",
+    "en": "English"
+  },
+  "report": {
+    "reportPost": "신고하기",
+    "reportComment": "댓글 신고하기",
+    "blockAuthor": "작성자 차단",
+    "reported": "신고를 접수했어요.",
+    "blocked": "차단했어요. 이 유저의 글·댓글이 숨겨져요.",
+    "blockList": "차단 목록",
+    "unblock": "차단 해제",
+    "blockEmpty": "차단한 유저가 없어요."
+  },
+  "auth": {
+    "welcome": "로그인하고 오늘의 연애를 시작해보세요",
+    "kakao": "카카오로 시작하기",
+    "apple": "Apple로 시작하기",
+    "email": "이메일로 시작하기",
+    "emailPlaceholder": "이메일",
+    "passwordPlaceholder": "비밀번호 (8자 이상)",
+    "signup": "가입하기",
+    "hasAccount": "이미 계정이 있나요? 로그인",
+    "noAccount": "계정이 없나요? 가입하기"
+  }
+}

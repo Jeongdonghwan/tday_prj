@@ -77,3 +77,23 @@
 - **공유 카드**: `react-native-view-shot`(5.1.0)+`expo-sharing`(~56)으로 off-screen 자정테마 카드 캡처→이미지 공유. 웹/캡처 실패 시 기존 `shareUrl` 링크 공유로 폴백(Expo Go/웹은 캡처 미지원 → 링크). 네이티브 캡처 동작은 dev-client/EAS 빌드 필요(런타임 미검증).
 - **푸시 코호트**: `fortune_profiles(push_enabled, push_time)` × `users.push_token` 조인, 수신자별 `personalize` 점수/세그먼트 summary로 개인화 티저(§6). `send_push` 재사용(청크 100). data.type="fortune" → `todaylove://fortune`(usePushRouting). 토큰 정리(수신영수증 폴링)는 이번 범위 외.
 - **데일리 스레드 배너**: `/fortune/today` 응답에 `thread_id`(오늘 운영계정 daily 글 id, 없으면 null) 추가 → 탭 배너 노출/링크. 생성 실패 시 null → 배너 미노출.
+
+## 글로벌 확장 (오늘연애 → TodayLoves) — 신규
+### 사용자 확정
+- **게시 전 자동검수(Claude 1차 필터) 미구현**. UGC는 신고+차단+가이드라인만.
+- **앱 표시명 기기 로케일 분기**: ko 기기="오늘연애", 그 외="TodayLoves". 관리형 Expo라 config plugin(`plugins/withLocalizedAppName.js`)으로 prebuild 시 Android values-ko/strings.xml + iOS ko.lproj 주입. base 이름=en(글로벌 기본), ko만 override.
+- **약관 재동의=소프트 모달**: `users.terms_v2_agreed_at`. 미동의자도 앱 사용 무제약, K-Story 후보에서만 제외. 신규가입은 자동 충족.
+- **K-Story 번역 모델=Sonnet 기본**(`KSTORY_MODEL`, env 전환).
+
+### 현실 보정 (스펙과 다름)
+- **스케줄러=crontab+Flask CLI**(APScheduler 없음). 신규 배치도 CLI+크론.
+- **텔레그램 알림=신규**(기존 없음). `alerts.py` env 게이트 no-op.
+- **EN 운세=결정론 폴백**(Claude 배치 아님). KO와 동일 무AI 방식, sun-sign 프레임.
+
+### 자율 결정
+- **lang 격리 범위**: 피드/콘텐츠 리스트(posts·best·home·issues·daily_poll·fortune)만 `WHERE lang=resolve_lang`. **댓글·좋아요·신고·차단은 lang 무관**(K-Story 글에 EN 유저 댓글 허용). `get_post`(상세 직접링크)도 lang 무관 열람.
+- **resolve_lang**: 인증=`g.user.lang`(또는 current_user_optional 유저), 게스트=`Accept-Language`(en* → en, 그 외 ko). 클라 임의 지정 불가.
+- **가입 언어결정**: 클라가 `locale`(기기 로케일) 전달 → 서버 `ko*`=ko, 그 외 en. locale 미제공(구버전)=ko 기본(무변경).
+- **best 캐시 키에 lang 추가**(`best:{lang}:...`), best/comments 는 원글 lang 조인 격리.
+- **daily_fortunes 유니크**=(fortune_date,zodiac,love_status,**lang**). EN은 zodiac 슬롯을 sun-sign(0~11)로 재사용.
+- **앱 i18n 커버리지(점진)**: 이번 단계는 프레임워크(i18next+expo-localization, 기기로케일→user.lang 동기화) + 핵심 표면(탭/커뮤니티/PostCard/마이+언어전환/공용) 키화. 나머지 화면(이슈상세·테스트·커플·글쓰기·캘린더·운세탭 상세·카테고리라벨·상대시간)은 ko 리터럴 폴백 유지 → 후속 점진 치환. KO 유저는 전부 무변경.

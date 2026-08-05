@@ -53,7 +53,9 @@
           "kotlinVersion": "2.1.20"
         }
       ],
-      "expo-sharing"
+      "expo-sharing",
+      "expo-localization",
+      "./plugins/withLocalizedAppName"
     ],
     "experiments": {
       "typedRoutes": true,

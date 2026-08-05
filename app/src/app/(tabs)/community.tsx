@@ -3,6 +3,7 @@ import { useCallback, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import { listPosts, toFeedPost } from '@/api/posts';
 import { useAuth } from '@/auth/AuthContext';
@@ -19,6 +20,7 @@ import { colors, weight } from '@/theme';
 export default function CommunityFeed() {
   const router = useRouter();
   const { token } = useAuth();
+  const { t } = useTranslation();
   const isDesktop = useIsDesktop();
   // 퀵메뉴 등에서 category 파라미터로 진입 가능
   const params = useLocalSearchParams<{ category?: string }>();
@@ -72,7 +74,7 @@ export default function CommunityFeed() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       {!isDesktop && (
         <AppBar
-          title="커뮤니티"
+          title={t('community.title')}
           right={
             <>
               <Pressable onPress={() => router.push('/search')} hitSlop={8}>
@@ -103,7 +105,7 @@ export default function CommunityFeed() {
           loading ? (
             <ActivityIndicator color={colors.rose} style={{ marginTop: 40 }} />
           ) : (
-            <Text style={styles.emptyText}>아직 글이 없어요.{'\n'}첫 글을 올려보세요!</Text>
+            <Text style={styles.emptyText}>{t('community.empty')}</Text>
           )
         }
       />

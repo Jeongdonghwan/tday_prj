@@ -7,6 +7,7 @@ import { Tabs, usePathname, useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import { Icon, type IconName } from '@/components/Icon';
 import { useIsDesktop } from '@/hooks/useResponsive';
@@ -14,12 +15,12 @@ import { colors, weight } from '@/theme';
 
 // GNB 5탭 (오늘연애 개편): 홈·커뮤니티·오늘연애(중앙 돌출)·연애이슈·마이
 // order 로 탭바 노출 순서 고정. center=true 는 하트 원형 돌출 탭. (BEST 는 탭바에서 제거, 라우트는 유지)
-const TAB_META: Record<string, { label: string; icon: IconName; order: number; center?: boolean }> = {
-  index: { label: '홈', icon: 'home', order: 0 },
-  community: { label: '커뮤니티', icon: 'community', order: 1 },
-  fortune: { label: '오늘연애', icon: 'heartFill', order: 2, center: true },
-  issues: { label: '연애이슈', icon: 'news', order: 3 },
-  my: { label: 'MY', icon: 'user', order: 4 },
+const TAB_META: Record<string, { labelKey: string; icon: IconName; order: number; center?: boolean }> = {
+  index: { labelKey: 'tabs.home', icon: 'home', order: 0 },
+  community: { labelKey: 'tabs.community', icon: 'community', order: 1 },
+  fortune: { labelKey: 'tabs.fortune', icon: 'heartFill', order: 2, center: true },
+  issues: { labelKey: 'tabs.issues', icon: 'news', order: 3 },
+  my: { labelKey: 'tabs.my', icon: 'user', order: 4 },
 };
 
 /** 커스텀 tabBar 에 전달되는 props 중 사용하는 부분만 (react-navigation 호환). */
@@ -33,6 +34,7 @@ type TabBarProps = {
 
 function CustomTabBar({ state, navigation }: TabBarProps) {
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   // TAB_META.order 로 노출 순서 고정 (route 등록 순서와 무관하게 오늘연애를 중앙에)
   const items = state.routes
     .map((route, index) => ({ route, index, meta: TAB_META[route.name] }))
@@ -56,7 +58,7 @@ function CustomTabBar({ state, navigation }: TabBarProps) {
                   <Icon name={meta!.icon} size={26} color="#fff" />
                 </LinearGradient>
               </View>
-              <Text style={[styles.label, styles.centerLabel]}>{meta!.label}</Text>
+              <Text style={[styles.label, styles.centerLabel]}>{t(meta!.labelKey)}</Text>
             </Pressable>
           );
         }
@@ -64,7 +66,7 @@ function CustomTabBar({ state, navigation }: TabBarProps) {
         return (
           <Pressable key={route.key} style={styles.tab} onPress={onPress}>
             <Icon name={meta!.icon} size={23} color={focused ? colors.ink : colors.sub2} strokeWidth={1.9} />
-            <Text style={[styles.label, { color: focused ? colors.ink : colors.sub2 }]}>{meta!.label}</Text>
+            <Text style={[styles.label, { color: focused ? colors.ink : colors.sub2 }]}>{t(meta!.labelKey)}</Text>
           </Pressable>
         );
       })}

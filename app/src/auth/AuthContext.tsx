@@ -6,6 +6,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import { Platform } from 'react-native';
 
 import { emailLogin, emailSignup, fetchMe, socialLogin, type Me, type SocialLoginResult, type SocialProvider } from '@/api/auth';
+import { setAppLang } from '@/i18n';
 import { registerForPush } from '@/push/registerPush';
 import { deleteToken, getToken, setToken } from './tokenStorage';
 
@@ -49,6 +50,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [token, setTokenState] = useState<string | null>(null);
   const [user, setUser] = useState<Me | null>(null);
+
+  // 유저 언어권 → 앱 언어 동기화 (로그인/전환/부팅 복원 시)
+  useEffect(() => {
+    if (user?.lang) setAppLang(user.lang);
+  }, [user?.lang]);
 
   // 부팅: (웹) 카카오 콜백 토큰 수신 → 저장된 토큰 복원 + /me 확인
   useEffect(() => {

@@ -37,6 +37,9 @@ export type ApiPost = {
   comment_count: number;
   image_url?: string | null;
   poll?: ApiPoll;
+  lang?: 'ko' | 'en';
+  post_type?: 'user' | 'kstory';
+  source_post_id?: number | null;
 };
 
 export type ApiComment = {
@@ -80,12 +83,20 @@ export function toFeedPost(p: ApiPost): FeedPost {
     likeCount: p.like_count,
     commentCount: p.comment_count,
     imageUrl: p.image_url ?? undefined,
+    isKStory: p.post_type === 'kstory',
   };
 }
 
-export function listPosts(params: { category?: string; cursor?: number | null; q?: string; token?: Tok }) {
+export function listPosts(params: {
+  category?: string;
+  postType?: 'user' | 'kstory';
+  cursor?: number | null;
+  q?: string;
+  token?: Tok;
+}) {
   const q = new URLSearchParams();
   if (params.category && params.category !== 'all') q.set('category', params.category);
+  if (params.postType) q.set('post_type', params.postType);
   if (params.cursor) q.set('cursor', String(params.cursor));
   if (params.q?.trim()) q.set('q', params.q.trim());
   const qs = q.toString();

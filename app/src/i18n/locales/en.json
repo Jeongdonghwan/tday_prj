@@ -1,0 +1,74 @@
+{
+  "tabs": {
+    "home": "Home",
+    "community": "Community",
+    "fortune": "Today",
+    "issues": "Hot Takes",
+    "my": "My"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "confirm": "OK",
+    "save": "Save",
+    "close": "Close",
+    "more": "More",
+    "retry": "Try again",
+    "loading": "Loading…",
+    "login": "Log in",
+    "loginSignup": "Log in / Sign up",
+    "logout": "Log out"
+  },
+  "community": {
+    "title": "Community",
+    "empty": "No posts yet.\nBe the first to post!"
+  },
+  "post": {
+    "like": "Like",
+    "comment": "Comments",
+    "tagPoll": "Poll",
+    "tagWorry": "Advice",
+    "tagStory": "Story",
+    "kstoryBadge": "K-Story"
+  },
+  "feed": {
+    "kstory": "K-Story"
+  },
+  "my": {
+    "guestPrompt": "Log in to get started",
+    "myActivity": "My posts & comments",
+    "fortuneSettings": "Daily love horoscope settings",
+    "calendar": "Calendar",
+    "sharedCalendar": "Shared calendar",
+    "coupleDaily": "Daily question (couple)",
+    "psychTest": "Love personality tests",
+    "language": "Language / 언어",
+    "withdraw": "Delete account",
+    "logout": "Log out"
+  },
+  "language": {
+    "title": "Language",
+    "ko": "한국어",
+    "en": "English"
+  },
+  "report": {
+    "reportPost": "Report",
+    "reportComment": "Report comment",
+    "blockAuthor": "Block author",
+    "reported": "Report received.",
+    "blocked": "Blocked. This user's posts and comments are now hidden.",
+    "blockList": "Blocked users",
+    "unblock": "Unblock",
+    "blockEmpty": "You haven't blocked anyone."
+  },
+  "auth": {
+    "welcome": "Log in to start your love life today",
+    "kakao": "Continue with Kakao",
+    "apple": "Continue with Apple",
+    "email": "Continue with email",
+    "emailPlaceholder": "Email",
+    "passwordPlaceholder": "Password (8+ characters)",
+    "signup": "Sign up",
+    "hasAccount": "Already have an account? Log in",
+    "noAccount": "No account? Sign up"
+  }
+}

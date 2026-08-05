@@ -9,6 +9,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 
+import '@/i18n'; // i18n 초기화 (기기 로케일 기준, 로그인 후 user.lang 로 동기화)
 import { AuthProvider, useAuth } from '@/auth/AuthContext';
 import { FortuneProvider } from '@/fortune/FortuneContext';
 import { DesktopShell } from '@/components/web/DesktopShell';

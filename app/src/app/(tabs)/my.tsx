@@ -4,10 +4,13 @@ import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from '
 import { useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { deleteMe, updateMe } from '@/api/auth';
+import { useTranslation } from 'react-i18next';
+
+import { deleteMe, updateMe, type AppLang } from '@/api/auth';
 import { getDday, type Dday } from '@/api/couple';
 import { getTestBadge, type TestBadge } from '@/api/tests';
 import { useAuth } from '@/auth/AuthContext';
+import { ActionSheet, type SheetAction } from '@/components/ActionSheet';
 import { AppBar } from '@/components/AppBar';
 import { Avatar } from '@/components/Avatar';
 import { Icon, type IconName } from '@/components/Icon';
@@ -19,10 +22,12 @@ const STATUSES: RelationshipStatus[] = ['couple', 'single', 'married'];
 
 export default function MyScreen() {
   const { user, token, signOut, refresh } = useAuth();
+  const { t } = useTranslation();
   const router = useRouter();
   const isDesktop = useIsDesktop();
   const [dday, setDday] = useState<Dday | null>(null);
   const [badge, setBadge] = useState<TestBadge>(null);
+  const [langSheet, setLangSheet] = useState(false);
   const status = user?.relationship_status ?? 'single';
   const nickname = user?.nickname ?? '나';
 
@@ -56,6 +61,23 @@ export default function MyScreen() {
     }
   }
 
+  async function changeLang(lang: AppLang) {
+    setLangSheet(false);
+    if (!token || lang === user?.lang) return;
+    try {
+      // 서버 저장 → refresh 로 user.lang 갱신 → AuthContext effect 가 앱 언어 전환 + 피드 재격리
+      await updateMe({ lang }, token);
+      await refresh();
+    } catch {
+      /* noop */
+    }
+  }
+
+  const langActions: SheetAction[] = [
+    { label: t('language.ko'), onPress: () => changeLang('ko') },
+    { label: t('language.en'), onPress: () => changeLang('en') },
+  ];
+
   async function doDeleteAccount() {
     if (!token) return;
     try {
@@ -85,10 +107,10 @@ export default function MyScreen() {
       <SafeAreaView style={styles.safe} edges={['top']}>
         <View style={styles.guestBox}>
           <Avatar avatarNo={1} size={64} />
-          <Text style={styles.guestTitle}>로그인하고 시작해보세요</Text>
+          <Text style={styles.guestTitle}>{t('my.guestPrompt')}</Text>
           <Text style={styles.guestSub}>투표·댓글·커플 기능까지, 3초면 충분해요.</Text>
           <Pressable style={styles.guestBtn} onPress={() => router.push('/(auth)/login')}>
-            <Text style={styles.guestBtnText}>로그인 / 회원가입</Text>
+            <Text style={styles.guestBtnText}>{t('common.loginSignup')}</Text>
           </Pressable>
         </View>
       </SafeAreaView>
@@ -96,11 +118,12 @@ export default function MyScreen() {
   }
 
   const links: { icon: IconName; label: string; onPress: () => void }[] = [
-    { icon: 'chat', label: '내 글·댓글', onPress: () => router.push('/my-activity') },
-    { icon: 'heartFill', label: '오늘연애 운세 설정', onPress: () => router.push('/fortune-settings') },
-    { icon: 'heart', label: dday?.connected ? '공유 캘린더' : '캘린더', onPress: () => router.push('/calendar') },
-    { icon: 'chat', label: '오늘의 질문 (커플)', onPress: () => router.push('/daily') },
-    { icon: 'best', label: '연애 심리테스트', onPress: () => router.push('/tests') },
+    { icon: 'chat', label: t('my.myActivity'), onPress: () => router.push('/my-activity') },
+    { icon: 'heartFill', label: t('my.fortuneSettings'), onPress: () => router.push('/fortune-settings') },
+    { icon: 'heart', label: dday?.connected ? t('my.sharedCalendar') : t('my.calendar'), onPress: () => router.push('/calendar') },
+    { icon: 'chat', label: t('my.coupleDaily'), onPress: () => router.push('/daily') },
+    { icon: 'best', label: t('my.psychTest'), onPress: () => router.push('/tests') },
+    { icon: 'settings', label: t('my.language'), onPress: () => setLangSheet(true) },
   ];
 
   return (
@@ -180,13 +203,14 @@ export default function MyScreen() {
         </View>
 
         <Pressable style={styles.logout} onPress={signOut}>
-          <Text style={styles.logoutText}>로그아웃</Text>
+          <Text style={styles.logoutText}>{t('my.logout')}</Text>
         </Pressable>
 
         <Pressable style={styles.withdraw} onPress={confirmDeleteAccount} hitSlop={8}>
-          <Text style={styles.withdrawText}>회원 탈퇴</Text>
+          <Text style={styles.withdrawText}>{t('my.withdraw')}</Text>
         </Pressable>
       </ScrollView>
+      <ActionSheet visible={langSheet} actions={langActions} onClose={() => setLangSheet(false)} />
     </SafeAreaView>
   );
 }

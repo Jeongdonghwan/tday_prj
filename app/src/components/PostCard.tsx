@@ -1,5 +1,6 @@
 /** 피드 글 카드 (DESIGN_UPDATE §2). 헤더(아바타/닉/상태칩/메타) + 본문(±썸네일) + 투표 + 알약 액션. */
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import { Avatar } from '@/components/Avatar';
 import { Icon } from '@/components/Icon';
@@ -28,9 +29,12 @@ export type FeedPost = {
   commentCount: number;
   /** 이미지 첨부 글 썸네일 (없으면 텍스트 글) */
   imageUrl?: string;
+  /** K-Story(한국 인기글 번역·각색) 여부 → 전용 뱃지 */
+  isKStory?: boolean;
 };
 
 export function PostCard({ post, onPress }: { post: FeedPost; onPress?: () => void }) {
+  const { t } = useTranslation();
   return (
     <Pressable style={styles.card} onPress={onPress}>
       {/* 헤더 행 */}
@@ -50,7 +54,12 @@ export function PostCard({ post, onPress }: { post: FeedPost; onPress?: () => vo
       {/* 본문 행 */}
       <View style={styles.bodyRow}>
         <View style={{ flex: 1 }}>
-          {/* 말머리 뱃지 제거 — 카테고리는 메타줄에 이미 노출(중복·산만함 제거) */}
+          {/* K-Story 뱃지 — 한국 인기글 번역·각색 글 구분 */}
+          {post.isKStory && (
+            <View style={styles.kstoryBadge}>
+              <Text style={styles.kstoryBadgeText}>{t('post.kstoryBadge')}</Text>
+            </View>
+          )}
           <Text style={styles.title} numberOfLines={2}>{post.title}</Text>
           {post.body ? <Text style={styles.body} numberOfLines={2}>{post.body}</Text> : null}
         </View>
@@ -72,11 +81,11 @@ export function PostCard({ post, onPress }: { post: FeedPost; onPress?: () => vo
       <View style={styles.actions}>
         <View style={styles.pill}>
           <Icon name="heart" size={14} color={BODY} />
-          <Text style={styles.pillText}>공감 {post.likeCount}</Text>
+          <Text style={styles.pillText}>{t('post.like')} {post.likeCount}</Text>
         </View>
         <View style={styles.pill}>
           <Icon name="chat" size={14} color={BODY} />
-          <Text style={styles.pillText}>댓글 {post.commentCount}</Text>
+          <Text style={styles.pillText}>{t('post.comment')} {post.commentCount}</Text>
         </View>
       </View>
     </Pressable>
@@ -101,6 +110,8 @@ const styles = StyleSheet.create({
   status: { fontSize: 10.5, color: colors.statusText },
   meta: { fontSize: 11.5, color: colors.sub, marginTop: 2 },
   bodyRow: { flexDirection: 'row', gap: 12, alignItems: 'flex-start', marginTop: 11 },
+  kstoryBadge: { alignSelf: 'flex-start', backgroundColor: '#1C1430', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2, marginBottom: 6 },
+  kstoryBadgeText: { color: '#F5C36B', fontSize: 10, fontWeight: weight.extrabold as '800', letterSpacing: 0.5 },
   title: { flex: 1, fontSize: 15, fontWeight: weight.semibold as '600', color: colors.ink, lineHeight: 22, letterSpacing: -0.4 },
   body: { fontSize: 13.5, color: BODY, lineHeight: 20, marginTop: 4 },
   thumb: { width: 66, height: 66, borderRadius: 12, backgroundColor: colors.soft },
