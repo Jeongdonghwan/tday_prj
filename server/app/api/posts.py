@@ -16,6 +16,7 @@ from ..auth import current_user_optional, login_required
 from ..extensions import db
 from ..models import Block, Comment, PollOption, Post, PostLike, Vote
 from ..models.enums import POLL_SIDES, POST_CATEGORIES
+from ._lang import resolve_lang
 from .serializers import post_dict
 
 bp = Blueprint("posts", __name__)
@@ -26,11 +27,16 @@ def list_posts():
     """커서 페이지네이션(id DESC = 최신순, OFFSET 금지). 차단 유저 글 제외."""
     user = current_user_optional()
     category = request.args.get("category")
+    post_type = request.args.get("post_type")  # 'kstory' 면 K-Story 모아보기
     cursor = request.args.get("cursor", type=int)
     limit = min(request.args.get("limit", default=20, type=int), 50)
     search = (request.args.get("q") or "").strip()
 
     q = select(Post).where(Post.is_blinded.is_(False))
+    # 언어권 격리 — 유저(게스트는 Accept-Language)의 lang 피드만 노출
+    q = q.where(Post.lang == resolve_lang(user))
+    if post_type in ("user", "kstory"):
+        q = q.where(Post.post_type == post_type)
     if category and category != "all":
         q = q.where(Post.category == category)
     else:
@@ -89,6 +95,7 @@ def create_post():
         is_poll=is_poll,
         image_url=image_url,
         author_status=g.user.relationship_status,  # 작성 시점 스냅샷
+        lang=g.user.lang,  # 작성자 언어권 스냅샷 (피드 격리)
     )
     db.session.add(post)
     db.session.flush()

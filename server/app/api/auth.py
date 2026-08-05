@@ -66,8 +66,18 @@ def _social_email() -> str | None:
     return email[:255] or None
 
 
-def login_or_create(provider: str, social_id: str) -> tuple[User, bool]:
-    """(provider, social_id) 로 유저 조회, 없으면 생성. (user, created) 반환."""
+def signup_lang(data: dict) -> str:
+    """가입 요청의 device locale → 언어권('ko'|'en'). ko 로 시작하면 ko, 그 외 en.
+    locale 미제공(구버전 클라)이면 기본 'ko'(기존 한국 유저 무변경)."""
+    loc = (data.get("locale") or "").strip().lower()
+    if not loc:
+        return "ko"
+    return "ko" if loc.startswith("ko") else "en"
+
+
+def login_or_create(provider: str, social_id: str, lang: str = "ko") -> tuple[User, bool]:
+    """(provider, social_id) 로 유저 조회, 없으면 생성. (user, created) 반환.
+    lang 은 신규 생성 시에만 적용(기존 유저 언어권 무변경)."""
     # dev provider 는 내부적으로 "dev:<id>" 형태이므로 저장 provider 는 'dev'
     store_provider = "dev" if provider == "dev" else provider
 
@@ -93,6 +103,7 @@ def login_or_create(provider: str, social_id: str) -> tuple[User, bool]:
         relationship_status="single",
         email=email,
         avatar_no=avatar_no,
+        lang=lang,
     )
     db.session.add(user)
     db.session.commit()
@@ -114,7 +125,7 @@ def social_login():
     except SocialAuthError as e:
         return jsonify({"error": "social_auth_failed", "message": e.message}), e.status
 
-    user, created = login_or_create(provider, social_id)
+    user, created = login_or_create(provider, social_id, lang=signup_lang(data))
     token_out = issue_token(user.id)
     return jsonify({"token": token_out, "user": user.to_dict(), "is_new": created}), 200
 
@@ -155,6 +166,7 @@ def email_signup():
         nickname=_generate_nickname(avatar_no),
         relationship_status="single",
         avatar_no=avatar_no,
+        lang=signup_lang(data),
     )
     db.session.add(user)
     db.session.commit()
@@ -321,6 +333,11 @@ def update_me():
             n = 0
         if 1 <= n <= 12:
             user.avatar_no = n
+    if "lang" in data:
+        lang = (data["lang"] or "").strip().lower()
+        if lang not in ("ko", "en"):
+            return jsonify({"error": "invalid_lang"}), 400
+        user.lang = lang
 
     db.session.commit()
     return jsonify(_me_payload(user)), 200

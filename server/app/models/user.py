@@ -28,6 +28,10 @@ class User(db.Model):
     password_hash = db.Column(String(255), nullable=True)
     # 회원 탈퇴(소프트 삭제) — 개인정보 익명화 + 재로그인 차단 (애플/구글 심사 요건)
     is_deleted = db.Column(Boolean, nullable=False, default=False)
+    # 언어권 (글로벌 확장) — 'ko' | 'en'. 가입 시 기기 로케일로 결정, 설정에서 변경. 피드/콘텐츠 분리 기준.
+    lang = db.Column(String(5), nullable=False, default="ko", server_default="ko")
+    # 개정 약관(v2: 게시물 2차 활용) 동의 시각. NULL=미동의 → K-Story 번역 대상에서만 제외(앱 사용엔 무제약).
+    terms_v2_agreed_at = db.Column(DateTime, nullable=True)
     created_at = db.Column(DateTime, nullable=False, default=datetime.utcnow)
 
     __table_args__ = (
@@ -50,5 +54,7 @@ class User(db.Model):
             "status_label": self.status_label(),
             "couple_id": self.couple_id,
             "avatar_no": self.avatar(),
+            "lang": self.lang,
+            "terms_v2_agreed_at": self.terms_v2_agreed_at.isoformat() if self.terms_v2_agreed_at else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }

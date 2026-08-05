@@ -13,6 +13,7 @@ from .schedule import Schedule
 from .moderation import Block, Report
 from .ad import AdSlot
 from .fortune import CompatibilityLog, DailyFortune, FortuneProfile, FortuneRead
+from .kstory import KStoryCandidate
 
 __all__ = [
     "User",
@@ -42,4 +43,5 @@ __all__ = [
     "DailyFortune",
     "FortuneRead",
     "CompatibilityLog",
+    "KStoryCandidate",
 ]

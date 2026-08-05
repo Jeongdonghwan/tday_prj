@@ -10,14 +10,15 @@ from sqlalchemy.exc import IntegrityError
 from ..auth import login_required
 from ..extensions import db
 from ..models import Couple, DailyPoll, DailyPollVote
+from ._lang import resolve_lang
 
 bp = Blueprint("daily_poll", __name__)
 
 
-def _active_poll():
+def _active_poll(lang: str):
     return db.session.scalar(
         select(DailyPoll)
-        .where(DailyPoll.is_active.is_(True))
+        .where(DailyPoll.is_active.is_(True), DailyPoll.lang == lang)
         .order_by(DailyPoll.scheduled_date.desc(), DailyPoll.id.desc())
     )
 
@@ -72,13 +73,15 @@ def today():
     """오늘의 밸런스 투표 — 게스트 열람 허용 (투표는 로그인 필요)."""
     from ..auth import current_user_optional
 
-    poll = _active_poll()
-    data = {"poll": _poll_dict(poll, current_user_optional()) if poll else None}
+    user = current_user_optional()
+    lang = resolve_lang(user)
+    poll = _active_poll(lang)
+    data = {"poll": _poll_dict(poll, user) if poll else None}
 
     past = []
     for p in db.session.scalars(
         select(DailyPoll)
-        .where(DailyPoll.id != (poll.id if poll else 0))
+        .where(DailyPoll.id != (poll.id if poll else 0), DailyPoll.lang == lang)
         .order_by(DailyPoll.scheduled_date.desc(), DailyPoll.id.desc())
         .limit(3)
     ).all():
@@ -100,7 +103,7 @@ def today():
 @login_required
 def vote():
     side = (request.get_json(silent=True) or {}).get("side")
-    poll = _active_poll()
+    poll = _active_poll(g.user.lang)
     if not poll:
         return jsonify({"error": "no_active_poll"}), 404
     if side not in ("a", "b") and not (side == "c" and poll.choice_c):

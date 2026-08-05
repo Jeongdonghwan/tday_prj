@@ -32,6 +32,8 @@ class Issue(db.Model):
     starts_at = db.Column(DateTime, nullable=True)
     is_active = db.Column(Boolean, nullable=False, default=True)
     comment_count = db.Column(Integer, nullable=False, default=0)
+    # 언어권 (글로벌 확장) — 'ko' | 'en'. 언어권별 이슈 분리.
+    lang = db.Column(String(5), nullable=False, default="ko", server_default="ko")
     created_at = db.Column(DateTime, nullable=False, default=datetime.utcnow)
 
     __table_args__ = (Index("idx_issue_active", "is_active", "created_at"),)

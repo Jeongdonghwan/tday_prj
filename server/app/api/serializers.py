@@ -51,6 +51,9 @@ def post_dict(post, my_vote: str | None = None, liked: bool = False) -> dict:
         "liked": liked,
         "comment_count": post.comment_count,
         "image_url": post.image_url,
+        "lang": post.lang,
+        "post_type": post.post_type,  # 'user' | 'kstory'
+        "source_post_id": post.source_post_id,
     }
     if post.is_poll:
         opts = {o.side: o for o in post.options}

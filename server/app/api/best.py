@@ -9,10 +9,12 @@ from flask import Blueprint, jsonify, request
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
+from ..auth import current_user_optional
 from ..extensions import db
 from ..models import Comment, Post
 from ..models.enums import STATUS_LABELS
 from ..ranking import cache_get, cache_set
+from ._lang import resolve_lang
 from .serializers import post_dict
 
 bp = Blueprint("best", __name__)
@@ -24,13 +26,14 @@ CACHE_TTL = 60  # 초
 def best_posts():
     period = request.args.get("period", "realtime")
     category = request.args.get("category")
-    cache_key = f"best:{period}:{category or 'all'}"
+    lang = resolve_lang(current_user_optional())
+    cache_key = f"best:{lang}:{period}:{category or 'all'}"
 
     cached = cache_get(cache_key, CACHE_TTL)
     if cached is not None:
         return jsonify(cached)
 
-    q = select(Post).where(Post.is_blinded.is_(False))
+    q = select(Post).where(Post.is_blinded.is_(False), Post.lang == lang)
     if category and category != "all":
         q = q.where(Post.category == category)
 
@@ -52,14 +55,17 @@ def best_posts():
 
 @bp.get("/best/comments")
 def best_comments():
-    cache_key = "best:comments"
+    lang = resolve_lang(current_user_optional())
+    cache_key = f"best:comments:{lang}"
     cached = cache_get(cache_key, CACHE_TTL)
     if cached is not None:
         return jsonify(cached)
 
+    # 댓글은 원글의 언어권으로 격리 (같은 언어권 글의 인기 댓글만 노출)
     rows = db.session.scalars(
         select(Comment)
-        .where(Comment.is_blinded.is_(False))
+        .join(Post, Comment.post_id == Post.id)
+        .where(Comment.is_blinded.is_(False), Post.lang == lang)
         .order_by(Comment.like_count.desc(), Comment.id.desc())
         .limit(20)
         .options(joinedload(Comment.author))

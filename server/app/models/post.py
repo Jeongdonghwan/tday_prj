@@ -34,6 +34,12 @@ class Post(db.Model):
     comment_count = db.Column(Integer, nullable=False, default=0)
     hot_score = db.Column(Float, nullable=False, default=0)   # BEST 정렬용, 5분 배치 갱신
     is_blinded = db.Column(Boolean, nullable=False, default=False)  # 신고 누적 시 가림
+    # 언어권 (글로벌 확장) — 'ko' | 'en'. 작성 시 작성자 lang 스냅샷. 피드 분리 기준.
+    lang = db.Column(String(5), nullable=False, default="ko", server_default="ko")
+    # 'user'(일반 유저글) | 'kstory'(한국 인기글 번역·각색 게시)
+    post_type = db.Column(String(20), nullable=False, default="user", server_default="user")
+    # kstory 일 때 원본(ko) 글 id. 원본 삭제 시 이 글 자동 비공개.
+    source_post_id = db.Column(BigInteger, nullable=True)
     created_at = db.Column(DateTime, nullable=False, default=datetime.utcnow)
 
     options = db.relationship("PollOption", backref="post", cascade="all, delete-orphan")
@@ -42,6 +48,7 @@ class Post(db.Model):
     __table_args__ = (
         Index("idx_cat_created", "category", "created_at"),
         Index("idx_hot", hot_score.desc()),
+        Index("idx_posts_lang_created", "lang", "created_at"),
     )
 
 

@@ -14,14 +14,17 @@ from sqlalchemy.orm import joinedload
 from ..auth import current_user_optional, login_required
 from ..extensions import db
 from ..models import Issue, IssueComment, IssueVote
+from ._lang import resolve_lang
 from .serializers import comment_dict
 
 bp = Blueprint("issues", __name__)
 
 
-def _active_issue():
+def _active_issue(lang: str):
     return db.session.scalar(
-        select(Issue).where(Issue.is_active.is_(True)).order_by(Issue.created_at.desc(), Issue.id.desc())
+        select(Issue)
+        .where(Issue.is_active.is_(True), Issue.lang == lang)
+        .order_by(Issue.created_at.desc(), Issue.id.desc())
     )
 
 
@@ -67,16 +70,21 @@ def _issue_dict(issue, user, detail=False):
 
 @bp.get("/issues/today")
 def today():
-    """오늘의 이슈 — 게스트 열람 허용 (투표는 로그인 필요)."""
-    issue = _active_issue()
-    return jsonify({"issue": _issue_dict(issue, current_user_optional()) if issue else None})
+    """오늘의 이슈 — 게스트 열람 허용 (투표는 로그인 필요). 언어권별 분리."""
+    user = current_user_optional()
+    issue = _active_issue(resolve_lang(user))
+    return jsonify({"issue": _issue_dict(issue, user) if issue else None})
 
 
 @bp.get("/issues/archive")
 def archive():
-    """지난(비활성) 이슈 아카이브 — 날짜·제목·최종 결과·댓글수 (HOME_UPDATE §3)."""
+    """지난(비활성) 이슈 아카이브 — 날짜·제목·최종 결과·댓글수 (HOME_UPDATE §3). 언어권별 분리."""
+    lang = resolve_lang(current_user_optional())
     rows = db.session.scalars(
-        select(Issue).where(Issue.is_active.is_(False)).order_by(Issue.created_at.desc()).limit(30)
+        select(Issue)
+        .where(Issue.is_active.is_(False), Issue.lang == lang)
+        .order_by(Issue.created_at.desc())
+        .limit(30)
     ).all()
     items = []
     for issue in rows:

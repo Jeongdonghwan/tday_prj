@@ -45,16 +45,18 @@ class DailyFortune(db.Model):
 
     id = db.Column(BigInteger, primary_key=True, autoincrement=True)
     fortune_date = db.Column(Date, nullable=False)
-    zodiac = db.Column(SmallInteger, nullable=False)
+    zodiac = db.Column(SmallInteger, nullable=False)  # ko=십이지 0~11 / en=sun-sign 0~11
     love_status = db.Column(Enum(*FORTUNE_LOVE_STATUSES, name="fortune_seg_love_status"), nullable=False)
     summary = db.Column(String(120), nullable=False)  # 한줄운세
     full_text = db.Column(Text, nullable=False)
     cat_labels = db.Column(JSON, nullable=False)  # [{"name":"데이트운","comment":"..."}, ...] 3항목
     published_at = db.Column(DateTime, nullable=False)  # KST 자정 공개 시각(UTC 저장)
     is_fallback = db.Column(Boolean, nullable=False, default=False)
+    # 언어권 (글로벌 확장) — 'ko'(십이지+사주톤) | 'en'(sun-sign+점성술톤). 세그먼트 분리.
+    lang = db.Column(String(5), nullable=False, default="ko", server_default="ko")
 
     __table_args__ = (
-        UniqueConstraint("fortune_date", "zodiac", "love_status", name="uq_fortune_seg"),
+        UniqueConstraint("fortune_date", "zodiac", "love_status", "lang", name="uq_fortune_seg"),
     )
 
 
