@@ -177,6 +177,12 @@ def delete_post(post_id: int):
     if post.user_id != g.user.id:
         return jsonify({"error": "forbidden"}), 403
 
+    # 원본 삭제 시 연결된 K-Story 발행글 자동 비공개 (약관 §2차활용 철회 대응)
+    if post.lang == "ko":
+        from ..services.kstory import unpublish_for_source
+
+        unpublish_for_source(post_id)
+
     # FK 정리 후 글 삭제 (poll_options 는 relationship cascade)
     db.session.execute(delete(Vote).where(Vote.post_id == post_id))
     db.session.execute(delete(Comment).where(Comment.post_id == post_id))

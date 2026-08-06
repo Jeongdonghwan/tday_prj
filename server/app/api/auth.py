@@ -343,6 +343,18 @@ def update_me():
     return jsonify(_me_payload(user)), 200
 
 
+@bp.post("/me/terms-agree")
+@login_required
+def terms_agree():
+    """개정 약관(v2: 게시물 2차 활용) 동의 기록. 소프트 모달에서 '동의' 시 호출.
+    미동의여도 앱 사용엔 제약 없음(K-Story 후보에서만 제외)."""
+    from datetime import datetime as _dt
+
+    g.user.terms_v2_agreed_at = _dt.utcnow()
+    db.session.commit()
+    return jsonify({"terms_v2_agreed_at": g.user.terms_v2_agreed_at.isoformat()}), 200
+
+
 @bp.delete("/me")
 @login_required
 def delete_me():

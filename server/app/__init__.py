@@ -233,6 +233,48 @@ def _register_cli(app: Flask):
         pid = create_daily_thread(d)
         click.echo(f"데일리 스레드: {d} → post_id={pid}")
 
+    # --- K-Story 파이프라인 (글로벌 확장 Phase 2) ---
+    @app.cli.command("seed-kstory-operator")
+    def seed_kstory_operator():
+        """K-Story 발행 운영 계정(K-Story) 시드 (idempotent)."""
+        from .services.kstory import get_or_create_operator
+
+        u = get_or_create_operator()
+        click.echo(f"K-Story 운영 계정: id={u.id} nickname={u.nickname}")
+
+    @app.cli.command("kstory-select")
+    def kstory_select():
+        """인기 ko 글을 K-Story 후보로 선정 (크론 일 1회)."""
+        from .services.kstory import select_candidates
+
+        n = select_candidates()
+        click.echo(f"K-Story 후보 선정: {n}건")
+
+    @app.cli.command("kstory-translate")
+    @click.option("--limit", default=20, type=int)
+    def kstory_translate(limit):
+        """candidate 후보를 Claude 로 번역·각색 → translated (크론 수 회/일)."""
+        from .services.kstory import translate_pending
+
+        r = translate_pending(limit=limit)
+        click.echo(f"K-Story 번역: 성공 {r['ok']} / 실패 {r['failed']}")
+
+    @app.cli.command("kstory-publish")
+    def kstory_publish():
+        """approved 후보를 영어 피드에 발행 (크론 일 1~3, cap=KSTORY_DAILY_CAP)."""
+        from .services.kstory import publish_approved
+
+        n = publish_approved()
+        click.echo(f"K-Story 발행: {n}건")
+
+    @app.cli.command("kstory-sync")
+    def kstory_sync():
+        """원본 사라진 K-Story 발행글 비공개 정리 (안전망 배치)."""
+        from .services.kstory import sync_deleted
+
+        n = sync_deleted()
+        click.echo(f"K-Story 동기화(비공개): {n}건")
+
     @app.cli.command("seed-issue")
     def seed_issue():
         """활성 이슈가 없으면 데모 1건 삽입 (idempotent, DESIGN_UPDATE §5)."""

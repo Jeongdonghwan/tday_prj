@@ -60,6 +60,13 @@
     "unblock": "Unblock",
     "blockEmpty": "You haven't blocked anyone."
   },
+  "terms": {
+    "title": "Our terms have been updated",
+    "body": "We added a 'secondary use of posts' clause so popular posts can be translated and adapted for our global community (K-Story). You can decline — it won't limit your use of the app at all.",
+    "agree": "I agree",
+    "later": "Later",
+    "view": "View full terms"
+  },
   "auth": {
     "welcome": "Log in to start your love life today",
     "kakao": "Continue with Kakao",

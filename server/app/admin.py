@@ -13,7 +13,7 @@ from flask import Blueprint, abort, current_app, redirect, render_template, requ
 from sqlalchemy import func, select
 
 from .extensions import db
-from .models import AdSlot, Comment, DailyPoll, Issue, Post, Test, User, Vote
+from .models import AdSlot, Comment, DailyPoll, Issue, KStoryCandidate, Post, Test, User, Vote
 from .models.enums import AD_POSITIONS
 from .services.daily_poll import create_daily_poll
 from .services.issues import create_issue
@@ -107,6 +107,62 @@ def dashboard():
         q=q,
         flash=request.args.get("flash"),
     )
+
+
+# --- K-Story 검수 큐 (글로벌 확장 Phase 2-3) ---
+@bp.get("/admin/kstory")
+def kstory_queue():
+    token = _check_token()
+    # translated(검수 대기) 우선, 최근 것부터. 원본 글을 함께 로드.
+    cands = db.session.scalars(
+        select(KStoryCandidate)
+        .where(KStoryCandidate.status == "translated")
+        .order_by(KStoryCandidate.updated_at.desc())
+        .limit(50)
+    ).all()
+    items = []
+    for c in cands:
+        src = db.session.get(Post, c.source_post_id)
+        items.append({"c": c, "src": src})
+    # 상태별 카운트(요약)
+    counts = dict(
+        db.session.execute(
+            select(KStoryCandidate.status, func.count(KStoryCandidate.id)).group_by(KStoryCandidate.status)
+        ).all()
+    )
+    return render_template(
+        "admin_kstory.html",
+        token=token,
+        items=items,
+        counts={k: int(v) for k, v in counts.items()},
+        flash=request.args.get("flash"),
+    )
+
+
+@bp.post("/admin/kstory/<int:cand_id>")
+def kstory_action(cand_id: int):
+    token = _check_token()
+    c = db.session.get(KStoryCandidate, cand_id)
+    if c is None:
+        return redirect(url_for("admin.kstory_queue", token=token, flash="후보를 찾을 수 없어요."))
+    action = request.form.get("action")
+    if action == "approve":
+        # 검수자가 번역문을 수정했으면 반영 후 승인
+        title = (request.form.get("title") or "").strip()
+        body = (request.form.get("body") or "").strip()
+        if title:
+            c.translated_title = title[:120]
+        if body:
+            c.translated_body = body
+        c.status = "approved"
+        msg = "승인했어요. 다음 발행 배치에서 게시돼요."
+    elif action == "reject":
+        c.status = "rejected"
+        msg = "반려했어요."
+    else:
+        return redirect(url_for("admin.kstory_queue", token=token, flash="알 수 없는 동작이에요."))
+    db.session.commit()
+    return redirect(url_for("admin.kstory_queue", token=token, flash=msg))
 
 
 def _parse_dt(s):

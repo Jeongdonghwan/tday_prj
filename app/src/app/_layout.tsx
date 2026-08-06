@@ -12,6 +12,7 @@ import { StatusBar } from 'expo-status-bar';
 import '@/i18n'; // i18n 초기화 (기기 로케일 기준, 로그인 후 user.lang 로 동기화)
 import { AuthProvider, useAuth } from '@/auth/AuthContext';
 import { FortuneProvider } from '@/fortune/FortuneContext';
+import { TermsConsentModal } from '@/components/TermsConsentModal';
 import { DesktopShell } from '@/components/web/DesktopShell';
 import { useIsDesktop } from '@/hooks/useResponsive';
 import { usePushRouting } from '@/push/usePushRouting';
@@ -65,9 +66,17 @@ function RootNavigator() {
     </Stack>
   );
 
+  // 개정 약관 소프트 재동의 모달 — 로그인 유저 & 미동의 시 오버레이(비차단)
+  const withModal = (
+    <>
+      {stack}
+      <TermsConsentModal />
+    </>
+  );
+
   // 데스크톱(웹): 로그인 화면을 제외한 모든 화면(글쓰기·글상세 포함)을 GNB 아래에 렌더
-  if (isDesktop && segments[0] !== '(auth)') return <DesktopShell>{stack}</DesktopShell>;
-  return stack;
+  if (isDesktop && segments[0] !== '(auth)') return <DesktopShell>{withModal}</DesktopShell>;
+  return withModal;
 }
 
 export default function RootLayout() {

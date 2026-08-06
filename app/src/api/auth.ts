@@ -73,3 +73,8 @@ export function updateMe(
 export function deleteMe(token: string): Promise<{ ok: boolean }> {
   return apiRequest<{ ok: boolean }>('/me', { method: 'DELETE', token });
 }
+
+/** 개정 약관(v2: 게시물 2차 활용) 동의 기록. 소프트 모달 '동의' 시 호출. */
+export function agreeTermsV2(token: string): Promise<{ terms_v2_agreed_at: string }> {
+  return apiRequest<{ terms_v2_agreed_at: string }>('/me/terms-agree', { method: 'POST', token });
+}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}K-Story 검수 · 오늘연애{% endblock %}
+{% block content %}
+<div class="admin">
+  <h1>K-Story 검수 큐</h1>
+  <p style="margin:6px 0 14px">
+    <a href="{{ url_for('admin.dashboard', token=token) }}">← 관리자 홈</a>
+  </p>
+  {% if flash %}<div class="flash">{{ flash }}</div>{% endif %}
+
+  <h2>상태 요약</h2>
+  <table>
+    <tr><th>candidate</th><th>translated</th><th>approved</th><th>published</th><th>rejected</th></tr>
+    <tr>
+      <td>{{ counts.get('candidate', 0) }}</td>
+      <td>{{ counts.get('translated', 0) }}</td>
+      <td>{{ counts.get('approved', 0) }}</td>
+      <td>{{ counts.get('published', 0) }}</td>
+      <td>{{ counts.get('rejected', 0) }}</td>
+    </tr>
+  </table>
+
+  <h2>검수 대기 (translated) — {{ items | length }}건</h2>
+  {% if not items %}
+    <p>검수할 항목이 없어요.</p>
+  {% endif %}
+
+  {% for it in items %}
+  <div style="border:1px solid #eee;border-radius:10px;padding:14px;margin:14px 0">
+    <div style="display:flex;gap:16px;flex-wrap:wrap">
+      <div style="flex:1;min-width:280px">
+        <h3 style="font-size:14px;margin:0 0 6px">원문 (ko)</h3>
+        {% if it.src %}
+          <b>{{ it.src.title }}</b>
+          <p style="white-space:pre-wrap;color:#555;font-size:13px">{{ it.src.body }}</p>
+          <p style="font-size:12px;color:#999">공감 {{ it.src.like_count }} · 댓글 {{ it.src.comment_count }} · post_id {{ it.src.id }}</p>
+        {% else %}
+          <p style="color:#c00">원본 글이 삭제되었습니다.</p>
+        {% endif %}
+      </div>
+      <div style="flex:1;min-width:280px">
+        <h3 style="font-size:14px;margin:0 0 6px">번역·각색 (en)</h3>
+        {% if it.c.translator_note %}
+          <div class="flash" style="font-size:12px">📝 {{ it.c.translator_note }}</div>
+        {% endif %}
+        <form method="post" action="{{ url_for('admin.kstory_action', cand_id=it.c.id) }}">
+          <input type="hidden" name="token" value="{{ token }}" />
+          <label>Title</label>
+          <input name="title" maxlength="120" value="{{ it.c.translated_title }}" style="width:100%" />
+          <label>Body</label>
+          <textarea name="body" rows="8" style="width:100%">{{ it.c.translated_body }}</textarea>
+          <div style="margin-top:8px;display:flex;gap:8px">
+            <button type="submit" name="action" value="approve">승인 (수정 반영)</button>
+            <button type="submit" name="action" value="reject" style="background:#888">반려</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -44,6 +44,17 @@ class Config:
     ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
     AI_MODEL = os.getenv("AI_MODEL", "claude-haiku-4-5")
 
+    # --- K-Story 파이프라인 (글로벌 확장 Phase 2) — 임계치/페이스 전부 env ---
+    KSTORY_MODEL = os.getenv("KSTORY_MODEL", "claude-sonnet-5")  # 번역·각색 모델(비용시 haiku)
+    KSTORY_WINDOW_H = int(os.getenv("KSTORY_WINDOW_H", "72"))    # 후보 판정 시간창(시간)
+    KSTORY_MIN_LIKES = int(os.getenv("KSTORY_MIN_LIKES", "20"))  # 후보 최소 공감
+    KSTORY_MIN_COMMENTS = int(os.getenv("KSTORY_MIN_COMMENTS", "10"))  # 후보 최소 댓글
+    KSTORY_DAILY_CAP = int(os.getenv("KSTORY_DAILY_CAP", "3"))   # 하루 발행 상한(도배 방지)
+
+    # 운영 알림 (배치 실패 등) — 텔레그램 봇. 미설정 시 no-op.
+    TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
+
     # 심리테스트존 웹 / 관리자 (DESIGN_UPDATE §5·§6)
     ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "dev-admin-token")
     WEB_BASE_URL = os.getenv("WEB_BASE_URL", "http://127.0.0.1:5050")

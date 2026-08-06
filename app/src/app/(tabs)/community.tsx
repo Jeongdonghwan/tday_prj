@@ -19,9 +19,12 @@ import { colors, weight } from '@/theme';
 
 export default function CommunityFeed() {
   const router = useRouter();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const { t } = useTranslation();
   const isDesktop = useIsDesktop();
+  // 영어권 유저에게만 K-Story 모아보기 필터 노출(한국 유저에겐 없음)
+  const filters =
+    user?.lang === 'en' ? [{ key: 'kstory', label: t('feed.kstory') }, ...CATEGORY_FILTERS] : CATEGORY_FILTERS;
   // 퀵메뉴 등에서 category 파라미터로 진입 가능
   const params = useLocalSearchParams<{ category?: string }>();
   const [filter, setFilter] = useState(params.category ?? 'all');
@@ -36,7 +39,11 @@ export default function CommunityFeed() {
       const reset = opts.reset ?? true;
       if (reset) setLoading(true);
       try {
-        const res = await listPosts({ category: filter, cursor: reset ? null : cursor, token });
+        const res = await listPosts(
+          filter === 'kstory'
+            ? { postType: 'kstory', cursor: reset ? null : cursor, token }
+            : { category: filter, cursor: reset ? null : cursor, token },
+        );
         // 실제 이미지 첨부 기능 도입 전까지 목업 썸네일 미부착 (첨부 안 한 글이 이미지글로 보이던 문제)
         const mapped = res.items.map(toFeedPost);
         setPosts((prev) => (reset ? mapped : [...prev, ...mapped]));
@@ -85,7 +92,7 @@ export default function CommunityFeed() {
           }
         />
       )}
-      <FilterRow items={CATEGORY_FILTERS} value={filter} onChange={setFilter} />
+      <FilterRow items={filters} value={filter} onChange={setFilter} />
       <FlatList
         style={styles.list}
         data={posts}
