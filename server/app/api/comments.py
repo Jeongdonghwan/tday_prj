@@ -10,7 +10,7 @@ from sqlalchemy.orm import joinedload
 
 from ..auth import current_user_optional, login_required
 from ..extensions import db
-from ..models import Comment, CommentLike, Post
+from ..models import Block, Comment, CommentLike, Post
 from .serializers import comment_dict
 
 bp = Blueprint("comments", __name__)
@@ -18,12 +18,18 @@ bp = Blueprint("comments", __name__)
 
 @bp.get("/posts/<int:post_id>/comments")
 def list_comments(post_id: int):
-    rows = db.session.scalars(
+    user = current_user_optional()
+    q = (
         select(Comment)
         .where(Comment.post_id == post_id, Comment.is_blinded.is_(False))
         .order_by(Comment.created_at.asc(), Comment.id.asc())
         .options(joinedload(Comment.author))
-    ).all()
+    )
+    # 차단 유저의 댓글 제외 (UGC 차단 enforcement — 글 피드와 동일 정책)
+    if user:
+        blocked = select(Block.blocked_user_id).where(Block.user_id == user.id)
+        q = q.where(Comment.user_id.not_in(blocked))
+    rows = db.session.scalars(q).all()
 
     replies_by_parent: dict[int, list] = {}
     for c in rows:
@@ -33,7 +39,6 @@ def list_comments(post_id: int):
     tops = [c for c in rows if c.parent_id is None]
 
     # 내가 좋아요한 댓글 표시 (게스트는 빈 집합)
-    user = current_user_optional()
     liked_ids: set[int] = set()
     if user and rows:
         liked_ids = set(

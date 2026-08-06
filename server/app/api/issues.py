@@ -140,12 +140,20 @@ def vote(issue_id: int):
 
 @bp.get("/issues/<int:issue_id>/comments")
 def list_comments(issue_id: int):
-    rows = db.session.scalars(
+    user = current_user_optional()
+    q = (
         select(IssueComment)
         .where(IssueComment.issue_id == issue_id, IssueComment.is_blinded.is_(False))
         .order_by(IssueComment.created_at.asc(), IssueComment.id.asc())
         .options(joinedload(IssueComment.author))
-    ).all()
+    )
+    # 차단 유저의 이슈 댓글 제외 (UGC 차단 enforcement)
+    if user:
+        from ..models import Block
+
+        blocked = select(Block.blocked_user_id).where(Block.user_id == user.id)
+        q = q.where(IssueComment.user_id.not_in(blocked))
+    rows = db.session.scalars(q).all()
     replies: dict[int, list] = {}
     for c in rows:
         if c.parent_id:

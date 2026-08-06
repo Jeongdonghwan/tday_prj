@@ -40,6 +40,25 @@ def test_cannot_block_self(client, register, bearer):
     assert client.post("/blocks", json={"blocked_user_id": me_id}, headers=bearer(me)).status_code == 400
 
 
+def test_block_excludes_comments(client, register, bearer):
+    """차단 시 상대의 댓글도 목록에서 제외 (UGC enforcement 확장, 글로벌 Phase 3)."""
+    me, _ = register("me")
+    other, other_id = register("other")
+    pid = _post(client, bearer(me), title="글")
+    client.post(f"/posts/{pid}/comments", json={"body": "차단대상 댓글"}, headers=bearer(other))
+
+    # 차단 전엔 보임
+    before = client.get(f"/posts/{pid}/comments", headers=bearer(me)).get_json()["items"]
+    assert len(before) == 1
+
+    client.post("/blocks", json={"blocked_user_id": other_id}, headers=bearer(me))
+    after = client.get(f"/posts/{pid}/comments", headers=bearer(me)).get_json()["items"]
+    assert after == []
+    # 게스트(비로그인)에겐 그대로 보임(차단은 개인 설정)
+    guest = client.get(f"/posts/{pid}/comments").get_json()["items"]
+    assert len(guest) == 1
+
+
 def test_report_threshold_blinds_issue_comment(client, token, bearer, app):
     """이슈 댓글 신고 누적 → 자동 블라인드 (UGC 개별 신고 요건)."""
     from app.services.issues import create_issue

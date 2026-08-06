@@ -47,6 +47,18 @@ def privacy():
     return render_template("privacy.html")
 
 
+@bp.get("/guidelines")
+def guidelines():
+    """커뮤니티 가이드라인 (UGC 정책, ko). 구글/애플 심사 요건."""
+    return render_template("guidelines.html")
+
+
+@bp.get("/guidelines/en")
+def guidelines_en():
+    """Community guidelines (UGC policy, en)."""
+    return render_template("guidelines_en.html")
+
+
 @bp.get("/t")
 def test_list():
     tests = db.session.query(Test).filter_by(is_active=True).order_by(Test.created_at.desc()).all()

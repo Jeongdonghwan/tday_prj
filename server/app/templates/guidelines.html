@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}커뮤니티 가이드라인 · 오늘연애{% endblock %}
+{% block og_title %}오늘연애 커뮤니티 가이드라인{% endblock %}
+{% block og_desc %}건강한 커뮤니티를 위한 이용 규칙{% endblock %}
+{% block head_extra %}
+<style>
+  .legal { padding: 24px 20px 60px; line-height: 1.7; color: #333; }
+  .legal h1 { font-size: 22px; margin: 0 0 6px; }
+  .legal .date { color: #888; font-size: 13px; margin-bottom: 24px; }
+  .legal h2 { font-size: 16px; margin: 26px 0 8px; }
+  .legal p, .legal li { font-size: 14px; }
+  .legal ul { padding-left: 20px; }
+  .legal a { color: #F23B5F; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="legal">
+  <h1>커뮤니티 가이드라인</h1>
+  <div class="date">모두가 안심하고 연애 이야기를 나눌 수 있는 공간을 위해</div>
+
+  <h2>1. 서로를 존중해요</h2>
+  <p>비방, 욕설, 혐오 표현, 특정인·집단을 향한 차별적 발언은 금지됩니다. 의견이 달라도 예의를 지켜주세요.</p>
+
+  <h2>2. 금지되는 콘텐츠</h2>
+  <ul>
+    <li>성적으로 노골적이거나 음란한 콘텐츠</li>
+    <li>미성년자와 관련된 부적절한 내용</li>
+    <li>특정 개인을 저격·신상공개(개인정보 노출)하는 게시물</li>
+    <li>폭력·자해·불법행위를 조장하는 내용</li>
+    <li>스팸, 광고, 도배, 사기·피싱</li>
+  </ul>
+
+  <h2>3. 개인정보를 보호해요</h2>
+  <p>본인 또는 타인의 실명·연락처·주소·직장 등 신원을 특정할 수 있는 정보를 게시하지 마세요.</p>
+
+  <h2>4. 신고와 차단</h2>
+  <p>부적절한 게시물·댓글은 <b>신고</b>할 수 있고, 불편한 이용자는 <b>차단</b>하여 해당 이용자의 글·댓글을 보이지 않게 할 수 있습니다. 신고가 누적된 콘텐츠는 자동으로 가려지며, 운영자가 검토 후 조치합니다.</p>
+
+  <h2>5. 위반 시 조치</h2>
+  <p>가이드라인을 위반한 콘텐츠는 사전 통지 없이 블라인드 처리될 수 있으며, 반복·중대 위반 시 이용이 제한되거나 계정이 정지될 수 있습니다.</p>
+
+  <p style="margin-top:24px"><a href="/terms">이용약관</a> · <a href="/privacy">개인정보처리방침</a> · <a href="/guidelines/en">English</a></p>
+</div>
+{% endblock %}

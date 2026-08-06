@@ -1,6 +1,6 @@
 /** 마이페이지 (스펙 §5-5). API 연동: 상태 전환 + D-day + 캘린더/커플 진입. */
 import { useCallback, useState } from 'react';
-import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 
 import { deleteMe, updateMe, type AppLang } from '@/api/auth';
 import { getDday, type Dday } from '@/api/couple';
-import { getTestBadge, type TestBadge } from '@/api/tests';
+import { getTestBadge, type TestBadge, WEB_BASE_URL } from '@/api/tests';
 import { useAuth } from '@/auth/AuthContext';
 import { ActionSheet, type SheetAction } from '@/components/ActionSheet';
 import { AppBar } from '@/components/AppBar';
@@ -124,6 +124,12 @@ export default function MyScreen() {
     { icon: 'chat', label: t('my.coupleDaily'), onPress: () => router.push('/daily') },
     { icon: 'best', label: t('my.psychTest'), onPress: () => router.push('/tests') },
     { icon: 'settings', label: t('my.language'), onPress: () => setLangSheet(true) },
+    { icon: 'user', label: t('my.blockList'), onPress: () => router.push('/blocklist') },
+    {
+      icon: 'info',
+      label: t('my.guidelines'),
+      onPress: () => Linking.openURL(`${WEB_BASE_URL}/guidelines${user?.lang === 'en' ? '/en' : ''}`),
+    },
   ];
 
   return (
