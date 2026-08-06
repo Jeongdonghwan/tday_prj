@@ -13,8 +13,8 @@ from sqlalchemy import select
 
 from ..auth import login_required
 from ..extensions import db
-from ..fortune.constants import ZODIAC_KR
 from ..fortune.kst import kst_now, kst_today, zodiac_of
+from ..fortune.packs import sign_name, sun_sign_of
 from ..fortune.personalize import compatibility, personalize, tarot_card
 from ..fortune.thread import daily_thread_id
 from ..models import DailyFortune, FortuneProfile, FortuneRead
@@ -32,13 +32,13 @@ def reset_seg_cache() -> None:
     _seg_cache["rows"] = {}
 
 
-def _segment(d: date, zodiac: int, status: str):
-    """daily_fortunes 세그먼트 (날짜 단위 메모리 캐시)."""
+def _segment(d: date, zodiac: int, status: str, lang: str = "ko"):
+    """daily_fortunes 세그먼트 (날짜 단위 메모리 캐시). 언어권별 세그먼트 격리."""
     if _seg_cache["date"] != d:
         rows = db.session.scalars(select(DailyFortune).where(DailyFortune.fortune_date == d)).all()
         _seg_cache["date"] = d
-        _seg_cache["rows"] = {(r.zodiac, r.love_status): r for r in rows}
-    return _seg_cache["rows"].get((zodiac, status))
+        _seg_cache["rows"] = {(r.zodiac, r.love_status, r.lang): r for r in rows}
+    return _seg_cache["rows"].get((zodiac, status, lang))
 
 
 def _streak(user_id: int, today: date) -> int:
@@ -60,19 +60,19 @@ def _streak(user_id: int, today: date) -> int:
     return streak
 
 
-def _today_payload(profile: FortuneProfile) -> dict:
-    """오늘(또는 00시 이전이면 어제) 세그먼트 + 개인화 결합."""
+def _today_payload(profile: FortuneProfile, lang: str = "ko") -> dict:
+    """오늘(또는 00시 이전이면 어제) 세그먼트 + 개인화 결합. lang 으로 콘텐츠 언어권 선택."""
     today = kst_today()
-    seg = _segment(today, profile.zodiac, profile.love_status)
+    seg = _segment(today, profile.zodiac, profile.love_status, lang)
     published = True
     if seg is None or seg.published_at > kst_now():
         # 00시 이전 방어 — 어제 운세 노출
         published = False
-        seg = _segment(today - timedelta(days=1), profile.zodiac, profile.love_status)
+        seg = _segment(today - timedelta(days=1), profile.zodiac, profile.love_status, lang)
     if seg is None:
         return {"registered": True, "published": False, "date": today.isoformat(), "unavailable": True}
 
-    pz = personalize(profile.user_id, seg.fortune_date)
+    pz = personalize(profile.user_id, seg.fortune_date, lang)
     # 항목: 앞 2개는 점수, 3번째(주의보)는 점수 없음
     cats = []
     for i, c in enumerate(seg.cat_labels):
@@ -85,14 +85,14 @@ def _today_payload(profile: FortuneProfile) -> dict:
         "published": published,
         "date": seg.fortune_date.isoformat(),
         "nickname": g.user.nickname,
-        "zodiac": ZODIAC_KR[profile.zodiac],
+        "zodiac": sign_name(profile.zodiac, lang),
         "love_status": profile.love_status,
         "score": pz["score"],
         "summary": seg.summary,
         "full_text": seg.full_text,
         "cats": cats,
         "lucky": pz["lucky"],
-        "tarot": tarot_card(pz["tarot_index"]),
+        "tarot": tarot_card(pz["tarot_index"], lang),
         "streak": _streak(profile.user_id, today),
         # 데일리 스레드 배너 링크 (없으면 None → 배너 미노출)
         "thread_id": daily_thread_id(today),
@@ -105,7 +105,7 @@ def today():
     profile = db.session.get(FortuneProfile, g.user.id)
     if profile is None:
         return jsonify({"registered": False})
-    return jsonify(_today_payload(profile))
+    return jsonify(_today_payload(profile, g.user.lang))
 
 
 @bp.get("/fortune/profile")
@@ -160,13 +160,14 @@ def upsert_profile():
     profile.birth_time = birth_time
     profile.gender = gender
     profile.love_status = love_status
-    profile.zodiac = zodiac_of(birth)
+    # ko=십이지(생년), en=서양 별자리(월/일). zodiac 슬롯(0~11)을 언어권 부호로 재사용.
+    profile.zodiac = sun_sign_of(birth) if g.user.lang == "en" else zodiac_of(birth)
     profile.push_enabled = bool(data.get("push_enabled", False))
     profile.push_time = push_time
     if not db.session.get(FortuneProfile, g.user.id):
         db.session.add(profile)
     db.session.commit()
-    return jsonify(_today_payload(profile))
+    return jsonify(_today_payload(profile, g.user.lang))
 
 
 @bp.post("/fortune/read")
@@ -195,7 +196,7 @@ def compat():
         return jsonify({"error": "invalid_partner_birth"}), 400
 
     today = kst_today()
-    result = compatibility(profile.birth_date.isoformat(), partner.isoformat(), today)
+    result = compatibility(profile.birth_date.isoformat(), partner.isoformat(), today, g.user.lang)
     db.session.add(CompatibilityLog(user_id=g.user.id, partner_birth=partner, score=result["score"]))
     db.session.commit()
     return jsonify(result)
@@ -217,12 +218,12 @@ def history():
     ).all()
     items = []
     for d in reads:
-        seg = _segment(d, profile.zodiac, profile.love_status)
+        seg = _segment(d, profile.zodiac, profile.love_status, g.user.lang)
         if not seg:
             continue
         items.append({
             "date": d.isoformat(),
-            "score": personalize(g.user.id, d)["score"],
+            "score": personalize(g.user.id, d, g.user.lang)["score"],
             "summary": seg.summary,
             "full_text": seg.full_text,
         })
