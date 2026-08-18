@@ -25,3 +25,14 @@ def test_root_landing(client):
     r = client.get("/")
     assert r.status_code == 200
     assert "오늘연애" in r.get_data(as_text=True)
+
+
+def test_child_safety_page(client):
+    """아동 안전 표준 — 구글 플레이 정책 요건: 오류 없이 로드 + CSAE 언급 + 앱/개발자명 언급."""
+    r = client.get("/child-safety")
+    assert r.status_code == 200
+    body = r.get_data(as_text=True)
+    assert "CSAE" in body and "CSAM" in body  # 관련성 요건
+    assert "오늘연애" in body and "TodayLoves" in body  # 스토어 앱명
+    assert "에이치코" in body  # 개발자명
+    assert "jdhwan0227@gmail.com" in body  # 담당 연락처

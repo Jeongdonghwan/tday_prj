@@ -59,6 +59,12 @@ def guidelines_en():
     return render_template("guidelines_en.html")
 
 
+@bp.get("/child-safety")
+def child_safety():
+    """아동 안전 표준(CSAE 금지, ko+en) — 구글 플레이 아동 안전 표준 정책 필수 공개 URL."""
+    return render_template("child_safety.html")
+
+
 @bp.get("/t")
 def test_list():
     tests = db.session.query(Test).filter_by(is_active=True).order_by(Test.created_at.desc()).all()
