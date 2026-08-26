@@ -9,3 +9,4 @@ PyJWT==2.10.1
 python-dotenv==1.0.1
 requests==2.32.3
 gunicorn==23.0.0
+anthropic>=1.0,<2  # 매일 운세 AI 생성 + K-Story 번역 (output_config 는 1.x 필요)
