@@ -1,12 +1,12 @@
 /**
  * 푸시 알림 탭 랜딩 라우팅 (HOME_UPDATE §1: 탭 개편 후 랜딩 경로 갱신).
- * data.type 별 목적지 — best→글 상세, daily*→커플 오늘의질문, issue→연애이슈 탭, fortune→오늘연애 탭.
+ * data.type 별 목적지 — best→글 상세, daily*→커플 오늘의질문, issue→연애이슈 탭, fortune→오늘연애 탭, couple_note→속마음이야기 상세.
  */
 import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 
-type PushData = { type?: string; post_id?: number; question_id?: number };
+type PushData = { type?: string; post_id?: number; question_id?: number; note_id?: number };
 
 export function usePushRouting() {
   const router = useRouter();
@@ -16,6 +16,8 @@ export function usePushRouting() {
       if (!data?.type) return;
       if (data.type === 'best' && data.post_id) {
         router.push({ pathname: '/post/[id]', params: { id: data.post_id } });
+      } else if (data.type === 'couple_note' && data.note_id) {
+        router.push({ pathname: '/couple/notes/[id]', params: { id: data.note_id } });
       } else if (data.type === 'fortune') {
         router.push('/fortune');
       } else if (data.type.startsWith('daily')) {

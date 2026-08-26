@@ -9,7 +9,7 @@ import { usePathname, useRouter } from 'expo-router';
 import { BottomNavView, NAV_ITEMS, type NavName } from '@/components/BottomNav';
 import { useIsDesktop } from '@/hooks/useResponsive';
 
-const HIDDEN_PREFIXES = ['/write', '/photos/new', '/fortune-onboarding', '/login', '/(auth)'];
+const HIDDEN_PREFIXES = ['/write', '/photos/new', '/fortune-onboarding', '/couple/notes/new', '/login', '/(auth)'];
 
 function activeFor(pathname: string): NavName | null {
   if (pathname.startsWith('/post')) return 'community';

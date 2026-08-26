@@ -4,6 +4,7 @@ Alembic 마이그레이션과 `flask init-db`(create_all) 가 모두 이 모델�
 """
 from .user import User
 from .couple import Couple
+from .couple_note import CoupleNote, CoupleNoteComment
 from .post import Comment, CommentLike, PollOption, Post, PostLike, Vote
 from .daily import DailyAnswer, DailyQuestion
 from .daily_poll import DailyPoll, DailyPollVote
@@ -18,6 +19,8 @@ from .kstory import KStoryCandidate
 __all__ = [
     "User",
     "Couple",
+    "CoupleNote",
+    "CoupleNoteComment",
     "Post",
     "PollOption",
     "Vote",

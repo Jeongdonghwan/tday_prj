@@ -65,6 +65,9 @@ function RootNavigator() {
       <Stack.Screen name="fortune-onboarding" options={{ presentation: 'modal' }} />
       <Stack.Screen name="fortune-settings" />
       <Stack.Screen name="blocklist" />
+      <Stack.Screen name="couple/notes/index" />
+      <Stack.Screen name="couple/notes/new" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="couple/notes/[id]" />
     </Stack>
   );
 
