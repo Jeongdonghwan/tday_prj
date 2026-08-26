@@ -2,7 +2,7 @@
   "expo": {
     "name": "오늘연애",
     "slug": "todaylove",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/brand/app_icon.png",
     "scheme": "todaylove",

@@ -4,7 +4,7 @@
  */
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useEffect } from 'react';
-import { Platform } from 'react-native';
+import { Platform, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -12,6 +12,7 @@ import { StatusBar } from 'expo-status-bar';
 import '@/i18n'; // i18n 초기화 (기기 로케일 기준, 로그인 후 user.lang 로 동기화)
 import { AuthProvider, useAuth } from '@/auth/AuthContext';
 import { FortuneProvider } from '@/fortune/FortuneContext';
+import { GlobalBottomNav } from '@/components/GlobalBottomNav';
 import { TermsConsentModal } from '@/components/TermsConsentModal';
 import { DesktopShell } from '@/components/web/DesktopShell';
 import { useIsDesktop } from '@/hooks/useResponsive';
@@ -67,12 +68,16 @@ function RootNavigator() {
     </Stack>
   );
 
+  // (tabs) 밖 스택 화면(글상세·이슈상세·설정 등)에도 하단 GNB 유지. 탭·로그인 화면은 자체 처리.
+  const showGlobalNav = segments[0] !== '(tabs)' && segments[0] !== '(auth)';
+
   // 개정 약관 소프트 재동의 모달 — 로그인 유저 & 미동의 시 오버레이(비차단)
   const withModal = (
-    <>
+    <View style={{ flex: 1 }}>
       {stack}
+      {showGlobalNav && <GlobalBottomNav />}
       <TermsConsentModal />
-    </>
+    </View>
   );
 
   // 데스크톱(웹): 로그인 화면을 제외한 모든 화면(글쓰기·글상세 포함)을 GNB 아래에 렌더
