@@ -6,7 +6,8 @@
 ## 0. 사전 (필수)
 - [ ] **DB 백업** 후 `cd server && flask db upgrade` (마이그레이션 `c1d2global` — users/posts/콘텐츠에 lang, kstory_candidates). 기존 데이터는 전부 `lang='ko'` 자동 백필.
 - [ ] `.env` 추가:
-  - `ANTHROPIC_API_KEY=` (K-Story 번역 필수. 없으면 번역 배치가 실패-알림만)
+  - `ANTHROPIC_API_KEY=` (**매일 운세 AI 생성 + K-Story 번역**. 없으면 운세는 폴백 풀 문구로 자동 대체, 번역 배치는 실패-알림만)
+  - `FORTUNE_MODEL=claude-sonnet-5` (운세 본문 모델. 품질 우선이면 `claude-opus-5`, 월 비용 약 2배)
   - `KSTORY_MODEL=claude-sonnet-5` (기본. 비용 절감 시 `claude-haiku-4-5`)
   - `KSTORY_WINDOW_H=72` `KSTORY_MIN_LIKES=20` `KSTORY_MIN_COMMENTS=10` `KSTORY_DAILY_CAP=3` (임계치·페이스 조절)
   - `TELEGRAM_BOT_TOKEN=` `TELEGRAM_CHAT_ID=` (배치 실패 알림. 미설정 시 no-op)

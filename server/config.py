@@ -45,6 +45,7 @@ class Config:
     AI_MODEL = os.getenv("AI_MODEL", "claude-haiku-4-5")
 
     # --- K-Story 파이프라인 (글로벌 확장 Phase 2) — 임계치/페이스 전부 env ---
+    FORTUNE_MODEL = os.getenv("FORTUNE_MODEL", "claude-sonnet-5")  # 매일 운세 본문 생성 모델(품질↑ claude-opus-5)
     KSTORY_MODEL = os.getenv("KSTORY_MODEL", "claude-sonnet-5")  # 번역·각색 모델(비용시 haiku)
     KSTORY_WINDOW_H = int(os.getenv("KSTORY_WINDOW_H", "72"))    # 후보 판정 시간창(시간)
     KSTORY_MIN_LIKES = int(os.getenv("KSTORY_MIN_LIKES", "20"))  # 후보 최소 공감

@@ -177,16 +177,17 @@ def _register_cli(app: Flask):
     @click.option("--date", "date_str", default=None, help="YYYY-MM-DD (기본: 내일 KST)")
     @click.option("--lang", type=click.Choice(["ko", "en"]), default="ko")
     @click.option("--overwrite/--no-overwrite", default=False)
-    def fortune_generate(date_str, lang, overwrite):
+    @click.option("--ai/--no-ai", "ai_flag", default=None, help="AI 생성 강제/비활성 (기본: 키 있으면 AI)")
+    def fortune_generate(date_str, lang, overwrite, ai_flag):
         """연애운세 48세그먼트 생성 (크론 23:40). 기본은 내일 날짜(KST)·ko."""
         from datetime import timedelta
 
-        from .fortune.generate import generate_for_date
+        from .fortune.generate import LAST_RUN, generate_for_date
         from .fortune.kst import kst_today
 
         d = _parse_date_opt(date_str) or (kst_today() + timedelta(days=1))
-        n = generate_for_date(d, lang=lang, overwrite=overwrite)
-        click.echo(f"운세 생성({lang}): {d} → {n}세그먼트")
+        n = generate_for_date(d, lang=lang, overwrite=overwrite, ai=ai_flag)
+        click.echo(f"운세 생성({lang}): {d} → {n}세그먼트 (AI {LAST_RUN['ai']} / 폴백 {LAST_RUN['fallback']})")
 
     @app.cli.command("fortune-verify")
     @click.option("--date", "date_str", default=None, help="YYYY-MM-DD (기본: 내일 KST)")
