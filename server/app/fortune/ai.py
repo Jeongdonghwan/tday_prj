@@ -74,7 +74,7 @@ Tone: Co-Star style — short, witty, warm, a little poetic, never cheesy. Secon
 For each sign:
 - summary: one punchy line, max 60 characters, no trailing period.
 - full_text: 60-90 words, 3-4 sentences. Mention the day/season naturally. Give one concrete tiny action for today.
-- cats: exactly 3 comments, in this order: {labels}. Each comment max 8 words.
+- cats: exactly 3 comments, in this order: {labels}. Each comment is a short phrase, max 6 words, max 45 characters.
 Rules: all 12 must feel clearly different. No numbers, scores, percentages, or dates in the text.
 No doom, no medical/financial advice, no naming specific people. Keep it playful and hopeful.
 Return JSON only."""
@@ -145,7 +145,7 @@ def generate_segments_ai(fortune_date: date, status: str, lang: str = "ko") -> d
         out[idx] = {
             "summary": summary[:60],
             "full_text": full_text[:600],
-            "cats": [{"name": labels[i], "comment": comments[i][:40]} for i in range(3)],
+            "cats": [{"name": labels[i], "comment": comments[i][:60]} for i in range(3)],
         }
     if len(out) < 12:
         raise FortuneAIError(f"incomplete: {len(out)}/12 signs")
