@@ -111,7 +111,8 @@ def generate_segments_ai(fortune_date: date, status: str, lang: str = "ko") -> d
     signs = list(pack(lang)["signs"])
     labels = cat_labels(status, lang)
 
-    client = Anthropic(api_key=key)
+    # 429/5xx 는 SDK 가 retry-after 를 존중해 지수 백오프 재시도 (신규 키는 분당 토큰 제한이 낮음)
+    client = Anthropic(api_key=key, max_retries=5)
     try:
         resp = client.messages.create(
             model=current_app.config.get("FORTUNE_MODEL", "claude-sonnet-5"),

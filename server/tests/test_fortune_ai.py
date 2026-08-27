@@ -22,6 +22,7 @@ def _fake_ai(fortune_date, status, lang="ko"):
 
 def test_ai_used_when_available(app, monkeypatch):
     monkeypatch.setattr(gen, "generate_segments_ai", _fake_ai)
+    monkeypatch.setattr(gen, "_AI_RETRY_WAIT", 0)
     with app.app_context():
         n = gen.generate_for_date(D, lang="ko", overwrite=True, ai=True)
         assert n == 48
@@ -29,7 +30,7 @@ def test_ai_used_when_available(app, monkeypatch):
         assert len(rows) == 48 and all(r.is_fallback is False for r in rows)
         r = next(x for x in rows if x.zodiac == 3 and x.love_status == "couple")
         assert r.summary == "AI couple ko 3" and r.cat_labels[0]["name"] == cat_labels("couple", "ko")[0]
-        assert gen.LAST_RUN == {"ai": 48, "fallback": 0}
+        assert (gen.LAST_RUN["ai"], gen.LAST_RUN["fallback"], gen.LAST_RUN["errors"]) == (48, 0, [])
 
 
 def test_ai_failure_falls_back_with_alert(app, monkeypatch):
@@ -40,6 +41,7 @@ def test_ai_failure_falls_back_with_alert(app, monkeypatch):
 
     alerts = []
     monkeypatch.setattr(gen, "generate_segments_ai", boom)
+    monkeypatch.setattr(gen, "_AI_RETRY_WAIT", 0)
     monkeypatch.setattr(gen, "send_alert", lambda t: alerts.append(t) or True)
     with app.app_context():
         assert gen.generate_for_date(D, lang="en", overwrite=True, ai=True) == 48
@@ -47,7 +49,8 @@ def test_ai_failure_falls_back_with_alert(app, monkeypatch):
         some = [r for r in rows if r.love_status == "some"]
         others = [r for r in rows if r.love_status != "some"]
         assert all(r.is_fallback for r in some) and all(not r.is_fallback for r in others)
-        assert gen.LAST_RUN == {"ai": 36, "fallback": 12}
+        assert (gen.LAST_RUN["ai"], gen.LAST_RUN["fallback"]) == (36, 12)
+        assert gen.LAST_RUN["errors"] == ["en/some: api down"]  # 3회 재시도 후 폴백, 사유 기록
     assert len(alerts) == 1 and "some" in alerts[0]
 
 

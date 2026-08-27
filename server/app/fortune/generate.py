@@ -7,6 +7,7 @@ ANTHROPIC_API_KEY 가 있으면 상태(4)×언어별로 Claude 가 띠/별자리
 import hashlib
 import json
 import os
+import time
 from datetime import date
 
 from flask import current_app
@@ -19,7 +20,9 @@ from .ai import FortuneAIError, generate_segments_ai
 from .kst import kst_midnight_utc
 
 # 직전 generate_for_date 실행 통계 (CLI 출력·테스트용)
-LAST_RUN = {"ai": 0, "fallback": 0}
+LAST_RUN = {"ai": 0, "fallback": 0, "errors": []}
+_AI_ATTEMPTS = 3       # 상태별 시도 횟수
+_AI_RETRY_WAIT = 25    # 재시도 간격(초) — 분당 토큰 제한 회복용
 
 _FALLBACK_PATHS = {
     "ko": os.path.join(os.path.dirname(__file__), "fallbacks.json"),
@@ -57,6 +60,7 @@ def generate_for_date(fortune_date: date, lang: str = "ko", overwrite: bool = Fa
     made = 0
     LAST_RUN["ai"] = 0
     LAST_RUN["fallback"] = 0
+    LAST_RUN["errors"] = []
     for status in FORTUNE_LOVE_STATUSES:
         # 덮어쓰지 않을 때 이미 12행 다 있으면 API 호출 자체를 건너뜀
         if not overwrite:
@@ -65,10 +69,20 @@ def generate_for_date(fortune_date: date, lang: str = "ko", overwrite: bool = Fa
                 continue
         ai_segs: dict[int, dict] | None = None
         if ai:
-            try:
-                ai_segs = generate_segments_ai(fortune_date, status, lang)
-            except FortuneAIError as e:
-                send_alert(f"[운세] AI 생성 실패 → 폴백 사용 {fortune_date} {lang}/{status}: {e}")
+            last_err = None
+            for attempt in range(1, _AI_ATTEMPTS + 1):
+                try:
+                    ai_segs = generate_segments_ai(fortune_date, status, lang)
+                    break
+                except FortuneAIError as e:
+                    last_err = e
+                    current_app.logger.warning("[운세] AI %s/%s 시도 %d 실패: %s", lang, status, attempt, e)
+                    if attempt < _AI_ATTEMPTS:
+                        time.sleep(_AI_RETRY_WAIT)
+            if ai_segs is None:
+                msg = f"{lang}/{status}: {last_err}"
+                LAST_RUN["errors"].append(msg)
+                send_alert(f"[운세] AI 생성 실패 → 폴백 사용 {fortune_date} {msg}")
         for zodiac in range(12):
             existing = DailyFortune.query.filter_by(
                 fortune_date=fortune_date, zodiac=zodiac, love_status=status, lang=lang

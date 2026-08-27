@@ -188,6 +188,8 @@ def _register_cli(app: Flask):
         d = _parse_date_opt(date_str) or (kst_today() + timedelta(days=1))
         n = generate_for_date(d, lang=lang, overwrite=overwrite, ai=ai_flag)
         click.echo(f"운세 생성({lang}): {d} → {n}세그먼트 (AI {LAST_RUN['ai']} / 폴백 {LAST_RUN['fallback']})")
+        for err in LAST_RUN["errors"]:
+            click.echo(f"  ! AI 실패 → 폴백: {err}")
 
     @app.cli.command("fortune-verify")
     @click.option("--date", "date_str", default=None, help="YYYY-MM-DD (기본: 내일 KST)")
