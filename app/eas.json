@@ -14,7 +14,9 @@
     },
     "preview": {
       "distribution": "internal",
-      "android": { "buildType": "apk" },
+      "android": {
+        "buildType": "apk"
+      },
       "env": {
         "EXPO_PUBLIC_API_BASE_URL": "https://api.todayloves.com",
         "EXPO_PUBLIC_WEB_BASE_URL": "https://todayloves.com"
@@ -29,6 +31,10 @@
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "ascAppId": "6792736397"
+      }
+    }
   }
 }
