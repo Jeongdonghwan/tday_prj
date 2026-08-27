@@ -190,6 +190,11 @@ def _register_cli(app: Flask):
         click.echo(f"운세 생성({lang}): {d} → {n}세그먼트 (AI {LAST_RUN['ai']} / 폴백 {LAST_RUN['fallback']})")
         for err in LAST_RUN["errors"]:
             click.echo(f"  ! AI 실패 → 폴백: {err}")
+        from .fortune import ai as _ai
+
+        if _ai.USAGE["calls"]:
+            model = app.config.get("FORTUNE_MODEL", "claude-sonnet-5")
+            click.echo(f"  토큰: 호출 {_ai.USAGE['calls']}회 / 입력 {_ai.USAGE['input']:,} / 출력 {_ai.USAGE['output']:,} → 약 ${_ai.estimated_cost_usd(model):.3f} ({model})")
 
     @app.cli.command("fortune-verify")
     @click.option("--date", "date_str", default=None, help="YYYY-MM-DD (기본: 내일 KST)")

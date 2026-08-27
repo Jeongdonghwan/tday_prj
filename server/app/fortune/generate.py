@@ -16,12 +16,12 @@ from ..alerts import send_alert
 from ..extensions import db
 from ..models import DailyFortune
 from ..models.enums import FORTUNE_LOVE_STATUSES
-from .ai import FortuneAIError, generate_segments_ai
+from .ai import FortuneAIError, generate_segments_ai, reset_usage
 from .kst import kst_midnight_utc
 
 # 직전 generate_for_date 실행 통계 (CLI 출력·테스트용)
 LAST_RUN = {"ai": 0, "fallback": 0, "errors": []}
-_AI_ATTEMPTS = 3       # 상태별 시도 횟수
+_AI_ATTEMPTS = 2       # 상태별 시도 횟수 (과금 상한: 실패해도 상태당 최대 2회)
 _AI_RETRY_WAIT = 25    # 재시도 간격(초) — 분당 토큰 제한 회복용
 
 _FALLBACK_PATHS = {
@@ -61,6 +61,7 @@ def generate_for_date(fortune_date: date, lang: str = "ko", overwrite: bool = Fa
     LAST_RUN["ai"] = 0
     LAST_RUN["fallback"] = 0
     LAST_RUN["errors"] = []
+    reset_usage()
     for status in FORTUNE_LOVE_STATUSES:
         # 덮어쓰지 않을 때 이미 12행 다 있으면 API 호출 자체를 건너뜀
         if not overwrite:

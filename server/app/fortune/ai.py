@@ -18,6 +18,21 @@ class FortuneAIError(Exception):
     pass
 
 
+# 직전 generate_for_date 실행의 누적 토큰 사용량 (CLI 비용 표시용)
+USAGE = {"input": 0, "output": 0, "calls": 0}
+# 모델별 $/1M 토큰 (input, output) — 비용 추정 표시용
+_PRICE = {"claude-sonnet-5": (2.0, 10.0), "claude-haiku-4-5": (1.0, 5.0), "claude-opus-5": (5.0, 25.0)}
+
+
+def reset_usage() -> None:
+    USAGE.update(input=0, output=0, calls=0)
+
+
+def estimated_cost_usd(model: str) -> float:
+    pi, po = _PRICE.get(model, (2.0, 10.0))
+    return USAGE["input"] / 1e6 * pi + USAGE["output"] / 1e6 * po
+
+
 _STATUS_KO = {"solo": "솔로", "some": "썸 타는 중", "couple": "연애 중", "rebound": "재회를 바라는 중"}
 _STATUS_EN = {"solo": "single", "some": "in a situationship / early talking stage", "couple": "in a relationship",
               "rebound": "hoping to get back with an ex"}
@@ -116,13 +131,23 @@ def generate_segments_ai(fortune_date: date, status: str, lang: str = "ko") -> d
     try:
         resp = client.messages.create(
             model=current_app.config.get("FORTUNE_MODEL", "claude-sonnet-5"),
-            max_tokens=8000,
+            max_tokens=12000,
+            # 창작 문구엔 확장 사고가 불필요 — 생략하면 adaptive thinking 이 켜져 출력 토큰(과금)을 크게 늘리고
+            # max_tokens 를 잠식해 응답이 잘린다. 명시적으로 끈다.
+            thinking={"type": "disabled"},
             messages=[{"role": "user", "content": _prompt(fortune_date, status, lang, signs, labels)}],
             output_config={"format": {"type": "json_schema", "schema": _schema()}},
         )
     except Exception as e:  # SDK 오류 전부 → 폴백 대상
         raise FortuneAIError(f"api error: {type(e).__name__}: {e}") from e
 
+    u = getattr(resp, "usage", None)
+    if u is not None:
+        USAGE["input"] += getattr(u, "input_tokens", 0) or 0
+        USAGE["output"] += getattr(u, "output_tokens", 0) or 0
+        USAGE["calls"] += 1
+    if getattr(resp, "stop_reason", None) == "max_tokens":
+        raise FortuneAIError("truncated (max_tokens)")
     if getattr(resp, "stop_reason", None) == "refusal":
         raise FortuneAIError("refusal")
     text = next((b.text for b in resp.content if getattr(b, "type", "") == "text"), None)
