@@ -1,6 +1,6 @@
 /** 프로필 수정 — 닉네임 + 기본 아바타 선택. */
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -54,7 +54,8 @@ export default function ProfileEditScreen() {
             </Pressable>
           }
         />
-        <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+<ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
           <View style={styles.avatarHead}>
             <Avatar avatarNo={avatarNo} size={72} />
           </View>
@@ -78,6 +79,7 @@ export default function ProfileEditScreen() {
             ))}
           </View>
         </ScrollView>
+</KeyboardAvoidingView>
       </View>
     </SafeAreaView>
   );

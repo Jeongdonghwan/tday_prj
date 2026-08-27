@@ -1,6 +1,6 @@
 /** 오늘의 질문 (스펙 §5-3). API 연동: 1인 모드 + 커플 연결 시 답 공개. */
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -74,7 +74,8 @@ export default function DailyScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <AppBar title="오늘의 질문" onBack={() => router.back()} right={user ? <StatusChip status={user.relationship_status} /> : undefined} />
-      <ScrollView contentContainerStyle={{ paddingBottom: 24 }} keyboardShouldPersistTaps="handled">
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+<ScrollView contentContainerStyle={{ paddingBottom: 24 }} keyboardShouldPersistTaps="handled">
         <View style={styles.hero}>
           <Text style={styles.day}>{data.question.date}</Text>
           <Text style={styles.main}>{data.question.text}</Text>
@@ -133,6 +134,7 @@ export default function DailyScreen() {
           </View>
         )}
       </ScrollView>
+</KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

@@ -1,6 +1,6 @@
 /** 마이 > 오늘연애 운세 설정 (FORTUNE_UPDATE.md §5 마이). 프로필 수정 + 푸시 on/off·시간 + 히스토리 30일. */
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -119,7 +119,8 @@ export default function FortuneSettingsScreen() {
       {loading ? (
         <ActivityIndicator color={colors.rose} style={{ marginTop: 60 }} />
       ) : (
-        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+<ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
           {/* 프로필 */}
           <Text style={styles.h}>내 정보</Text>
           <Text style={styles.label}>생년월일</Text>
@@ -191,6 +192,7 @@ export default function FortuneSettingsScreen() {
             ))
           )}
         </ScrollView>
+</KeyboardAvoidingView>
       )}
     </SafeAreaView>
   );

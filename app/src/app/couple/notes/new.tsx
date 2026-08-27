@@ -81,7 +81,7 @@ export default function CoupleNoteFormScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <AppBar title={editId ? '이야기 수정' : '속마음 남기기'} onBack={() => router.back()} />
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 24 }} keyboardShouldPersistTaps="handled">
           <Text style={styles.hint}>둘만 볼 수 있어요. 비난보다는 "나는 이렇게 느꼈어"로 적어보세요 🔒</Text>
 

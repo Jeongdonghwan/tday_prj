@@ -1,6 +1,6 @@
 /** 오늘연애 탭 (fortune_tab.html 11섹션). 잠금/해제, 타로, 궁합, 오늘의 질문(DailyPollCard 재배치). */
 import { useCallback, useRef, useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -60,7 +60,8 @@ export default function FortuneScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <AppBar title="오늘연애" />
-      <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+<ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
         {loading && !data ? (
           <ActivityIndicator color={colors.rose} style={{ marginTop: 60 }} />
         ) : !registered ? (
@@ -77,6 +78,7 @@ export default function FortuneScreen() {
           <Registered data={data as Extract<FortuneToday, { registered: true }>} token={token} />
         )}
       </ScrollView>
+</KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

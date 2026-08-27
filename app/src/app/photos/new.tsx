@@ -1,6 +1,6 @@
 /** 사진 올리기 — 이미지 선택 + 제목 → 업로드 후 photo 게시판에 등록. */
 import { useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
@@ -47,6 +47,7 @@ export default function NewPhotoScreen() {
 
   return (
     <SafeAreaView style={[styles.safe, isDesktop && styles.safeDesktop]}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
       <View style={[styles.col, isDesktop && styles.colDesktop]}>
         <View style={styles.bar}>
           <Pressable onPress={() => router.back()} hitSlop={8}>
@@ -77,6 +78,7 @@ export default function NewPhotoScreen() {
           onChangeText={setTitle}
         />
       </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

@@ -1,6 +1,6 @@
 /** 글쓰기 + 내 글 수정(?edit=<id>). 골격: 카테고리 + 제목/본문 + 작성자 상태칩 + 투표 토글 + A/B 입력. */
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -95,7 +95,8 @@ export default function WriteScreen() {
         </Pressable>
       </View>
 
-      <ScrollView keyboardShouldPersistTaps="handled">
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+<ScrollView keyboardShouldPersistTaps="handled">
         <View style={{ paddingTop: 14 }}>
           <FilterRow items={WRITE_CATEGORIES} value={cat} onChange={setCat} />
         </View>
@@ -155,6 +156,7 @@ export default function WriteScreen() {
           </View>
         )}
       </ScrollView>
+</KeyboardAvoidingView>
      </View>
     </SafeAreaView>
   );

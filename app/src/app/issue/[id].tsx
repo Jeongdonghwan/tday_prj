@@ -103,7 +103,7 @@ export default function IssueDetail() {
      <View style={styles.col}>
       {cmActions.sheet}
       <Bar onBack={() => router.back()} />
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={8}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" keyboardVerticalOffset={8}>
         <ScrollView contentContainerStyle={styles.wrap} keyboardShouldPersistTaps="handled">
           <Text style={styles.label}>오늘의 연애 이슈</Text>
           <Text style={styles.title}>{issue.title}</Text>

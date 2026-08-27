@@ -84,7 +84,7 @@ export default function CoupleNoteDetailScreen() {
       {!note ? (
         <ActivityIndicator color={colors.rose} style={{ marginTop: 60 }} />
       ) : (
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={8}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" keyboardVerticalOffset={8}>
           <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 24 }} keyboardShouldPersistTaps="handled">
             <View style={styles.authorRow}>
               <Avatar avatarNo={note.author.avatar_no} size={32} />

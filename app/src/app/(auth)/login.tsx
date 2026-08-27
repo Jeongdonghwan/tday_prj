@@ -3,7 +3,7 @@
  * 카카오/애플 네이티브 SDK 는 후속 단계 — 지금은 안내 + 개발용 로그인으로 인증 경로 E2E.
  */
 import { useState } from 'react';
-import { Alert, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import * as WebBrowser from 'expo-web-browser';
@@ -89,6 +89,8 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
       <View style={styles.body}>
         <View style={styles.hero}>
           <BrandLogo height={40} />
@@ -173,6 +175,8 @@ export default function LoginScreen() {
         </View>
 
       </View>
+      </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

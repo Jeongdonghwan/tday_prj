@@ -1,6 +1,6 @@
 /** 공유 캘린더 (스펙 §5-8). API 연동: 월별 일정 색 구분 + 선택일 아젠다 + 추가. */
 import { useCallback, useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -137,7 +137,8 @@ export default function CalendarScreen() {
         ))}
       </View>
 
-      <ScrollView>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+<ScrollView>
         <View style={styles.cal}>
           <View style={styles.weekhead}>
             {WEEKDAYS.map((w, i) => (
@@ -233,6 +234,7 @@ export default function CalendarScreen() {
           )}
         </View>
       </ScrollView>
+</KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

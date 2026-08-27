@@ -1,6 +1,6 @@
 /** 커플 연결 (스펙 §5-7). API 연동: 초대코드 생성/입력 + 시작일. */
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -98,7 +98,8 @@ export default function CoupleConnect() {
       {loading ? (
         <ActivityIndicator color={colors.rose} style={{ marginTop: 60 }} />
       ) : (
-        <ScrollView contentContainerStyle={styles.wrap}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+<ScrollView contentContainerStyle={styles.wrap}>
           <View style={styles.illust}>
             <Icon name="heart" size={42} color={colors.rose} strokeWidth={1.7} />
           </View>
@@ -167,6 +168,7 @@ export default function CoupleConnect() {
             <Text style={styles.foot}>설정하면 327일째처럼 자동으로 세어드려요. 둘 중 누가 정해도 함께 적용돼요.</Text>
           </View>
         </ScrollView>
+</KeyboardAvoidingView>
       )}
     </SafeAreaView>
   );
