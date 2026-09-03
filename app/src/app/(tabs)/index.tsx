@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 6, paddingBottom: 14 },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  body: { flex: 1, backgroundColor: colors.soft },
+  body: { flex: 1, backgroundColor: colors.bg }, // 화이트 톤 (카드 구분은 테두리)
   card: {
     backgroundColor: colors.bg,
     borderWidth: 0.5,
