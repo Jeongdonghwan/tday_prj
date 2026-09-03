@@ -54,8 +54,8 @@ export default function FortuneScreen() {
             <View style={{ marginHorizontal: 16 }}>
               <NightCardLocked onUnlock={() => router.push('/(auth)/login')} />
             </View>
-            <Text style={styles.guestHint}>내 생년월일·연애 상태에 맞춘 <Text style={{ fontWeight: '800', color: colors.ink }}>맞춤 운세로 보려면 로그인</Text>이 필요해요{'
-'}매일 자정 연애운·타로·궁합 — 무료</Text>
+            <Text style={styles.guestHint}>내 생년월일·연애 상태에 맞춘 맞춤 운세는 로그인 후 볼 수 있어요</Text>
+            <Text style={styles.guestHint2}>매일 자정 연애운·타로·궁합 — 무료</Text>
             <Text style={styles.disclaimer}>운세 콘텐츠는 재미로 즐기는 참고용 정보예요.</Text>
           </View>
         </ScrollView>
@@ -359,5 +359,6 @@ const styles = StyleSheet.create({
   threadS: { fontSize: 11.5, color: colors.sub2, fontWeight: weight.semibold as '600', marginTop: 2 },
   threadGo: { color: colors.rose, fontWeight: weight.extrabold as '800', fontSize: 12 },
   guestHint: { marginTop: 14, marginHorizontal: 24, fontSize: 12.5, color: colors.sub, textAlign: 'center', lineHeight: 18 },
+  guestHint2: { marginTop: 4, fontSize: 12, color: colors.sub2, textAlign: 'center', fontWeight: weight.semibold as '600' },
   disclaimer: { marginTop: 20, marginHorizontal: 16, fontSize: 10.5, color: colors.sub2, textAlign: 'center' },
 });
