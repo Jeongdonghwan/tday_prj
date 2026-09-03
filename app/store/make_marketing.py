@@ -74,44 +74,34 @@ def phone_frame(shot_path, target_w):
     return frame
 
 
-def make(slide, idx):
+def make(slide, idx, f, fs, sf, sfs):
     shot, lines, sub, (top, bot), accent = slide
-    VS = H / 1920  # 세로 여백 스케일
+    VS = H / 1920
     canvas = vgrad(W, H, top, bot).convert("RGBA")
     d = ImageDraw.Draw(canvas)
 
-    def fit_font(path, size, texts, max_w):
-        while size > 20:
-            ft = ImageFont.truetype(path, size)
-            if all(d.textlength(t, font=ft) <= max_w for t in texts):
-                return ft, size
-            size -= 2
-        return ImageFont.truetype(path, size), size
-
-    # 헤드라인 — 가로 기준 크기 + 폭 자동 맞춤
-    f, fs = fit_font(BOLD, int(92 * W / 1080), lines, W - int(90 * W / 1080))
+    # 헤드라인 — 전 슬라이드 공통 크기(레이아웃 통일)
     line_h = int(fs * 1.26)
-    y = int(120 * VS)
+    y = int(110 * VS)
     for i, line in enumerate(lines):
         w = d.textlength(line, font=f)
         color = accent if i == len(lines) - 1 else INK
         d.text(((W - w) / 2, y), line, font=f, fill=color)
         y += line_h
-    # 서브카피 (설명 한 줄) — 폭 자동 맞춤
-    y += int(26 * VS)
-    sf, sfs = fit_font(REG, int(42 * W / 1080), [sub], W - int(80 * W / 1080))
+    y += int(24 * VS)
     sw_ = d.textlength(sub, font=sf)
     d.text(((W - sw_) / 2, y), sub, font=sf, fill=SUB)
-    y += int(sfs * 1.3) + int(40 * VS)
+    y += int(sfs * 1.3)
 
-    # 폰 목업 — 하단 앵커(아래로 50px 블리드), 폭은 상한 내에서 높이를 채우도록
-    bleed = int(50 * VS)
-    avail_h = H + bleed - (y + int(30 * VS))
-    scr_w_by_h = int((avail_h - 44) * 1080 / 1920)  # shot 1080x1920
-    target_w = min(int(0.88 * W), scr_w_by_h + 44)
+    # 폰 목업 — 고정 상단(y_end+간격), 하단 블리드까지 채움 (전 슬라이드 동일 위치·크기)
+    phone_top = y + int(64 * VS)
+    bleed = int(56 * VS)
+    frame_h_target = H + bleed - phone_top
+    scr_w_by_h = int((frame_h_target - 44) * 1080 / 1920)
+    target_w = min(int(0.92 * W), scr_w_by_h + 44)
     frame = phone_frame(os.path.join(SHOTS, shot), target_w=target_w)
     fx = (W - frame.width) // 2
-    fy = H + bleed - frame.height  # 하단 붙임 → 남는 공간은 위(서브카피와의 사이)로
+    fy = phone_top
     shadow = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
     sd = ImageDraw.Draw(shadow)
     sd.rounded_rectangle([fx + 14, fy + 26, fx + frame.width + 14, fy + frame.height + 26], radius=64, fill=(0, 0, 0, 70))
@@ -125,5 +115,20 @@ def make(slide, idx):
 
 
 if __name__ == "__main__":
-    for i, s in enumerate(SLIDES, 1):
-        make(s, i)
+    # 공통 폰트: 가장 긴 헤드라인/서브카피 기준으로 한 번만 산정 → 전 슬라이드 동일 크기
+    probe = ImageDraw.Draw(Image.new("RGB", (W, H)))
+
+    def fit(path, size, texts, max_w):
+        while size > 20:
+            ft = ImageFont.truetype(path, size)
+            if all(probe.textlength(t, font=ft) <= max_w for t in texts):
+                return ft, size
+            size -= 2
+        return ImageFont.truetype(path, size), size
+
+    all_lines = [l for sl in SLIDES for l in sl[1]]
+    all_subs = [sl[2] for sl in SLIDES]
+    F, FS = fit(BOLD, int(96 * W / 1080), all_lines, W - int(90 * W / 1080))
+    SF, SFS = fit(REG, int(42 * W / 1080), all_subs, W - int(80 * W / 1080))
+    for i, sl in enumerate(SLIDES, 1):
+        make(sl, i, F, FS, SF, SFS)
