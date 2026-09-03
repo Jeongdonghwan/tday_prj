@@ -42,15 +42,23 @@ export default function FortuneScreen() {
   );
 
   if (!token) {
+    // 게스트(웹): 잠긴 자정 카드 미리보기 — CTA 는 로그인으로 (유입 퍼널)
     return (
       <SafeAreaView style={styles.safe} edges={['top']}>
         <AppBar title="오늘연애" />
-        <View style={styles.center}>
-          <Text style={styles.guide}>로그인하고 오늘의 연애운을 확인해보세요</Text>
-          <Pressable style={styles.guideBtn} onPress={() => router.push('/(auth)/login')}>
-            <Text style={styles.guideBtnT}>로그인 / 회원가입</Text>
-          </Pressable>
-        </View>
+        <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
+          <View style={{ paddingTop: 8 }}>
+            <View style={styles.datebar}>
+              <Text style={styles.dbD}>{todayLabel()}</Text>
+            </View>
+            <View style={{ marginHorizontal: 16 }}>
+              <NightCardLocked onUnlock={() => router.push('/(auth)/login')} />
+            </View>
+            <Text style={styles.guestHint}>내 생년월일·연애 상태에 맞춘 <Text style={{ fontWeight: '800', color: colors.ink }}>맞춤 운세로 보려면 로그인</Text>이 필요해요{'
+'}매일 자정 연애운·타로·궁합 — 무료</Text>
+            <Text style={styles.disclaimer}>운세 콘텐츠는 재미로 즐기는 참고용 정보예요.</Text>
+          </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
@@ -350,5 +358,6 @@ const styles = StyleSheet.create({
   threadB: { fontSize: 13, fontWeight: weight.extrabold as '800', color: colors.ink },
   threadS: { fontSize: 11.5, color: colors.sub2, fontWeight: weight.semibold as '600', marginTop: 2 },
   threadGo: { color: colors.rose, fontWeight: weight.extrabold as '800', fontSize: 12 },
+  guestHint: { marginTop: 14, marginHorizontal: 24, fontSize: 12.5, color: colors.sub, textAlign: 'center', lineHeight: 18 },
   disclaimer: { marginTop: 20, marginHorizontal: 16, fontSize: 10.5, color: colors.sub2, textAlign: 'center' },
 });
