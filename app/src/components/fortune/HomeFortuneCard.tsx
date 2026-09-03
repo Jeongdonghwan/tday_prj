@@ -21,7 +21,28 @@ export function HomeFortuneCard() {
     if (token && !data) reload();
   }, [token, data, reload]);
 
-  if (!token) return null; // 게스트는 미노출(홈 게스트 처리 별도)
+  // 게스트(웹): 잠금 미니카드 노출 — 탭하면 로그인 (유입 퍼널)
+  if (!token) {
+    return (
+      <Pressable onPress={() => router.push('/(auth)/login')} style={styles.wrap}>
+        <LinearGradient {...nightGradient} style={styles.card}>
+          <View style={styles.row}>
+            <ScoreRing size={64} stroke={6} score={0} dashed>
+              <Text style={styles.num}>?</Text>
+            </ScoreRing>
+            <View style={styles.tx}>
+              <Text style={styles.eb}>🌙 오늘의 연애운</Text>
+              <Text style={styles.line} numberOfLines={2}>매일 자정, 나만의 연애운이 도착해요</Text>
+              <View style={styles.go}>
+                <Text style={styles.goT}>맞춤 운세로 보려면 로그인</Text>
+                <Icon name="chevronRight" size={12} color={night.gold} strokeWidth={2.5} />
+              </View>
+            </View>
+          </View>
+        </LinearGradient>
+      </Pressable>
+    );
+  }
 
   const registered = data?.registered === true;
 
