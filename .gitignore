@@ -26,3 +26,7 @@ e2e/shots/
 
 # 심사 계정 비밀번호 포함 — 공개 저장소 커밋 금지
 app/store/review-account.md
+
+# 웹 배포 산출물은 git pull 배포 채널이라 추적 (dist/ 무시 예외)
+!app/dist/
+!app/dist/**
