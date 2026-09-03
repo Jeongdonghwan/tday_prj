@@ -133,7 +133,7 @@ const RAIL_W = 280;
 const GAP = 24;
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.soft },
+  root: { flex: 1, backgroundColor: colors.bg }, // 화이트 톤 캔버스 (카드 구분은 테두리로)
   gnb: {
     height: 60,
     backgroundColor: colors.bg,
