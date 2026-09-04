@@ -122,6 +122,8 @@ def translate_post(title: str, body: str) -> dict:
     resp = client.messages.create(
         model=current_app.config["KSTORY_MODEL"],
         max_tokens=1500,
+        # 번역엔 확장 사고 불필요 — 켜두면 사고 토큰이 출력으로 과금돼 호출당 비용이 수 배로 뜀
+        thinking={"type": "disabled"},
         messages=[{"role": "user", "content": _PROMPT.format(title=title, body=body or "(none)")}],
     )
     return _parse(resp.content[0].text)
