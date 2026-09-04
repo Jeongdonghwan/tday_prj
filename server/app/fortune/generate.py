@@ -103,6 +103,7 @@ def generate_for_date(fortune_date: date, lang: str = "ko", overwrite: bool = Fa
                 db.session.add(row)
             made += 1
             LAST_RUN["ai" if ai_segs else "fallback"] += 1
+        db.session.commit()  # 상태 단위 커밋 — AI 재시도로 길어져도 락 점유를 짧게 (verify 와 경합 방지)
     db.session.commit()
     # 방금 만든 날짜가 캐시에 비어있게 잡혀 있으면 무효화 (같은 프로세스 내 즉시 반영)
     from ..api.fortune import reset_seg_cache
