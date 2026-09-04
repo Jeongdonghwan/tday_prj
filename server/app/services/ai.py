@@ -48,6 +48,7 @@ def suggest_poll(title: str, body: str = "") -> dict:
     resp = client.messages.create(
         model=current_app.config["AI_MODEL"],
         max_tokens=200,
+        thinking={"type": "disabled"},
         messages=[{"role": "user", "content": _PROMPT.format(title=title, body=body or "(없음)")}],
     )
     return _parse(resp.content[0].text)
